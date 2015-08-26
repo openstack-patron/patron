@@ -1,7 +1,13 @@
 # ignore everything but files in /nova and /novaclient
 /*
+
+/novaclient/.idea/
+/nova/.idea/workspace.xml
+nova/nova-api.py
+
 !/nova
 !/novaclient
+!/patron-test
 
 *.py[cod]
 
