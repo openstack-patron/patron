@@ -1,3 +1,8 @@
+# ignore everything but files in /nova and /novaclient
+/*
+!/nova
+!/novaclient
+
 *.py[cod]
 
 # C extensions
