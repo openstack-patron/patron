@@ -30,11 +30,14 @@ class PatronAccessController(object):
 
         context = req.environ['nova.context']
 
-        policy.enforce(context, rule,
+        try:
+            res = policy.enforce(context, rule,
                         {'project_id': context.project_id,
                          'user_id': context.user_id})
+            return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id, 'res': res}
+        except Exception:
+            return {'res': False}
 
-        return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id}
 
 class Patron_access(extensions.ExtensionDescriptor):
     """Enables cells-related functionality such as adding neighbor cells,
