@@ -27,23 +27,32 @@ class PatronResource(base.Resource):
 class PatronAccessManager(base.Manager):
     resource_class = PatronResource
 
-    def verify(self, user_id, resource_id):
+    def verify(self, rule):
         """
         patron verify
         """
         # os-patron-access/123/resource/456/action/verify
-        return self.api.client.get("/os-patron-access/%s/resource/%s/action/verify" % (user_id, resource_id))
+        return self.api.client.get("/os-patron-access/rule/%s/verify" % rule)
 
 
 @cliutils.arg(
-    '--user_id',
-    metavar='<user_id>',
-    help=_('User id.'))
-@cliutils.arg(
-    '--resource_id',
-    metavar='<resource_id>',
-    help=_('Resource id.'))
+    '--rule',
+    metavar='<rule>',
+    help=_('User rule.For example:\n\tcompute_extension:admin_actions'))
 def do_verify(cs, args):
-    """patron verify"""
-    ans = cs.patron_access.verify(args.user_id, args.resource_id)
+    """patron verify. Args:rule. For example:\n\tcompute_extension:admin_actions"""
+    ans = cs.patron_access.verify(args.rule)
     print ans
+
+# @cliutils.arg(
+#     '--user_id',
+#     metavar='<user_id>',
+#     help=_('User id.'))
+# @cliutils.arg(
+#     '--resource_id',
+#     metavar='<resource_id>',
+#     help=_('Resource id.'))
+# def do_verify(cs, args):
+#     """patron verify"""
+#     ans = cs.patron_access.verify(args.user_id, args.resource_id)
+#     print ans

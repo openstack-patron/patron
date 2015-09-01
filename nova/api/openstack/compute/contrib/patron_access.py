@@ -7,6 +7,7 @@
 import webob
 
 from nova.api.openstack import extensions
+from nova import policy
 from nova.api.openstack import wsgi
 from nova import context as nova_context
 from nova import exception
@@ -20,23 +21,20 @@ class PatronAccessController(object):
     def __init__(self, ext_mgr):
         self.ext_mgr = ext_mgr
 
-    def detail(self, req, user_id, res_id):
-        """Return all cells in detail."""
-        all_the_text = '>>>>>>>>> enter PatronAccessController:detail\n'
-        file_object = open('mylog.txt', 'a+')
-        file_object.write(all_the_text)
-        file_object.close()
-        ctxt = req.environ['nova.context']
-        return {'action': 'detail', 'user_id': user_id, 'res_id': res_id, 'ans': 'OK'}
-
-    def verify(self, req,  user_id, res_id):
+    def verify(self, req,  rule):
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
         file_object = open('mylog.txt', 'a+')
         file_object.write(all_the_text)
         file_object.close()
-        ctxt = req.environ['nova.context']
-        return {'action': 'verify', 'user_id': user_id, 'res_id': res_id, 'ans': 'OK'}
+
+        context = req.environ['nova.context']
+
+        policy.enforce(context, rule,
+                        {'project_id': context.project_id,
+                         'user_id': context.user_id})
+
+        return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id}
 
 class Patron_access(extensions.ExtensionDescriptor):
     """Enables cells-related functionality such as adding neighbor cells,
@@ -50,20 +48,21 @@ class Patron_access(extensions.ExtensionDescriptor):
 
     def get_resources(self):
         coll_actions = {
-                'detail': 'GET',
                 'verify': 'GET',
-                'info': 'GET',
-                'sync_instances': 'POST',
-                'capacities': 'GET',
                 }
         memb_actions = {
                 'capacities': 'GET',
                 }
 
         # /%(project_id)s/os-patron-access/%(user_id)s/resource/%(res_id)s/action/%(action)s/
+        # .../action/{rule}/
 
-        res = extensions.ResourceExtension('os-patron-access/{user_id}/resource/{res_id}/action',
+        res = extensions.ResourceExtension('os-patron-access/rule/{rule}',
                 controller=PatronAccessController(self.ext_mgr), collection_actions=coll_actions,
                 member_actions=memb_actions)
+
+        # res = extensions.ResourceExtension('os-patron-access/{user_id}/resource/{res_id}/action',
+        #         controller=PatronAccessController(self.ext_mgr), collection_actions=coll_actions,
+        #         member_actions=memb_actions)
         return [res]
 
