@@ -17,4 +17,9 @@ else :
     AUTH_URL = "http://ly-controller:5000/v2.0/"
 
 nova = client.Client(VERSION, USERNAME, PASSWORD, PROJECT_ID, AUTH_URL)
-print nova.patrons.verify("compute_extension:admin_actions")
+response = nova.patrons.verify("compute_extension:admin_actions")
+print response
+if response[1]['res'] == True:
+    print "Access permitted."
+else:
+    print "Acess denied."
