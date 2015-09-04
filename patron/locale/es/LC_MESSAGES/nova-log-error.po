@@ -1,0 +1,1566 @@
+# Translations template for patron.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the patron project.
+#
+# Translators:
+# David Martinez Morata, 2014
+# Rafael Rivero <rafael@cloudscaling.com>, 2014
+# Sergio Cuellar Valdes <scuellarv@kionetworks.com>, 2015
+msgid ""
+msgstr ""
+"Project-Id-Version: patron\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-04-20 11:01+0200\n"
+"PO-Revision-Date: 2015-04-17 15:14+0000\n"
+"Last-Translator: Sergio Cuellar Valdes <scuellarv@kionetworks.com>\n"
+"Language-Team: Spanish (http://www.transifex.com/projects/p/patron/language/"
+"es/)\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: patron/crypto.py:455
+msgid "Failed to write inbound.csr"
+msgstr "No se ha podido grabar inbound.csr"
+
+#: patron/exception.py:124
+msgid "Exception in string format operation"
+msgstr "Excepción en la operación de formato de cadena"
+
+#: patron/hooks.py:93
+#, python-format
+msgid "Fatal Exception running %(name)s %(type)s-hook: %(obj)s"
+msgstr ""
+
+#: patron/hooks.py:99
+#, python-format
+msgid "Exception running %(name)s %(type)s-hook: %(obj)s"
+msgstr ""
+
+#: patron/notifications.py:153 patron/notifications.py:192
+msgid "Failed to send state update notification"
+msgstr "No se ha podido enviar notificación de actualización de estado"
+
+#: patron/notifications.py:296
+msgid "Failed to get nw_info"
+msgstr "No se ha podido obtener nw_info"
+
+#: patron/quota.py:1368
+#, python-format
+msgid "Failed to commit reservations %s"
+msgstr "Ha fallado la entrega de reservas %s|"
+
+#: patron/quota.py:1392
+#, python-format
+msgid "Failed to roll back reservations %s"
+msgstr "Fallo al revertir las reservas %s"
+
+#: patron/service.py:300
+msgid "Service error occurred during cleanup_host"
+msgstr "Ha ocurrido un error de servicio durante cleanup_host"
+
+#: patron/service.py:317
+#, python-format
+msgid "Temporary directory is invalid: %s"
+msgstr "El directorio temporal no es válido: %s"
+
+#: patron/utils.py:436
+#, python-format
+msgid "Invalid server_string: %s"
+msgstr "Serie de servidor no válida: %s"
+
+#: patron/utils.py:711
+#, python-format
+msgid "Could not remove tmpdir: %s"
+msgstr "No se ha podido eliminar directorio temporal: %s"
+
+#: patron/version.py:62
+#, python-format
+msgid "Failed to load %(cfgfile)s: %(ex)s"
+msgstr "Fallo al cargar %(cfgfile)s: %(ex)s"
+
+#: patron/wsgi.py:144
+#, python-format
+msgid "Could not bind to %(host)s:%(port)s"
+msgstr "No se puede asociar a %(host)s:%(port)s"
+
+#: patron/wsgi.py:213
+#, python-format
+msgid "Failed to start %(name)s on %(host)s:%(port)s with SSL support"
+msgstr "No se ha podido iniciar %(name)s en %(host)s:%(port)s con soporte SSL"
+
+#: patron/wsgi.py:535
+#, python-format
+msgid "Couldn't lookup app: %s"
+msgstr ""
+
+#: patron/api/ec2/__init__.py:95
+msgid "FaultWrapper error"
+msgstr ""
+
+#: patron/api/ec2/__init__.py:299
+#, python-format
+msgid "Keystone failure: %s"
+msgstr "Anomalía de keystone: %s"
+
+#: patron/api/ec2/__init__.py:555
+#, python-format
+msgid "Unexpected %(ex_name)s raised: %(ex_str)s"
+msgstr "Encontrado %(ex_name)s inesperado : %(ex_str)s"
+
+#: patron/api/ec2/__init__.py:582
+#, python-format
+msgid "Environment: %s"
+msgstr "Entorno: %s"
+
+#: patron/api/metadata/handler.py:161 patron/api/metadata/handler.py:169
+#, python-format
+msgid "Failed to get metadata for ip: %s"
+msgstr "Fallo al generar metadatos para la ip %s"
+
+#: patron/api/metadata/handler.py:222 patron/api/metadata/handler.py:230
+#, python-format
+msgid "Failed to get metadata for instance id: %s"
+msgstr "No se han podido obtener metadatos para el id de instancia: %s"
+
+#: patron/api/openstack/__init__.py:93
+#, python-format
+msgid "Caught error: %s"
+msgstr "Capturado error: %s"
+
+#: patron/api/openstack/common.py:139
+#, python-format
+msgid ""
+"status is UNKNOWN from vm_state=%(vm_state)s task_state=%(task_state)s. Bad "
+"upgrade or db corrupted?"
+msgstr ""
+"el estado es UNKNOWN de vm_state=%(vm_state)s task_state=%(task_state)s. "
+"¿Actualización errónea o base de datos dañada?"
+
+#: patron/api/openstack/extensions.py:196
+#: patron/api/openstack/compute/plugins/__init__.py:46
+msgid "Exception loading extension"
+msgstr ""
+
+#: patron/api/openstack/extensions.py:493
+msgid "Unexpected exception in API method"
+msgstr "Excepción inesperada en método API."
+
+#: patron/api/openstack/wsgi.py:518
+#, python-format
+msgid "Exception handling resource: %s"
+msgstr "Excepción al manejar recurso: %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:69
+#, python-format
+msgid "Compute.api::pause %s"
+msgstr "Compute.api::pause %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:91
+#, python-format
+msgid "Compute.api::unpause %s"
+msgstr "Compute.api::unpause %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:113
+#, python-format
+msgid "compute.api::suspend %s"
+msgstr "compute.api::suspend %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:135
+#, python-format
+msgid "compute.api::resume %s"
+msgstr "compute.api::resume %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:159
+msgid "Error in migrate"
+msgstr "Error en la migración"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:178
+#, python-format
+msgid "Compute.api::reset_network %s"
+msgstr "Compute.api::reset_network %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:197
+#, python-format
+msgid "Compute.api::inject_network_info %s"
+msgstr "Compute.api::inject_network_info %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:214
+#, python-format
+msgid "Compute.api::lock %s"
+msgstr "Compute.api::lock %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:233
+#, python-format
+msgid "Compute.api::unlock %s"
+msgstr "Compute.api::unlock %s"
+
+#: patron/api/openstack/compute/contrib/admin_actions.py:388
+#, python-format
+msgid "Compute.api::resetState %s"
+msgstr "Compute.api::resetState %s"
+
+#: patron/api/openstack/compute/contrib/multinic.py:77
+#, python-format
+msgid "Unable to find address %r"
+msgstr "No se puede encontrar la dirección %r"
+
+#: patron/api/openstack/compute/contrib/os_tenant_networks.py:78
+#: patron/api/openstack/compute/plugins/v3/tenant_networks.py:74
+msgid "Failed to get default networks"
+msgstr "Fallo al obtener las redes predeterminadas"
+
+#: patron/api/openstack/compute/contrib/os_tenant_networks.py:118
+#: patron/api/openstack/compute/plugins/v3/tenant_networks.py:117
+msgid "Failed to update usages deallocating network."
+msgstr "No se han podido actualizar los usos desasignando la red."
+
+#: patron/api/openstack/compute/contrib/server_groups.py:157
+#: patron/api/openstack/compute/plugins/v3/server_groups.py:100
+msgid "Failed to update usages deallocating server group"
+msgstr ""
+
+#: patron/cells/messaging.py:205
+msgid "Error processing message locally"
+msgstr ""
+
+#: patron/cells/messaging.py:414
+msgid "Error locating next hop for message"
+msgstr ""
+
+#: patron/cells/messaging.py:440
+#, python-format
+msgid "Failed to send message to cell: %(next_hop)s"
+msgstr ""
+
+#: patron/cells/messaging.py:518
+msgid "Error locating next hops for message"
+msgstr ""
+
+#: patron/cells/messaging.py:537
+msgid "Error sending message to next hops."
+msgstr ""
+
+#: patron/cells/messaging.py:554
+msgid "Error waiting for responses from neighbor cells"
+msgstr ""
+
+#: patron/cells/messaging.py:1879
+#, python-format
+msgid "Returning exception %s to caller"
+msgstr "Devolviendo excepción %s al interlocutor"
+
+#: patron/cells/rpcapi.py:412
+msgid "Failed to notify cells of BDM update/create."
+msgstr "Fallo al notificar las celdas de actualización/creación de BDM."
+
+#: patron/cells/rpcapi.py:428
+msgid "Failed to notify cells of BDM destroy."
+msgstr "Fallo al notiifcar las celdas de destrucción de BDM"
+
+#: patron/cells/scheduler.py:198
+#, python-format
+msgid "Couldn't communicate with cell '%s'"
+msgstr "No se puede comunicar con la celda '%s'"
+
+#: patron/cells/scheduler.py:202
+msgid "Couldn't communicate with any cells"
+msgstr "No se puede establecer comunicación con alguna celda"
+
+#: patron/cells/scheduler.py:245
+#, python-format
+msgid "Error scheduling instances %(instance_uuids)s"
+msgstr "Error al planificar instancias %(instance_uuids)s"
+
+#: patron/cells/state.py:179
+msgid "DB error"
+msgstr "Error de BD"
+
+#: patron/cells/state.py:365
+#, python-format
+msgid "Unknown cell '%(cell_name)s' when trying to update capabilities"
+msgstr "Célula '%(cell_name)s' desconocida al intentar actualizar prestaciones"
+
+#: patron/cells/state.py:380
+#, python-format
+msgid "Unknown cell '%(cell_name)s' when trying to update capacities"
+msgstr "Célula '%(cell_name)s' desconocida al intentar actualizar capacidades"
+
+#: patron/cmd/all.py:63
+#, python-format
+msgid "Failed to load %s-api"
+msgstr ""
+
+#: patron/cmd/all.py:69 patron/cmd/all.py:92
+#, python-format
+msgid "Failed to load %s"
+msgstr "Ha fallado la carga de %s"
+
+#: patron/cmd/compute.py:50
+#, python-format
+msgid "No db access allowed in patron-compute: %s"
+msgstr "No se permite acceso a la base de datos en patron-compute: %s"
+
+#: patron/cmd/dhcpbridge.py:108
+#, python-format
+msgid "No db access allowed in patron-dhcpbridge: %s"
+msgstr "No se permite acceso a la base de datos en patron-dhcpbridge: %s"
+
+#: patron/cmd/dhcpbridge.py:140
+msgid "Environment variable 'NETWORK_ID' must be set."
+msgstr "La variable de entorno 'NETWORK_ID' debe ser establecida."
+
+#: patron/cmd/network.py:50
+#, python-format
+msgid "No db access allowed in patron-network: %s"
+msgstr "No se permite acceso a base de datos en patron-network: %s"
+
+#: patron/compute/api.py:630
+msgid "Failed to set instance name using multi_instance_display_name_template."
+msgstr ""
+"Se ha encontrado un error en la definición del nombre de instancia mediante "
+"multi_instance_display_name_template."
+
+#: patron/compute/api.py:1532
+msgid ""
+"Something wrong happened when trying to delete snapshot from shelved "
+"instance."
+msgstr ""
+"Algo malo ha pasado al intentar eliminar la instantánea de la imagen "
+"almacenada."
+
+#: patron/compute/api.py:3255
+#, python-format
+msgid ""
+"Instance compute service state on %s expected to be down, but it was up."
+msgstr ""
+"El estado de la instancia del servicio de cómputo en %s debería ser "
+"inactivo, pero se encontraba activo."
+
+#: patron/compute/api.py:3985
+msgid "Failed to update usages deallocating security group"
+msgstr ""
+"No se han podido actualizar los usos desasignando el grupo de seguridad "
+
+#: patron/compute/flavors.py:188
+#, python-format
+msgid "Instance type %s not found for deletion"
+msgstr "No se ha encontrado el tipo de instancia %s para suprimirse"
+
+#: patron/compute/manager.py:398
+#, python-format
+msgid "Error while trying to clean up image %s"
+msgstr "Error al intentar limpiar imagen %s"
+
+#: patron/compute/manager.py:868
+msgid "Failed to check if instance shared"
+msgstr "Fallo al verificar si la instancia se encuentra compartida"
+
+#: patron/compute/manager.py:950 patron/compute/manager.py:1028
+msgid "Failed to complete a deletion"
+msgstr "Fallo durante la compleción una remoción"
+
+#: patron/compute/manager.py:995
+msgid "Failed to cleanup snapshot."
+msgstr "Fallo al limpiar instantánea."
+
+#: patron/compute/manager.py:1077
+msgid "Failed to unpause instance"
+msgstr "Fallo al reanudar la instancia"
+
+#: patron/compute/manager.py:1089
+msgid "Failed to stop instance"
+msgstr "Fallo al detener instancia"
+
+#: patron/compute/manager.py:1101
+msgid "Failed to start instance"
+msgstr "Fallo al iniciar instancia"
+
+#: patron/compute/manager.py:1112
+msgid "Vifs plug failed"
+msgstr ""
+
+#: patron/compute/manager.py:1132
+msgid "Failed to revert crashed migration"
+msgstr "Se ha encontrado un error en al revertir la migración colgada"
+
+#: patron/compute/manager.py:1574
+msgid "Failed to dealloc network for deleted instance"
+msgstr "No se ha podido desasignar la red para la instancia suprimida"
+
+#: patron/compute/manager.py:1595
+msgid "Failed to dealloc network for failed instance"
+msgstr "Fallo al desasociar red para la instancia fallida"
+
+#: patron/compute/manager.py:1622
+#, python-format
+msgid "Error: %s"
+msgstr "Error: %s"
+
+#: patron/compute/manager.py:1671 patron/compute/manager.py:3921
+msgid "Error trying to reschedule"
+msgstr "Error al intentar volver a programar "
+
+#: patron/compute/manager.py:1779
+#, python-format
+msgid "Instance failed network setup after %(attempts)d attempt(s)"
+msgstr ""
+"La configuración de red de la instancia falló después de %(attempts)d "
+"intento(s)"
+
+#: patron/compute/manager.py:1970
+msgid "Instance failed block device setup"
+msgstr "Ha fallado la configuración de dispositivo de bloque en la instancia"
+
+#: patron/compute/manager.py:1996 patron/compute/manager.py:2443
+#: patron/compute/manager.py:4480
+msgid "Instance failed to spawn"
+msgstr "La instancia no se ha podido generar"
+
+#: patron/compute/manager.py:2271
+msgid "Unexpected build failure, not rescheduling build."
+msgstr "Fallo de compilación inesperado, no se reprogramará la compilación."
+
+#: patron/compute/manager.py:2339 patron/compute/manager.py:2396
+msgid "Failed to allocate network(s)"
+msgstr "Fallo al asociar red(es)"
+
+#: patron/compute/manager.py:2428
+msgid "Failure prepping block device"
+msgstr "Fallo al preparar el dispositivo de bloques"
+
+#: patron/compute/manager.py:2469
+msgid "Failed to deallocate networks"
+msgstr "Fallo al desasociar redes"
+
+#: patron/compute/manager.py:2517
+msgid "Failed to deallocate network for instance."
+msgstr "Se ha encontrado un error al desasignar la red para la instancia"
+
+#: patron/compute/manager.py:2729 patron/compute/manager.py:4116
+#: patron/compute/manager.py:6380
+msgid "Setting instance vm_state to ERROR"
+msgstr "Estableciendo el vm_state de la instancia a ERROR"
+
+#: patron/compute/manager.py:2962 patron/compute/manager.py:5425
+#, python-format
+msgid "Failed to get compute_info for %s"
+msgstr "Fallo al obtener compute_info para %s"
+
+#: patron/compute/manager.py:3154
+#, python-format
+msgid "Cannot reboot instance: %s"
+msgstr "No se puede reiniciar instancia: %s"
+
+#: patron/compute/manager.py:3390
+msgid "set_admin_password failed"
+msgstr ""
+
+#: patron/compute/manager.py:3479
+msgid "Error trying to Rescue Instance"
+msgstr "Error al intentar Rescatar Instancia"
+
+#: patron/compute/manager.py:3577
+#, python-format
+msgid "Migration %s is not found during confirmation"
+msgstr "La migración %s no ha sido encontrada durante la confirmación"
+
+#: patron/compute/manager.py:4122
+msgid "Failed to rollback quota for failed finish_resize"
+msgstr ""
+
+#: patron/compute/manager.py:4777
+#, python-format
+msgid "Failed to attach %(volume_id)s at %(mountpoint)s"
+msgstr "Fallo al asociar %(volume_id)s en %(mountpoint)s"
+
+#: patron/compute/manager.py:4821
+#, python-format
+msgid "Failed to detach volume %(volume_id)s from %(mp)s"
+msgstr "No se ha podido desconectar el volumen %(volume_id)s de %(mp)s"
+
+#: patron/compute/manager.py:4900
+#, python-format
+msgid "Failed to swap volume %(old_volume_id)s for %(new_volume_id)s"
+msgstr ""
+"Fallo para intercambiar volúmen %(old_volume_id)s por %(new_volume_id)s"
+
+#: patron/compute/manager.py:4907
+#, python-format
+msgid "Failed to connect to volume %(volume_id)s with volume at %(mountpoint)s"
+msgstr ""
+"Fallo al conectar hacia al volúmen %(volume_id)s con el volumen en "
+"%(mountpoint)s"
+
+#: patron/compute/manager.py:4996
+#, python-format
+msgid "allocate_port_for_instance returned %(ports)s ports"
+msgstr "allocate_port_for_instance ha regresado %(ports)s puertos"
+
+#: patron/compute/manager.py:5222
+#, python-format
+msgid "Pre live migration failed at %s"
+msgstr "Previo a migración en vivo falló en %s"
+
+#: patron/compute/manager.py:5601
+msgid "An error occurred while refreshing the network cache."
+msgstr "Ha ocurrido un error al actualizar el cache de red."
+
+#: patron/compute/manager.py:5753
+msgid "Periodic task failed to offload instance."
+msgstr "Tarea periódica falló al descargar instancia."
+
+#: patron/compute/manager.py:5794
+#, python-format
+msgid "Failed to generate usage audit for instance on host %s"
+msgstr ""
+"No se ha podido generar auditoría de uso para la instancia en el host %s "
+
+#: patron/compute/manager.py:5984
+msgid ""
+"Periodic sync_power_state task had an error while processing an instance."
+msgstr ""
+"La tarea periódica sync_power_state ha tenido un error al procesar una "
+"instancia."
+
+#: patron/compute/manager.py:6117 patron/compute/manager.py:6126
+#: patron/compute/manager.py:6165 patron/compute/manager.py:6176
+msgid "error during stop() in sync_power_state."
+msgstr "error durante stop() en sync_power_state."
+
+#: patron/compute/manager.py:6255
+#, python-format
+msgid "No compute node record for host %s"
+msgstr ""
+
+#: patron/compute/manager.py:6542
+#, python-format
+msgid "Exception while waiting completion of volume snapshots: %s"
+msgstr ""
+
+#: patron/compute/monitors/virt/cpu_monitor.py:112
+msgid "Not all properties needed are implemented in the compute driver"
+msgstr ""
+
+#: patron/conductor/manager.py:122
+#, python-format
+msgid "Instance update attempted for '%(key)s' on %(instance_uuid)s"
+msgstr "Se intentado actualizar instancia para '%(key)s' en %(instance_uuid)s"
+
+#: patron/conductor/manager.py:632
+#, python-format
+msgid ""
+"Migration of instance %(instance_id)s to host %(dest)s unexpectedly failed."
+msgstr ""
+"La migración de la instancia %(instance_id)s al anfitrión %(dest)s ha "
+"fallado inesperadamente."
+
+#: patron/conductor/manager.py:784
+msgid "Unshelve attempted but an error has occurred"
+msgstr ""
+
+#: patron/conductor/manager.py:787
+msgid "Unshelve attempted but vm_state not SHELVED or SHELVED_OFFLOADED"
+msgstr ""
+"Se ha intentado desarchivar pero vm_state no se encuentra como SHELVED o "
+"SHELVED_OFFLOADED"
+
+#: patron/console/xvp.py:124
+msgid "Failed to write configuration file"
+msgstr "No se ha podido grabar archivo de configuración"
+
+#: patron/console/xvp.py:147
+#, python-format
+msgid "Error starting xvp: %s"
+msgstr "Error al iniciar xvp: %s "
+
+#: patron/db/api.py:644
+msgid "Failed to notify cells of instance destroy"
+msgstr "No se ha podido notificar a las células la destrucción de instancia"
+
+#: patron/db/api.py:751 patron/db/api.py:779
+msgid "Failed to notify cells of instance update"
+msgstr "No se ha podido notificar a las células la actualización de instancia"
+
+#: patron/db/api.py:1683
+msgid "Failed to notify cells of bw_usage update"
+msgstr "No se ha podido notificar a las células la actualización de bw_usage"
+
+#: patron/db/sqlalchemy/api.py:876
+msgid "Failed to update usages bulk deallocating floating IP"
+msgstr "Fallo al actualizar uso de desasignación masiva de IP fotante"
+
+#: patron/db/sqlalchemy/utils.py:132 patron/db/sqlalchemy/utils.py:136
+#: patron/db/sqlalchemy/migrate_repo/versions/216_havana.py:84
+#: patron/db/sqlalchemy/migrate_repo/versions/216_havana.py:1103
+msgid "Exception while creating table."
+msgstr "Excepción al crear la tabla."
+
+#: patron/db/sqlalchemy/migrate_repo/versions/216_havana.py:111
+msgid "Exception while seeding instance_types table"
+msgstr "Excepción al iniciar la tabla instance_types"
+
+#: patron/image/glance.py:261
+#, python-format
+msgid ""
+"When loading the module %(module_str)s the following error occurred: %(ex)s"
+msgstr ""
+"Al cargar el módulo %(module_str)s se ha presentado el siguiente error: "
+"%(ex)s"
+
+#: patron/image/glance.py:326
+#, python-format
+msgid "Failed to instantiate the download handler for %(scheme)s"
+msgstr "Fallo al instanciar el manejador de descargas para %(scheme)s"
+
+#: patron/image/glance.py:347
+msgid "Download image error"
+msgstr "Error en la descarga de la imagen"
+
+#: patron/image/s3.py:335
+#, python-format
+msgid "Failed to download %(image_location)s to %(image_path)s"
+msgstr "No se ha podido descargar %(image_location)s en %(image_path)s"
+
+#: patron/image/s3.py:352
+#, python-format
+msgid "Failed to decrypt %(image_location)s to %(image_path)s"
+msgstr "No se ha podido descifrar %(image_location)s en %(image_path)s"
+
+#: patron/image/s3.py:363
+#, python-format
+msgid "Failed to untar %(image_location)s to %(image_path)s"
+msgstr "No se ha podido ejecutar untar %(image_location)s en %(image_path)s"
+
+#: patron/image/s3.py:373
+#, python-format
+msgid "Failed to upload %(image_location)s to %(image_path)s"
+msgstr "No se ha podido subir %(image_location)s a %(image_path)s "
+
+#: patron/image/download/__init__.py:41
+#, python-format
+msgid ""
+"%(scheme)s is registered as a module twice. %(module_name)s is not being "
+"used."
+msgstr ""
+"%(scheme)s se está registrado como módulo dos veces. %(module_name)s no se "
+"encuentra en uso."
+
+#: patron/keymgr/barbican.py:115
+#, python-format
+msgid "Error creating Barbican client: %s"
+msgstr ""
+
+#: patron/keymgr/barbican.py:151
+#, python-format
+msgid "Error creating key: %s"
+msgstr ""
+
+#: patron/keymgr/barbican.py:205
+#, python-format
+msgid "Error storing key: %s"
+msgstr "Error al almacenar la llave: %s"
+
+#: patron/keymgr/barbican.py:231
+#, python-format
+msgid "Error copying key: %s"
+msgstr "Error al copiar la llave: %s"
+
+#: patron/keymgr/barbican.py:281
+#, python-format
+msgid "Error getting secret data: %s"
+msgstr ""
+
+#: patron/keymgr/barbican.py:301
+#, python-format
+msgid "Error getting secret metadata: %s"
+msgstr "Error al obtener los metadatos secretos: %s"
+
+#: patron/keymgr/barbican.py:329
+#, python-format
+msgid "Error getting key: %s"
+msgstr ""
+
+#: patron/keymgr/barbican.py:346
+#, python-format
+msgid "Error deleting key: %s"
+msgstr ""
+
+#: patron/network/base_api.py:52
+msgid "Failed storing info cache"
+msgstr "Ha fallado el almacenamiento de memoria caché de información"
+
+#: patron/network/driver.py:39
+msgid "Network driver option required, but not specified"
+msgstr ""
+"La opción de controlador de red es necesaria, pero no se ha especificado"
+
+#: patron/network/floating_ips.py:292
+msgid "Failed to update usages deallocating floating IP"
+msgstr "No se han podido actualizar los usos desasignando IP flotante "
+
+#: patron/network/floating_ips.py:395
+#, python-format
+msgid "Interface %s not found"
+msgstr "Interfaz %s no encontrada"
+
+#: patron/network/linux_net.py:859
+#, python-format
+msgid "Error deleting conntrack entries for %s"
+msgstr "Error al eliminar las entradas conntrack para %s"
+
+#: patron/network/linux_net.py:1115
+#, python-format
+msgid "kill -HUP dnsmasq threw %s"
+msgstr "kill -HUP dnsmasq lanzó %s"
+
+#: patron/network/linux_net.py:1193
+#, python-format
+msgid "killing radvd threw %s"
+msgstr "Matando radvd lanzado %s"
+
+#: patron/network/linux_net.py:1363
+#, python-format
+msgid "Unable to execute %(cmd)s. Exception: %(exception)s"
+msgstr "No se puede ejecutar %(cmd)s. Excepción: %(exception)s"
+
+#: patron/network/linux_net.py:1425
+#, python-format
+msgid "Failed removing net device: '%s'"
+msgstr "Fallo al remover dispositivo de red: '%s'"
+
+#: patron/network/linux_net.py:1436
+#, python-format
+msgid "Failed removing bridge device: '%s'"
+msgstr ""
+
+#: patron/network/manager.py:993
+msgid "Failed to update usages deallocating fixed IP"
+msgstr ""
+"Se ha encontrado un error en la actualización de los usos desasignando IP "
+"flotante"
+
+#: patron/network/manager.py:1021
+#, python-format
+msgid "Unable to release %s because vif doesn't exist"
+msgstr ""
+
+#: patron/network/manager.py:1028
+#, python-format
+msgid "Unable to release %s because vif object doesn't exist"
+msgstr ""
+
+#: patron/network/manager.py:1042
+#, python-format
+msgid "Error releasing DHCP for IP %(address)s with MAC %(mac_address)s"
+msgstr "Error al liberar DHCP para la IP %(address)s con MAC %(mac_address)s"
+
+#: patron/network/neutronv2/api.py:330
+#, python-format
+msgid "Neutron error creating port on network %s"
+msgstr "Error de Neutron al crear puerto en la red: %s"
+
+#: patron/network/neutronv2/api.py:368
+#, python-format
+msgid "Unable to clear device ID for port '%s'"
+msgstr ""
+
+#: patron/network/neutronv2/api.py:947
+#, python-format
+msgid "Failed to access port %s"
+msgstr "Fallo al acceder al puerto %s"
+
+#: patron/network/neutronv2/api.py:1197
+#, python-format
+msgid "Unable to access floating IP %s"
+msgstr "Incapaz de acceder a la Ip flotante %s"
+
+#: patron/network/neutronv2/api.py:1331
+#, python-format
+msgid "Unable to access floating IP %(fixed_ip)s for port %(port_id)s"
+msgstr ""
+"Incapaz de acceder a la IP flotante %(fixed_ip)s para el puerto %(port_id)s"
+
+#: patron/network/neutronv2/api.py:1695
+#, python-format
+msgid "Unable to update host of port %s"
+msgstr "Incapaz de actualizar el anfitrión del puerto %s"
+
+#: patron/network/security_group/neutron_driver.py:57
+#, python-format
+msgid "Neutron Error creating security group %s"
+msgstr "Error de Neutron al crear el grupo de seguridad %s"
+
+#: patron/network/security_group/neutron_driver.py:78
+#, python-format
+msgid "Neutron Error updating security group %s"
+msgstr "Error de Neutron al actualizar el grupo de seguridad %s"
+
+#: patron/network/security_group/neutron_driver.py:142
+#: patron/network/security_group/neutron_driver.py:145
+#: patron/network/security_group/neutron_driver.py:191
+#: patron/network/security_group/neutron_driver.py:219
+#: patron/network/security_group/neutron_driver.py:290
+#, python-format
+msgid "Neutron Error: %s"
+msgstr "Error de Neutron: %s"
+
+#: patron/network/security_group/neutron_driver.py:165
+msgid "Neutron Error getting security groups"
+msgstr "Error de Neutron al obtener los grupos de seguridad"
+
+#: patron/network/security_group/neutron_driver.py:211
+#, python-format
+msgid "Neutron Error getting security group %s"
+msgstr "Error de Neutron al obtener los grupos de seguridad %s"
+
+#: patron/network/security_group/neutron_driver.py:215
+#, python-format
+msgid "Neutron Error adding rules to security group %s"
+msgstr "Error de Neutron al agregar reglas al grupo de seguridad %s"
+
+#: patron/network/security_group/neutron_driver.py:222
+#: patron/network/security_group/neutron_driver.py:421
+#: patron/network/security_group/neutron_driver.py:428
+#: patron/network/security_group/neutron_driver.py:456
+#: patron/network/security_group/neutron_driver.py:476
+#: patron/network/security_group/neutron_driver.py:483
+#: patron/network/security_group/neutron_driver.py:512
+msgid "Neutron Error:"
+msgstr "Error de Neutron:"
+
+#: patron/network/security_group/neutron_driver.py:276
+#, python-format
+msgid "Neutron Error unable to delete %s"
+msgstr "Error de Neutron incapaz de eliminar %s"
+
+#: patron/objects/base.py:91
+#, python-format
+msgid "Error setting %(attr)s"
+msgstr "Error al establecer %(attr)s"
+
+#: patron/objects/base.py:300
+#, python-format
+msgid "Unable to instantiate unregistered object type %(objtype)s"
+msgstr "Incapaz de instanciar tipo de objeto no registrado %(objtype)s"
+
+#: patron/objects/instance.py:794
+#, python-format
+msgid "No save handler for %s"
+msgstr "No hay manejador de guardado para %s"
+
+#: patron/objects/instance_fault.py:90
+msgid "Failed to notify cells of instance fault"
+msgstr "No se ha podido notificar a las células el error de instancia"
+
+#: patron/objects/instance_info_cache.py:85
+msgid "Failed to notify cells of instance info cache update"
+msgstr ""
+"No se ha podido notificar a las células la actualización de memoria caché de "
+"información de instancia"
+
+#: patron/openstack/common/loopingcall.py:95
+msgid "in fixed duration looping call"
+msgstr "en llamada en bucle de duración fija"
+
+#: patron/openstack/common/loopingcall.py:138
+msgid "in dynamic looping call"
+msgstr "en llamada en bucle dinámica"
+
+#: patron/openstack/common/periodic_task.py:228
+#, python-format
+msgid "Error during %(full_task_name)s: %(e)s"
+msgstr "Error durante %(full_task_name)s: %(e)s"
+
+#: patron/openstack/common/policy.py:564 patron/openstack/common/policy.py:844
+#, python-format
+msgid "Failed to understand rule %s"
+msgstr "Ha ocurrido un error al interpretar la regla %s"
+
+#: patron/openstack/common/policy.py:574
+#, python-format
+msgid "No handler for matches of kind %s"
+msgstr "No hay manejador para coincidencias de clase %s"
+
+#: patron/openstack/common/service.py:272
+msgid "Unhandled exception"
+msgstr "Excepción no controlada"
+
+#: patron/pci/stats.py:152
+msgid ""
+"Failed to allocate PCI devices for instance. Unassigning devices back to "
+"pools. This should not happen, since the scheduler should have accurate "
+"information, and allocation during claims is controlled via a hold on the "
+"compute node semaphore"
+msgstr ""
+
+#: patron/pci/utils.py:85 patron/pci/utils.py:101
+#, python-format
+msgid "PCI device %s not found"
+msgstr "El dispositivo PCI %s no se ha encontrado"
+
+#: patron/scheduler/scheduler_options.py:69
+#, python-format
+msgid "Could not stat scheduler options file %(filename)s"
+msgstr ""
+
+#: patron/scheduler/scheduler_options.py:78
+msgid "Could not decode scheduler options"
+msgstr ""
+
+#: patron/scheduler/utils.py:188
+#, python-format
+msgid "Error from last host: %(last_host)s (node %(last_node)s): %(exc)s"
+msgstr "Error del último host: %(last_host)s (nodo %(last_node)s): %(exc)s"
+
+#: patron/servicegroup/drivers/db.py:117 patron/servicegroup/drivers/mc.py:103
+msgid "Recovered model server connection!"
+msgstr "Recuperada la conexión al servidor de modelos."
+
+#: patron/servicegroup/drivers/db.py:123 patron/servicegroup/drivers/mc.py:109
+msgid "model server went away"
+msgstr "el servidor de modelos se ha ido"
+
+#: patron/servicegroup/drivers/zk.py:129
+msgid ""
+"Unable to join. It is possible that either another node exists with the same "
+"name, or this node just restarted. We will try again in a short while to "
+"make sure."
+msgstr ""
+"No se ha podido unir. Es posible que exista otro nodo con el mismo nombre, o "
+"que este nodo se acabe de reiniciar. Volverá a intentarse en poco tiempo "
+"para asegurarse."
+
+#: patron/virt/block_device.py:256
+#, python-format
+msgid "Driver failed to attach volume %(volume_id)s at %(mountpoint)s"
+msgstr ""
+"El controlador ha fallado al asignar el volumen %(volume_id)s en "
+"%(mountpoint)s"
+
+#: patron/virt/driver.py:1258
+#, python-format
+msgid "Exception dispatching event %(event)s: %(ex)s"
+msgstr "Excepción al asignar el suceso %(event)s: %(ex)s"
+
+#: patron/virt/driver.py:1382
+msgid "Compute driver option required, but not specified"
+msgstr ""
+"La opción de controlador de cálculo es necesaria, pero no se ha especificado"
+
+#: patron/virt/driver.py:1392
+msgid "Unable to load the virtualization driver"
+msgstr "Incapaz de cargar el controlador de virtualización"
+
+#: patron/virt/images.py:114
+#, python-format
+msgid ""
+"%(base)s virtual size %(disk_size)s larger than flavor root disk size "
+"%(size)s"
+msgstr ""
+"El tamaño virtual %(disk_size)s de %(base)s es más grande que el tamaño del "
+"disco raíz del sabor %(size)s"
+
+#: patron/virt/disk/api.py:419
+#, python-format
+msgid ""
+"Failed to mount container filesystem '%(image)s' on '%(target)s': %(errors)s"
+msgstr ""
+"Se ha encontrado un error en el montaje del sistema de archivos de "
+"contenedor '%(image)s' en '%(target)s': : %(errors)s"
+
+#: patron/virt/disk/api.py:449
+msgid "Failed to teardown container filesystem"
+msgstr ""
+
+#: patron/virt/disk/api.py:462
+msgid "Failed to umount container filesystem"
+msgstr ""
+
+#: patron/virt/disk/mount/nbd.py:57
+#, python-format
+msgid "NBD error - previous umount did not cleanup /var/lock/qemu-nbd-%s."
+msgstr "Error NBD - desmontaje previo no ha limpiado /var/qemu-nbd-%s."
+
+#: patron/virt/disk/mount/nbd.py:64
+msgid "nbd module not loaded"
+msgstr "El módulo nbd no se ha cargado"
+
+#: patron/virt/hyperv/ioutils.py:46
+#, python-format
+msgid "Error writing vm console log file from serial console pipe. Error: %s"
+msgstr ""
+
+#: patron/virt/hyperv/livemigrationutils.py:42
+msgid "Get version 2 connection error"
+msgstr ""
+
+#: patron/virt/hyperv/migrationops.py:100
+msgid "Cannot cleanup migration files"
+msgstr "No se pueden limpiar los archivos de migración"
+
+#: patron/virt/hyperv/vmops.py:354
+#, python-format
+msgid "Requested VM Generation %s is not supported on  this OS."
+msgstr ""
+
+#: patron/virt/hyperv/vmops.py:365
+#, python-format
+msgid "Requested VM Generation %s, but provided VHD instead of VHDX."
+msgstr ""
+
+#: patron/virt/hyperv/vmops.py:402 patron/virt/ironic/driver.py:623
+#: patron/virt/libvirt/driver.py:2829 patron/virt/vmwareapi/vmops.py:690
+#, python-format
+msgid "Creating config drive failed with error: %s"
+msgstr "La creación de unidad de configuración ha fallado con el error: %s"
+
+#: patron/virt/hyperv/vmops.py:460
+#, python-format
+msgid "Failed to destroy instance: %s"
+msgstr "No se ha podido destruir instancia: %s"
+
+#: patron/virt/hyperv/vmops.py:576
+#, python-format
+msgid "Failed to change vm state of %(instance_name)s to %(req_state)s"
+msgstr ""
+
+#: patron/virt/hyperv/volumeops.py:256
+#, python-format
+msgid "Unable to attach volume to instance %s"
+msgstr "Imposible adjuntar volumen a la instancia %s"
+
+#: patron/virt/hyperv/volumeops.py:371
+#, python-format
+msgid "Attach volume failed: %s"
+msgstr "Ha fallado la conexión de volumen: %s"
+
+#: patron/virt/ironic/driver.py:348
+#, python-format
+msgid ""
+"Failed to clean up the parameters on node %(node)s when unprovisioning the "
+"instance %(instance)s"
+msgstr ""
+
+#: patron/virt/ironic/driver.py:691
+#, python-format
+msgid ""
+"Error preparing deploy for instance %(instance)s on baremetal node %(node)s."
+msgstr ""
+
+#: patron/virt/ironic/driver.py:719
+#, python-format
+msgid "Failed to request Ironic to provision instance %(inst)s: %(reason)s"
+msgstr ""
+
+#: patron/virt/ironic/driver.py:734
+#, python-format
+msgid "Error deploying instance %(instance)s on baremetal node %(node)s."
+msgstr ""
+"Error al desplegar la instancia %(instance)s en nodo de máquina vacía "
+"%(node)s."
+
+#: patron/virt/libvirt/driver.py:667
+#, python-format
+msgid "Error from libvirt during destroy. Code=%(errcode)s Error=%(e)s"
+msgstr "Error de libvirt durante destrucción. Código=%(errcode)s Error=%(e)s"
+
+#: patron/virt/libvirt/driver.py:749
+#, python-format
+msgid "Error from libvirt during undefine. Code=%(errcode)s Error=%(e)s"
+msgstr ""
+"Error de libvirt durante borrado de definición. Código=%(errcode)s Error="
+"%(e)s"
+
+#: patron/virt/libvirt/driver.py:775
+#, python-format
+msgid "Error from libvirt during unfilter. Code=%(errcode)s Error=%(e)s"
+msgstr ""
+"Error de libvirt durante eliminación de filtro. Código=%(errcode)s Error="
+"%(e)s"
+
+#: patron/virt/libvirt/driver.py:1057
+#, python-format
+msgid "Failed to attach volume at mountpoint: %s"
+msgstr ""
+
+#: patron/virt/libvirt/driver.py:1228
+msgid "attaching network adapter failed."
+msgstr "se ha encontrado un error en la conexión del adaptador de red."
+
+#: patron/virt/libvirt/driver.py:1252
+msgid "detaching network adapter failed."
+msgstr "se ha encontrado un error en la desconexión del adaptador de red."
+
+#: patron/virt/libvirt/driver.py:1573
+msgid "Failed to send updated snapshot status to volume service."
+msgstr ""
+"Fallo al enviar estado de instantánea actualizada al servicio de volumen."
+
+#: patron/virt/libvirt/driver.py:1680
+msgid ""
+"Unable to create quiesced VM snapshot, attempting again with quiescing "
+"disabled."
+msgstr ""
+"Incapaz de crear instantánea de VM inmovilizada, intentando nuevamente con "
+"la inmovilidad deshabilitada"
+
+#: patron/virt/libvirt/driver.py:1686
+msgid "Unable to create VM snapshot, failing volume_snapshot operation."
+msgstr ""
+"Incapaz de crear instantánea de VM, operación de volume_snapshot fallida."
+
+#: patron/virt/libvirt/driver.py:1736
+msgid ""
+"Error occurred during volume_snapshot_create, sending error status to Cinder."
+msgstr ""
+"Error ocurrido durante volume_snapshot_create, enviando estado de error a "
+"Cinder."
+
+#: patron/virt/libvirt/driver.py:1958
+msgid ""
+"Error occurred during volume_snapshot_delete, sending error status to Cinder."
+msgstr ""
+"Ha ocurrido un error durante volume_snapshot_delete, envinado estado de "
+"error a Cinder."
+
+#: patron/virt/libvirt/driver.py:2534 patron/virt/libvirt/driver.py:2539
+#, python-format
+msgid "Error on '%(path)s' while checking direct I/O: '%(ex)s'"
+msgstr "Error en '%(path)s' al comprobar E/S directa: '%(ex)s'"
+
+#: patron/virt/libvirt/driver.py:2662
+#, python-format
+msgid "Error injecting data into image %(img_id)s (%(e)s)"
+msgstr "Error al inyectar datos en imagen %(img_id)s (%(e)s)"
+
+#: patron/virt/libvirt/driver.py:2922
+#, python-format
+msgid "Attaching PCI devices %(dev)s to %(dom)s failed."
+msgstr "La asociación de dispositivos PCI %(dev)s a %(dom)s ha fallado."
+
+#: patron/virt/libvirt/driver.py:4305
+#, python-format
+msgid "Error defining a domain with XML: %s"
+msgstr "Error definiendo el dominio con XML: %s"
+
+#: patron/virt/libvirt/driver.py:4309
+#, python-format
+msgid "Error launching a defined domain with XML: %s"
+msgstr "Error al lanzar el dominio definido con XML: %s"
+
+#: patron/virt/libvirt/driver.py:4315
+#, python-format
+msgid "Error enabling hairpin mode with XML: %s"
+msgstr ""
+
+#: patron/virt/libvirt/driver.py:4327
+#, python-format
+msgid "Neutron Reported failure on event %(event)s for instance %(uuid)s"
+msgstr ""
+"Neutron ha reportado una falla en el evento %(event)s para la instancia "
+"%(uuid)s"
+
+#: patron/virt/libvirt/driver.py:5470
+#, python-format
+msgid "Live Migration failure: %s"
+msgstr "Fallo en migración en vivo: %s"
+
+#: patron/virt/libvirt/driver.py:5623
+msgid "Migration operation has aborted"
+msgstr "La operación de migración ha sido abortada"
+
+#: patron/virt/libvirt/driver.py:5821
+#, python-format
+msgid "Cannot block migrate instance %s with mapped volumes"
+msgstr ""
+
+#: patron/virt/libvirt/driver.py:6672
+#, python-format
+msgid "Failed to cleanup directory %(target)s: %(e)s"
+msgstr "No se ha podido limpiar el directorio %(target)s: %(e)s"
+
+#: patron/virt/libvirt/host.py:526
+#, python-format
+msgid "Connection to libvirt failed: %s"
+msgstr "Ha fallado la conexión a libvirt: %s"
+
+#: patron/virt/libvirt/host.py:796 patron/virt/xenapi/host.py:260
+#, python-format
+msgid ""
+"Hostname has changed from %(old)s to %(new)s. A restart is required to take "
+"effect."
+msgstr ""
+"El nombre del anfitrión ha cambiado de %(old)s a %(new)s. Se requiere un "
+"reinicio para hacer efecto."
+
+#: patron/virt/libvirt/host.py:856
+#, python-format
+msgid "Error defining a secret with XML: %s"
+msgstr ""
+
+#: patron/virt/libvirt/imagebackend.py:249
+#, python-format
+msgid "Unable to preallocate_images=%(imgs)s at path: %(path)s"
+msgstr "Incapaz de preallocate_images=%(imgs)s en la ruta: %(path)s"
+
+#: patron/virt/libvirt/imagebackend.py:276
+#, python-format
+msgid ""
+"%(base)s virtual size %(base_size)s larger than flavor root disk size "
+"%(size)s"
+msgstr ""
+"El tamaño virtual %(base_size)s de %(base)s es más grande que el tamaño del "
+"disco raíz del sabor %(size)s"
+
+#: patron/virt/libvirt/imagebackend.py:605
+msgid "Failed to retrieve ephemeral encryption key"
+msgstr ""
+
+#: patron/virt/libvirt/imagecache.py:130
+#, python-format
+msgid "Error reading image info file %(filename)s: %(error)s"
+msgstr "Error al leer imagen en archivo %(filename)s: %(error)s"
+
+#: patron/virt/libvirt/imagecache.py:404
+#, python-format
+msgid "image %(id)s at (%(base_file)s): image verification failed"
+msgstr "imagen %(id)s en (%(base_file)s): ha fallado la verificación de imagen"
+
+#: patron/virt/libvirt/imagecache.py:463
+#, python-format
+msgid "Failed to remove %(base_file)s, error was %(error)s"
+msgstr "No se ha podido eliminar %(base_file)s, el error era %(error)s"
+
+#: patron/virt/libvirt/lvm.py:220
+#, python-format
+msgid "ignoring unrecognized volume_clear='%s' value"
+msgstr "Ignorando valor no reconocido volume_clear='%s'"
+
+#: patron/virt/libvirt/quobyte.py:59
+#, python-format
+msgid "The Quobyte volume at %s is still in use."
+msgstr ""
+
+#: patron/virt/libvirt/quobyte.py:62
+#, python-format
+msgid "Couldn't unmount the Quobyte Volume at %s"
+msgstr ""
+
+#: patron/virt/libvirt/quobyte.py:78
+#, python-format
+msgid "Volume is not writable. Please broaden the file permissions. Mount: %s"
+msgstr ""
+
+#: patron/virt/libvirt/rbd_utils.py:64
+#, python-format
+msgid "error opening rbd image %s"
+msgstr "Error al abrir imagen rbd %s"
+
+#: patron/virt/libvirt/remotefs.py:63
+#, python-format
+msgid "Couldn't unmount the share %s"
+msgstr "No se pudo desmontar el compartido %s"
+
+#: patron/virt/libvirt/vif.py:487 patron/virt/libvirt/vif.py:514
+#: patron/virt/libvirt/vif.py:536 patron/virt/libvirt/vif.py:589
+msgid "Failed while plugging vif"
+msgstr "Fallo al conectar vif"
+
+#: patron/virt/libvirt/vif.py:640 patron/virt/libvirt/vif.py:654
+#: patron/virt/libvirt/vif.py:673 patron/virt/libvirt/vif.py:692
+#: patron/virt/libvirt/vif.py:721 patron/virt/libvirt/vif.py:741
+#: patron/virt/libvirt/vif.py:766
+msgid "Failed while unplugging vif"
+msgstr "No se ha podido desconectar vif"
+
+#: patron/virt/libvirt/volume.py:173
+#, python-format
+msgid "Unknown content in connection_info/access_mode: %s"
+msgstr "Contenido desconocido en connection_info/access_mode: %s"
+
+#: patron/virt/libvirt/volume.py:922
+#, python-format
+msgid "Couldn't unmount the NFS share %s"
+msgstr "No se puede desmontar el recurso compartido NFS %s"
+
+#: patron/virt/libvirt/volume.py:1160
+#, python-format
+msgid "Couldn't unmount the GlusterFS share %s"
+msgstr "No se puede desmontar el recurso compartido GlusterFS %s"
+
+#: patron/virt/vmwareapi/ds_util.py:444
+#, python-format
+msgid "Unable to retrieve storage policy with name %s"
+msgstr ""
+
+#: patron/virt/vmwareapi/images.py:202
+msgid "Transfer data failed"
+msgstr ""
+
+#: patron/virt/vmwareapi/io_util.py:183
+msgid "Read/Write data failed"
+msgstr "Fallo en la Lectura/Escritura de datos"
+
+#: patron/virt/vmwareapi/vm_util.py:1310 patron/virt/xenapi/vm_utils.py:319
+msgid "Destroy VM failed"
+msgstr ""
+
+#: patron/virt/vmwareapi/vmops.py:196
+#, python-format
+msgid "Extending virtual disk failed with error: %s"
+msgstr "La extensión del disco virtual ha fallado con el error: %s"
+
+#: patron/virt/vmwareapi/vmops.py:936
+msgid "Destroy instance failed"
+msgstr "Fallo en la destrucción de la instancia"
+
+#: patron/virt/vmwareapi/vmops.py:1063
+msgid "Unable to access the rescue disk"
+msgstr ""
+
+#: patron/virt/vmwareapi/vmops.py:1579
+#, python-format
+msgid "Attaching network adapter failed. Exception:  %s"
+msgstr "Error al conectar el adaptador de red. Excepción: %s"
+
+#: patron/virt/vmwareapi/vmops.py:1619
+#, python-format
+msgid "Detaching network adapter failed. Exception: %s"
+msgstr "Fallo al desconectar el adaptador de red. Excepción: %s"
+
+#: patron/virt/vmwareapi/vmops.py:1692
+#, python-format
+msgid ""
+"Failed to copy cached image %(source)s to %(dest)s for resize: %(error)s"
+msgstr ""
+
+#: patron/virt/xenapi/agent.py:112 patron/virt/xenapi/vmops.py:1978
+#, python-format
+msgid "TIMEOUT: The call to %(method)s timed out. args=%(args)r"
+msgstr ""
+"TIEMPO DE ESPERA EXCEDIDO: La llamada a %(method)s ha excedido el tiempo de "
+"espera. args=%(args)r"
+
+#: patron/virt/xenapi/agent.py:124 patron/virt/xenapi/vmops.py:1983
+#, python-format
+msgid ""
+"NOT IMPLEMENTED: The call to %(method)s is not supported by the agent. args="
+"%(args)r"
+msgstr ""
+"SIN IMPLEMENTAR: el agente no soporta la llamada a %(method)s. args=%(args)r"
+
+#: patron/virt/xenapi/agent.py:129 patron/virt/xenapi/vmops.py:1988
+#, python-format
+msgid "The call to %(method)s returned an error: %(e)s. args=%(args)r"
+msgstr "La llamada a %(method)s ha devuelto un error: %(e)s. args=%(args)r"
+
+#: patron/virt/xenapi/agent.py:139
+#, python-format
+msgid ""
+"The agent call to %(method)s returned an invalid response: %(ret)r. args="
+"%(args)r"
+msgstr ""
+"La llamada del agente para %(method)s ha arrojado una respuesta inválida: "
+"%(ret)r. args=$(args)r"
+
+#: patron/virt/xenapi/agent.py:146
+#, python-format
+msgid ""
+"The agent call to %(method)s returned an an error: %(ret)r. args=%(args)r"
+msgstr ""
+"La llamada del agente para %(method)s ha arrojado un error: %(ret)r. args="
+"%(args)r"
+
+#: patron/virt/xenapi/driver.py:141
+msgid "Failure while cleaning up attached VDIs"
+msgstr "Error al limpiar VDI conectados "
+
+#: patron/virt/xenapi/host.py:107
+#, python-format
+msgid "Unable to migrate VM %(vm_ref)s from %(host)s"
+msgstr "Incapaz de migrar VM %(vm_ref)s desde %(host)s"
+
+#: patron/virt/xenapi/host.py:363
+msgid "Unable to get updated status"
+msgstr "No se puede obtener el estado actualizado"
+
+#: patron/virt/xenapi/host.py:366
+#, python-format
+msgid "The call to %(method)s returned an error: %(e)s."
+msgstr "La llamada a %(method)s ha devuelto un error: %(e)s."
+
+#: patron/virt/xenapi/pool.py:65
+#, python-format
+msgid ""
+"Aggregate %(aggregate_id)s: unrecoverable state during operation on %(host)s"
+msgstr ""
+"Agregado %(aggregate_id)s: estado irrecuperable durante la operación en "
+"%(host)s"
+
+#: patron/virt/xenapi/pool.py:177
+#, python-format
+msgid "Pool-Join failed: %s"
+msgstr "Fallo en la integración al conjunto: %s"
+
+#: patron/virt/xenapi/pool.py:196
+#, python-format
+msgid "Pool-eject failed: %s"
+msgstr "Expulsión de conjunto fallida: %s"
+
+#: patron/virt/xenapi/pool.py:207
+#, python-format
+msgid "Unable to set up pool: %s."
+msgstr "Incapaz de establecer conjunto: %s"
+
+#: patron/virt/xenapi/pool.py:218
+#, python-format
+msgid "Pool-set_name_label failed: %s"
+msgstr "Fallo al establecer set_name_label en conjunto: %s"
+
+#: patron/virt/xenapi/vm_utils.py:335
+msgid "Shutting down VM (cleanly) failed."
+msgstr ""
+
+#: patron/virt/xenapi/vm_utils.py:350
+msgid "Shutting down VM (hard) failed"
+msgstr ""
+
+#: patron/virt/xenapi/vm_utils.py:403
+msgid "Unable to unplug VBD"
+msgstr ""
+
+#: patron/virt/xenapi/vm_utils.py:418
+msgid "Unable to destroy VBD"
+msgstr ""
+
+#: patron/virt/xenapi/vm_utils.py:1437
+#, python-format
+msgid ""
+"Download handler '%(handler)s' raised an exception, falling back to default "
+"handler '%(default_handler)s'"
+msgstr ""
+"La descarga del manejador '%(handler)s' ha arrojado una excepción, "
+"restaurando hacia el manejador predeterminado '%(default_handler)s"
+
+#: patron/virt/xenapi/vm_utils.py:1493
+#, python-format
+msgid "Image size %(size)d exceeded flavor allowed size %(allowed_size)d"
+msgstr ""
+"El tamaño de la imagen %(size)d excede el tamaño permitido por el sabor "
+"%(allowed_size)d"
+
+#: patron/virt/xenapi/vm_utils.py:1586
+msgid "Failed to fetch glance image"
+msgstr "No se ha podido captar la imagen glance"
+
+#: patron/virt/xenapi/vm_utils.py:1688
+msgid "\"Look for the VDIs failed"
+msgstr ""
+
+#: patron/virt/xenapi/vm_utils.py:1818
+#, python-format
+msgid "Unable to parse rrd of %s"
+msgstr "Incapaz de analizar rrd de %s"
+
+#: patron/virt/xenapi/vm_utils.py:1902
+msgid ""
+"XenAPI is unable to find a Storage Repository to install guest instances on. "
+"Please check your configuration (e.g. set a default SR for the pool) and/or "
+"configure the flag 'sr_matching_filter'."
+msgstr ""
+"XenAPI es incapaz de encontrar un Storage Repository en dónde instalar las "
+"instancias invitadas. Por favor verifica tu configuración (p.ej. establece "
+"un SR predeterminado en el conjunto) y/o ocnfigura el identificador "
+"'sr_matching_filter'."
+
+#: patron/virt/xenapi/vm_utils.py:1968
+#, python-format
+msgid ""
+"Unable to obtain RRD XML for VM %(vm_uuid)s with server details: %(server)s."
+msgstr ""
+"No se ha podido obtener XML RRD para la máquina virtual %(vm_uuid)s con los "
+"detalles de servidor: %(server)s."
+
+#: patron/virt/xenapi/vmops.py:974
+msgid "_migrate_disk_resizing_down failed. Restoring orig vm"
+msgstr ""
+
+#: patron/virt/xenapi/vmops.py:1150
+#, python-format
+msgid "_migrate_disk_resizing_up failed. Restoring orig vm due_to: %s."
+msgstr "_migrate_disk_resizing_up fallido. Restaurando vm original due_to: %s."
+
+#: patron/virt/xenapi/vmops.py:1538
+#, python-format
+msgid "Failed to find an SR for volume %s"
+msgstr ""
+
+#: patron/virt/xenapi/vmops.py:1545
+#, python-format
+msgid "Volume %s is associated with the instance but no SR was found for it"
+msgstr ""
+
+#: patron/virt/xenapi/vmops.py:1549
+#, python-format
+msgid "Failed to forget the SR for volume %s"
+msgstr ""
+
+#: patron/virt/xenapi/vmops.py:1759
+msgid "Guest does not have a console available"
+msgstr "El invitado no tiene una consola disponible"
+
+#: patron/virt/xenapi/vmops.py:2083
+msgid "Migrate Receive failed"
+msgstr "Ha fallado la recepción de migración"
+
+#: patron/virt/xenapi/vmops.py:2140
+msgid "Plugin config_file get_val failed"
+msgstr ""
+
+#: patron/virt/xenapi/vmops.py:2228
+msgid "Migrate Send failed"
+msgstr "Ha fallado el envío de migración"
+
+#: patron/virt/xenapi/volume_utils.py:163
+msgid "Unable to introduce VDI on SR"
+msgstr ""
+
+#: patron/virt/xenapi/volume_utils.py:178
+msgid "Unable to get record of VDI"
+msgstr ""
+
+#: patron/virt/xenapi/volume_utils.py:200
+msgid "Unable to introduce VDI for SR"
+msgstr ""
+
+#: patron/virt/xenapi/volume_utils.py:298
+msgid "Unable to find SR from VBD"
+msgstr ""
+
+#: patron/virt/xenapi/volume_utils.py:309
+msgid "Unable to find SR from VDI"
+msgstr ""
+
+#: patron/virt/xenapi/client/session.py:144
+msgid "Host is member of a pool, but DB says otherwise"
+msgstr ""
+"El host es miembro de una agrupación, pero la base de datos indica lo "
+"contrario"
+
+#: patron/volume/encryptors/__init__.py:49
+#, python-format
+msgid "Error instantiating %(provider)s: %(exception)s"
+msgstr "Error al instanciar %(provider)s: %(exception)s"
+
+#: patron/volume/encryptors/__init__.py:64
+#, python-format
+msgid ""
+"Failed to retrieve encryption metadata for volume %(volume_id)s: "
+"%(exception)s"
+msgstr ""
+"Fallo al recuperar los metadatos de encripción para el volumen "
+"%(volume_id)s: %(exception)s"
