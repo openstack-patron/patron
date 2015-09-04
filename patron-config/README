@@ -1,0 +1,38 @@
+1. Copy "./rootdir/usr/bin/patron-api" file to "/usr/bin/patron-api"
+cd patron-config
+cp ./rootdir/usr/bin/patron-api /usr/bin/patron-api
+
+2. Copy "./rootdir/etc/init.d/patron-api" file to "/etc/init.d/patron-api"
+cp ./rootdir/etc/init.d/patron-api /etc/init.d/patron-api
+
+3. Copy "./rootdir/etc/patron/" folder to "/etc/patron/"
+cp -r ./rootdir/etc/patron/* /etc/patron/
+
+3. Create the service credentials
+openstack user create --password-prompt patron
+openstack role add --project service --user patron admin
+openstack service create --name patron --description "OpenStack Access Control" access
+openstack endpoint create --publicurl http://ly-controller:8292/v2/%\(tenant_id\)s --internalurl http://ly-controller:8292/v2/%\(tenant_id\)s --adminurl http://ly-controller:8292/v2/%\(tenant_id\)s --region RegionOne access
+
+4. Create linux user "patron", use the same settings as "nova"
+adduser patron --system --home /var/lib/patron --shell /bin/false
+addgroup patron --system
+usermod -g patron patron
+
+5. Set file owners to "patron"
+chown -R patron:patron /etc/patron
+
+
+######################## Comments ########################
+# delete the user:
+# userdel -r patron
+
+# delete the group:
+# groupdel patron
+
+# update files to git positions
+# cd /usr/lib/python2.7/dist-packages/patron-config
+# cp /usr/bin/patron-api ./rootdir/usr/bin/patron-api
+# cp /etc/init.d/patron-api ./rootdir/etc/init.d/patron-api
+# cp -r /etc/patron/* ./rootdir/etc/patron/
+

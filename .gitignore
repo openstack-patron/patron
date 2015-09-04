@@ -9,6 +9,7 @@ nova/nova-api.py
 !/novaclient
 !/patron-test
 !/patron
+!/patron-config
 
 *.py[cod]
 
