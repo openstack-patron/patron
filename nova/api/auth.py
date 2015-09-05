@@ -28,6 +28,8 @@ from nova.i18n import _
 from nova.openstack.common import versionutils
 from nova import wsgi
 
+from patronclient import client
+
 
 auth_opts = [
     cfg.BoolOpt('api_rate_limit',
@@ -148,6 +150,24 @@ class NovaKeystoneContext(wsgi.Middleware):
         # NOTE(jamielennox): This is a full auth plugin set by auth_token
         # middleware in newer versions.
         user_auth_plugin = req.environ.get('keystone.token_auth')
+
+        # Check policy against patron node
+        # Edited by Yang Luo
+        auth_url = "http://ly-controller:5000/v2.0/"
+        patron_client = client.Client("2",
+                                      user_name,
+                                      auth_token,
+                                      project_id,
+                                      auth_url,
+                                      service_type="access")
+        response = patron_client.patrons.verify("compute_extension:admin_actions")
+        result = response[1]['res']
+        # result = False
+
+        if result != True:
+            LOG.error("Access is denied by patron: res = %r, user_name = %r, auth_token = %r, project_id = %r, auth_url = %r",
+                      result, user_name, auth_token, project_id, auth_url)
+            return webob.exc.HTTPForbidden()
 
         ctx = context.RequestContext(user_id,
                                      project_id,
