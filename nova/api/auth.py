@@ -154,11 +154,11 @@ class NovaKeystoneContext(wsgi.Middleware):
 
         # Check policy against patron node
         # Edited by Yang Luo
-        auth_url = "http://ly-controller:5000/v2.0/"
         LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
                  user_name, auth_token, project_name, auth_url, user_auth_plugin)
 
         # 1) User/Password request way
+        # auth_url = "http://controller:5000/v2.0/"
         # patron_client = client.Client("2",
         #                               user_name,
         #                               "123",
