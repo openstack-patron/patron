@@ -63,9 +63,9 @@ DEFAULT_PATRON_ENDPOINT_TYPE = 'publicURL'
 # is pretty ugly, but we have to do this because traditionally the
 # catalog entry for compute points directly to the V2 API rather than
 # the root, and then doing version discovery.
-DEFAULT_PATRON_SERVICE_TYPE_MAP = {'1.1': 'compute',
-                                 '2': 'compute',
-                                 '3': 'computev3'}
+DEFAULT_PATRON_SERVICE_TYPE_MAP = {'1.1': 'access',
+                                 '2': 'access',
+                                 '3': 'accessv3'}
 
 logger = logging.getLogger(__name__)
 
