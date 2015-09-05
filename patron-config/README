@@ -4,6 +4,8 @@ cp ./rootdir/usr/bin/patron-api /usr/bin/patron-api
 
 2. Copy "./rootdir/etc/init.d/patron-api" file to "/etc/init.d/patron-api"
 cp ./rootdir/etc/init.d/patron-api /etc/init.d/patron-api
+cd /etc/init.d
+sudo update-rc.d patron-api defaults 95
 
 3. Copy "./rootdir/etc/patron/" folder to "/etc/patron/"
 cp -r ./rootdir/etc/patron/* /etc/patron/
