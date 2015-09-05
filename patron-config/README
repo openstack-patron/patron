@@ -24,6 +24,9 @@ usermod -g patron patron
 5. Set file owners to "patron"
 chown -R patron:patron /etc/patron
 
+6. Copy "./rootdir/usr/bin/patron" file to "/usr/bin/patron" (used by patronclient)
+cp ./rootdir/usr/bin/patron /usr/bin/patron
+
 
 ######################## Comments ########################
 # delete the user:
@@ -37,4 +40,4 @@ chown -R patron:patron /etc/patron
 # cp /usr/bin/patron-api ./rootdir/usr/bin/patron-api
 # cp /etc/init.d/patron-api ./rootdir/etc/init.d/patron-api
 # cp -r /etc/patron/* ./rootdir/etc/patron/
-
+# cp /usr/bin/patron ./rootdir/usr/bin/patron
