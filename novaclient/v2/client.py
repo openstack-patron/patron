@@ -48,8 +48,6 @@ from novaclient.v2 import volume_snapshots
 from novaclient.v2 import volume_types
 from novaclient.v2 import volumes
 
-from novaclient.v2.contrib import patron_access
-
 
 class Client(object):
     """
@@ -125,9 +123,6 @@ class Client(object):
         self.limits = limits.LimitsManager(self)
         self.servers = servers.ServerManager(self)
         self.versions = versions.VersionManager(self)
-
-        # add extension object by lwyeluo
-        self.patrons = patron_access.PatronAccessManager(self)
 
         # extensions
         self.agents = agents.AgentsManager(self)
