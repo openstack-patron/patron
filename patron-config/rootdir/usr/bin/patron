@@ -3,7 +3,7 @@
 
 import sys
 
-from pythonclient.shell import main
+from patronclient.shell import main
 
 
 if __name__ == "__main__":
