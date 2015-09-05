@@ -154,10 +154,12 @@ class NovaKeystoneContext(wsgi.Middleware):
         # Check policy against patron node
         # Edited by Yang Luo
         auth_url = "http://ly-controller:5000/v2.0/"
+        LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
+                 user_name, auth_token, project_name, auth_url)
         patron_client = client.Client("2",
                                       user_name,
-                                      auth_token,
-                                      project_id,
+                                      "123",
+                                      project_name,
                                       auth_url,
                                       service_type="access")
         response = patron_client.patrons.verify("compute_extension:admin_actions")
@@ -165,9 +167,12 @@ class NovaKeystoneContext(wsgi.Middleware):
         # result = False
 
         if result != True:
-            LOG.error("Access is denied by patron: res = %r, user_name = %r, auth_token = %r, project_id = %r, auth_url = %r",
-                      result, user_name, auth_token, project_id, auth_url)
+            LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
+                      result, user_name, auth_token, project_name, auth_url)
             return webob.exc.HTTPForbidden()
+        else:
+            LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
+                      result, user_name, auth_token, project_name, auth_url)
 
         ctx = context.RequestContext(user_id,
                                      project_id,
