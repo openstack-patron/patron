@@ -29,6 +29,7 @@ from nova.openstack.common import versionutils
 from nova import wsgi
 
 from patronclient import client
+from keystoneclient import session
 
 
 auth_opts = [
@@ -154,25 +155,33 @@ class NovaKeystoneContext(wsgi.Middleware):
         # Check policy against patron node
         # Edited by Yang Luo
         auth_url = "http://ly-controller:5000/v2.0/"
-        LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
-                 user_name, auth_token, project_name, auth_url)
+        LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
+                 user_name, auth_token, project_name, auth_url, user_auth_plugin)
+
+        # 1) User/Password request way
+        # patron_client = client.Client("2",
+        #                               user_name,
+        #                               "123",
+        #                               project_name,
+        #                               auth_url,
+        #                               service_type="access")
+
+        # 2) Session request way
+        sess = session.Session(auth=user_auth_plugin)
         patron_client = client.Client("2",
-                                      user_name,
-                                      "123",
-                                      project_name,
-                                      auth_url,
-                                      service_type="access")
+                              session=sess,
+                              service_type="access")
+
         response = patron_client.patrons.verify("compute_extension:admin_actions")
         result = response[1]['res']
-        # result = False
 
         if result != True:
-            LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
-                      result, user_name, auth_token, project_name, auth_url)
+            LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
+                      result, user_name, auth_token, project_name, auth_url, user_auth_plugin)
             return webob.exc.HTTPForbidden()
         else:
-            LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r",
-                      result, user_name, auth_token, project_name, auth_url)
+            LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
+                      result, user_name, auth_token, project_name, auth_url, user_auth_plugin)
 
         ctx = context.RequestContext(user_id,
                                      project_id,
