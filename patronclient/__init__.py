@@ -14,5 +14,6 @@
 
 import pbr.version
 
-
-__version__ = pbr.version.VersionInfo('python-patronclient').version_string()
+# Edited by Yang Luo
+# __version__ = pbr.version.VersionInfo('python-patronclient').version_string()
+__version__ = "2.22.0"
