@@ -154,8 +154,8 @@ class NovaKeystoneContext(wsgi.Middleware):
 
         # Check policy against patron node
         # Edited by Yang Luo
-        LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
-                 user_name, auth_token, project_name, auth_url, user_auth_plugin)
+        LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
+                 user_name, auth_token, project_name, user_auth_plugin)
 
         # 1) User/Password request way
         # auth_url = "http://controller:5000/v2.0/"
@@ -176,12 +176,12 @@ class NovaKeystoneContext(wsgi.Middleware):
         result = response[1]['res']
 
         if result != True:
-            LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
-                      result, user_name, auth_token, project_name, auth_url, user_auth_plugin)
+            LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
+                      result, user_name, auth_token, project_name, user_auth_plugin)
             return webob.exc.HTTPForbidden()
         else:
-            LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_url = %r, auth_plugin = %r",
-                      result, user_name, auth_token, project_name, auth_url, user_auth_plugin)
+            LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
+                      result, user_name, auth_token, project_name, user_auth_plugin)
 
         ctx = context.RequestContext(user_id,
                                      project_id,
