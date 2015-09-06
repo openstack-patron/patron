@@ -26,9 +26,15 @@ class PatronAccessController(object):
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
         file_object = open('mylog.txt', 'a+')
         file_object.write(all_the_text)
-        file_object.close()
 
+        file_object.write("patron.context:\n")
         context = req.environ['patron.context']
+        for d,x in context.to_dict().items():
+            file_object.write("%s = %s\n" % (d, x))
+
+        file_object.write("rule:\n")
+        file_object.write(rule)
+        file_object.close()
 
         try:
             res = policy.enforce(context, rule,
