@@ -1,34 +1,44 @@
+######################## Configuration Commands ########################
 1. Copy "./rootdir/usr/bin/patron-api" file to "/usr/bin/patron-api"
 cd patron-config
 cp ./rootdir/usr/bin/patron-api /usr/bin/patron-api
 
 2. Copy "./rootdir/etc/init.d/patron-api" file to "/etc/init.d/patron-api"
+cd patron-config
 cp ./rootdir/etc/init.d/patron-api /etc/init.d/patron-api
 cd /etc/init.d
 sudo update-rc.d patron-api defaults 95
 
 3. Copy "./rootdir/etc/patron/" folder to "/etc/patron/"
+cd patron-config
 cp -r ./rootdir/etc/patron/* /etc/patron/
+Remember to change all hostnames (default is "ly-controller") and passwords (default is "123") to your own
 
-3. Create the service credentials
+4. Create the service credentials
 openstack user create --password-prompt patron
 openstack role add --project service --user patron admin
 openstack service create --name patron --description "OpenStack Access Control" access
 openstack endpoint create --publicurl http://ly-controller:8292/v2/%\(tenant_id\)s --internalurl http://ly-controller:8292/v2/%\(tenant_id\)s --adminurl http://ly-controller:8292/v2/%\(tenant_id\)s --region RegionOne access
+(change the above hostname to your own!)
 
-4. Create linux user "patron", use the same settings as "nova"
+5. Create linux user "patron", use the same settings as "nova"
 adduser patron --system --home /var/lib/patron --shell /bin/false
 addgroup patron --system
 usermod -g patron patron
 
-5. Set file owners to "patron"
+6. Set file owners to "patron"
 chown -R patron:patron /etc/patron
 
-6. Copy "./rootdir/usr/bin/patron" file to "/usr/bin/patron" (used by patronclient)
+7. Copy "./rootdir/usr/bin/patron" file to "/usr/bin/patron" (used by patronclient)
+cd patron-config
 cp ./rootdir/usr/bin/patron /usr/bin/patron
 
+8. Run "service patron-api start", enter "patron verify" to test Patron API.
+If you get response like:
+(<Response [200]>, {u'action': u'verify', u'res': True, u'project_id': u'85c8848b1dd64c7ebb2c5baeb12e25c3', u'user_id': u'6914d79e61144a8ba71c00d2b859c916', u'rule': u'None'})
+This means that you have successfully configured Patron. 
 
-######################## Comments ########################
+######################## Comments, DO NOT use it ########################
 # delete the user:
 # userdel -r patron
 
