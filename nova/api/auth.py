@@ -152,8 +152,20 @@ class NovaKeystoneContext(wsgi.Middleware):
         # middleware in newer versions.
         user_auth_plugin = req.environ.get('keystone.token_auth')
 
+        ########################################################################################################
         # Check policy against patron node
         # Edited by Yang Luo
+
+        req_path_info = req.path_info
+        if req.is_body_readable:
+            for d, x in req.json.items():
+                req_action = d
+                break
+        else:
+            req_action = ""
+
+        LOG.info("req_path_info = %r", req.path_info)
+        LOG.info("req_action = %r", req_action)
         LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
                  user_name, auth_token, project_name, user_auth_plugin)
 
