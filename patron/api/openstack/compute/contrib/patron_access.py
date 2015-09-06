@@ -40,6 +40,8 @@ class PatronAccessController(object):
             res = policy.enforce(context, rule,
                         {'project_id': context.project_id,
                          'user_id': context.user_id})
+            if res != False:
+                res = True
             return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id, 'res': res}
         except Exception:
             return {'res': False}
