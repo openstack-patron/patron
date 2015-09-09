@@ -24,16 +24,30 @@ class PatronAccessController(object):
     def verify(self, req,  rule):
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
-        file_object = open('mylog.txt', 'a+')
+        file_object = open('/var/log/patron/mylog.txt', 'a+')
         file_object.write(all_the_text)
 
-        file_object.write("patron.context:\n")
-        context = req.environ['patron.context']
-        for d,x in context.to_dict().items():
-            file_object.write("%s = %s\n" % (d, x))
+        file_object.write("\npatron.context:\n")
+        try:
+            context = req.environ['patron.context']
+            for d,x in context.to_dict().items():
+                file_object.write("%s = %s\n" % (d, x))
+        except KeyError:
+            file_object.write("null\n")
 
-        file_object.write("rule:\n")
+        file_object.write("\npatron.target:\n")
+        try:
+            target = req.environ['patron.target']
+            if target != None:
+                for d,x in target.to_dict().items():
+                    file_object.write("%s = %s\n" % (d, x))
+        except KeyError:
+            file_object.write("null\n")
+
+        file_object.write("\nrule:\n")
         file_object.write(rule)
+
+        file_object.write("\n")
         file_object.close()
 
         try:
