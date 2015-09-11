@@ -906,6 +906,7 @@ class OpenStackHelpFormatter(argparse.HelpFormatter):
 
 
 def main():
+    start_time = time.clock()
     try:
         argv = [encodeutils.safe_decode(a) for a in sys.argv[1:]]
         OpenStackComputeShell().main(argv)
@@ -920,7 +921,8 @@ def main():
     except KeyboardInterrupt:
         print("... terminating nova client", file=sys.stderr)
         sys.exit(130)
-
+    end_time = time.clock()
+    print("Command run time is: %.03f seconds" % (end_time - start_time))
 
 if __name__ == "__main__":
     main()
