@@ -113,6 +113,7 @@ class NovaKeystoneContext(wsgi.Middleware):
         # rule_name : is used as the security rule for Patron.
         rule_name = "compute_extension:admin_actions"
         # target : is used to act as the security context of the object for Patron.
+        # if no target is needed, can do it as: target = None
         target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
         return (rule_name, target)
 

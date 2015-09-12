@@ -37,6 +37,7 @@ class PatronAccessController(object):
                 file_object.write("%s = %s\n" % (d, x))
         except KeyError:
             file_object.write("null\n")
+            return {'res': False}
 
         file_object.write("\npatron.target:\n")
         try:
@@ -45,8 +46,12 @@ class PatronAccessController(object):
             if target != None:
                 for d,x in target.items():
                     file_object.write("%s = %s\n" % (d, x))
-        except KeyError:
+        except ValueError:
+            # No target found, so we use the subject itself as target.
             file_object.write("null\n")
+            target = dict()
+            target['project_id'] = context.project_id
+            target['user_id'] = context.user_id
 
         file_object.write("\nrule:\n")
         # rule: used as the access control rule name for Patron.
@@ -56,9 +61,7 @@ class PatronAccessController(object):
         file_object.close()
 
         try:
-            res = policy.enforce(context, rule,
-                        {'project_id': context.project_id,
-                         'user_id': context.user_id})
+            res = policy.enforce(context, rule, target)
             if res != False:
                 res = True
             return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id, 'res': res}
