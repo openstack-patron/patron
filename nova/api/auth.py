@@ -164,10 +164,14 @@ class NovaKeystoneContext(wsgi.Middleware):
         else:
             req_action = ""
 
-        LOG.info("req_path_info = %r", req.path_info)
+        # req_path_info and req_action can be used together to decide the policy rule.
+        LOG.info("req_path_info = %r", req_path_info)
         LOG.info("req_action = %r", req_action)
         LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
                  user_name, auth_token, project_name, user_auth_plugin)
+
+        # patron_target is used to act as the security context of the object for Patron.
+        patron_target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
 
         # 1) User/Password request way
         # auth_url = "http://controller:5000/v2.0/"
@@ -184,7 +188,7 @@ class NovaKeystoneContext(wsgi.Middleware):
                               session=sess,
                               service_type="access")
 
-        response = patron_client.patrons.verify("compute_extension:admin_actions")
+        response = patron_client.patrons.verify("compute_extension:admin_actions", json = patron_target)
         result = response[1]['res']
 
         if result != True:

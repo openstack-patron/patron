@@ -27,12 +27,12 @@ class PatronResource(base.Resource):
 class PatronAccessManager(base.Manager):
     resource_class = PatronResource
 
-    def verify(self, rule):
+    def verify(self, rule, **kwargs):
         """
         patron verify
         """
         # os-patron-access/123/resource/456/action/verify
-        return self.api.client.get("/os-patron-access/rule/%s/verify" % rule)
+        return self.api.client.get("/os-patron-access/rule/%s/verify" % rule, **kwargs)
 
 
 @cliutils.arg(

@@ -14,6 +14,8 @@ from patron import exception
 from patron.i18n import _
 from patron import objects
 
+from oslo_serialization import jsonutils
+
 # os-patron-access/{user_id}/resource/{res_id}/action
 class PatronAccessController(object):
     """Controller for Cell resources."""
@@ -29,6 +31,7 @@ class PatronAccessController(object):
 
         file_object.write("\npatron.context:\n")
         try:
+            # context: used as the security context of the subject for Patron.
             context = req.environ['patron.context']
             for d,x in context.to_dict().items():
                 file_object.write("%s = %s\n" % (d, x))
@@ -37,14 +40,16 @@ class PatronAccessController(object):
 
         file_object.write("\npatron.target:\n")
         try:
-            target = req.environ['patron.target']
+            # target: used as the security context of the object for Patron.
+            target = jsonutils.loads(req.body)
             if target != None:
-                for d,x in target.to_dict().items():
+                for d,x in target.items():
                     file_object.write("%s = %s\n" % (d, x))
         except KeyError:
             file_object.write("null\n")
 
         file_object.write("\nrule:\n")
+        # rule: used as the access control rule name for Patron.
         file_object.write(rule)
 
         file_object.write("\n")
