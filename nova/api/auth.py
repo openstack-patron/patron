@@ -109,6 +109,13 @@ class InjectContext(wsgi.Middleware):
 class NovaKeystoneContext(wsgi.Middleware):
     """Make a request context from keystone headers."""
 
+    def url_to_rule_and_target(self, path_info, inner_action):
+        # rule_name : is used as the security rule for Patron.
+        rule_name = "compute_extension:admin_actions"
+        # target : is used to act as the security context of the object for Patron.
+        target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
+        return (rule_name, target)
+
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
         user_id = req.headers.get('X_USER')
@@ -159,19 +166,19 @@ class NovaKeystoneContext(wsgi.Middleware):
         req_path_info = req.path_info
         if req.is_body_readable:
             for d, x in req.json.items():
-                req_action = d
+                req_inner_action = d
                 break
         else:
-            req_action = ""
+            req_inner_action = ""
 
         # req_path_info and req_action can be used together to decide the policy rule.
         LOG.info("req_path_info = %r", req_path_info)
-        LOG.info("req_action = %r", req_action)
+        LOG.info("req_inner_action = %r", req_inner_action)
         LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
                  user_name, auth_token, project_name, user_auth_plugin)
 
-        # patron_target is used to act as the security context of the object for Patron.
-        patron_target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
+        # Map the path_info and inner_action to rule_name and target for Patron.
+        (rule_name, target) = self.url_to_rule_and_target(req_path_info, req_inner_action)
 
         # 1) User/Password request way
         # auth_url = "http://controller:5000/v2.0/"
@@ -188,7 +195,7 @@ class NovaKeystoneContext(wsgi.Middleware):
                               session=sess,
                               service_type="access")
 
-        response = patron_client.patrons.verify("compute_extension:admin_actions", json = patron_target)
+        response = patron_client.patrons.verify(rule_name, json = target)
         result = response[1]['res']
 
         if result != True:
