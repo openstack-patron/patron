@@ -16,14 +16,14 @@ from patron import objects
 
 from oslo_serialization import jsonutils
 
-# os-patron-access/{user_id}/resource/{res_id}/action
+# os-patron-access/op/{op}
 class PatronAccessController(object):
     """Controller for Cell resources."""
 
     def __init__(self, ext_mgr):
         self.ext_mgr = ext_mgr
 
-    def verify(self, req,  rule):
+    def verify(self, req,  op):
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
@@ -53,20 +53,28 @@ class PatronAccessController(object):
             target['project_id'] = context.project_id
             target['user_id'] = context.user_id
 
-        file_object.write("\nrule:\n")
-        # rule: used as the access control rule name for Patron.
-        file_object.write(rule)
+        file_object.write("\npatron.op:\n")
+        # op: used as the access control rule name for Patron.
+        file_object.write(op)
 
         file_object.write("\n")
         file_object.close()
 
         try:
-            res = policy.enforce(context, rule, target)
+            res = policy.enforce(context, op, target)
             if res != False:
                 res = True
-            return {'action': 'verify', 'rule': rule, 'project_id': context.project_id, 'user_id': context.user_id, 'res': res}
+            return {'command': 'verify',
+                    'op': op,
+                    'context.project_id': context.project_id,
+                    'context.user_id': context.user_id,
+                    'target.project_id': target['project_id'],
+                    'res': res}
         except Exception:
-            return {'res': False}
+            return {'command': 'verify',
+                    'op': op,
+                    'Exception': Exception,
+                    'res': False}
 
 
 class Patron_access(extensions.ExtensionDescriptor):
@@ -87,10 +95,8 @@ class Patron_access(extensions.ExtensionDescriptor):
                 'capacities': 'GET',
                 }
 
-        # /%(project_id)s/os-patron-access/%(user_id)s/resource/%(res_id)s/action/%(action)s/
-        # .../action/{rule}/
-
-        res = extensions.ResourceExtension('os-patron-access/rule/{rule}',
+        # /%(project_id)s/os-patron-access/op/%(op)s/
+        res = extensions.ResourceExtension('os-patron-access/op/{op}',
                 controller=PatronAccessController(self.ext_mgr), collection_actions=coll_actions,
                 member_actions=memb_actions)
 

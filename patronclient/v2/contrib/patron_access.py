@@ -27,21 +27,21 @@ class PatronResource(base.Resource):
 class PatronAccessManager(base.Manager):
     resource_class = PatronResource
 
-    def verify(self, rule, **kwargs):
+    def verify(self, op, **kwargs):
         """
         patron verify
         """
-        # os-patron-access/123/resource/456/action/verify
-        return self.api.client.get("/os-patron-access/rule/%s/verify" % rule, **kwargs)
+        # pattern : "/os-patron-access/op/compute_extension:admin_actions/verify"
+        return self.api.client.get("/os-patron-access/op/%s/verify" % op, **kwargs)
 
 
 @cliutils.arg(
-    '--rule',
-    metavar='<rule>',
-    help=_('User rule.For example:\n\tcompute_extension:admin_actions'))
+    '--op',
+    metavar='<op>',
+    help=_('User op for example:\n\tcompute_extension:admin_actions'))
 def do_verify(cs, args):
-    """patron verify. Args:rule. For example:\n\tcompute_extension:admin_actions"""
-    ans = cs.patron_access.verify(args.rule)
+    """patron verify. Args:op. For example:\n\tcompute_extension:admin_actions"""
+    ans = cs.patron_access.verify(args.op)
     print ans
 
 # @cliutils.arg(

@@ -109,13 +109,14 @@ class InjectContext(wsgi.Middleware):
 class NovaKeystoneContext(wsgi.Middleware):
     """Make a request context from keystone headers."""
 
-    def url_to_rule_and_target(self, path_info, inner_action):
-        # rule_name : is used as the security rule for Patron.
-        rule_name = "compute_extension:admin_actions"
+    def url_to_op_and_target(self, path_info, req_inner_action):
+        # op : is used as the security operation for Patron.
+        op = "compute_extension:admin_actions"
         # target : is used to act as the security context of the object for Patron.
         # if no target is needed, can do it as: target = None
-        target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
-        return (rule_name, target)
+        # target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
+        target = None
+        return (op, target)
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
@@ -172,14 +173,14 @@ class NovaKeystoneContext(wsgi.Middleware):
         else:
             req_inner_action = ""
 
-        # req_path_info and req_action can be used together to decide the policy rule.
+        # Show req_path_info and req_inner_action.
         LOG.info("req_path_info = %r", req_path_info)
         LOG.info("req_inner_action = %r", req_inner_action)
         LOG.info("user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
                  user_name, auth_token, project_name, user_auth_plugin)
 
-        # Map the path_info and inner_action to rule_name and target for Patron.
-        (rule_name, target) = self.url_to_rule_and_target(req_path_info, req_inner_action)
+        # Map the path_info and req_inner_action to op and target for Patron.
+        (op, target) = self.url_to_op_and_target(req_path_info, req_inner_action)
 
         # 1) User/Password request way
         # auth_url = "http://controller:5000/v2.0/"
@@ -196,7 +197,7 @@ class NovaKeystoneContext(wsgi.Middleware):
                               session=sess,
                               service_type="access")
 
-        response = patron_client.patrons.verify(rule_name, json = target)
+        response = patron_client.patrons.verify(op, json = target)
         result = response[1]['res']
 
         if result != True:
