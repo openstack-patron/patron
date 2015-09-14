@@ -60,6 +60,12 @@ class PatronAccessController(object):
         file_object.write("\n")
         file_object.close()
 
+        # If "op" is not valid, then deny the access.
+        if op == None or op == "" or op == "None":
+            return {'command': 'verify',
+                    'op': op,
+                    'res': False}
+
         try:
             res = policy.enforce(context, op, target)
             if res != False:
@@ -71,9 +77,14 @@ class PatronAccessController(object):
                     'target.project_id': target['project_id'],
                     'res': res}
         except Exception:
+            # Policy doesn't allow "op" to be performed. (HTTP 403)
             return {'command': 'verify',
                     'op': op,
-                    'Exception': Exception,
+                    'context.project_id': context.project_id,
+                    'context.user_id': context.user_id,
+                    'target.project_id': target['project_id'],
+                    'exception': Exception,
+                    'reason': "Policy doesn't allow [%s] to be performed. (HTTP 403)" % op,
                     'res': False}
 
 
