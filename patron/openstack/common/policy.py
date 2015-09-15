@@ -252,7 +252,7 @@ class Enforcer(object):
         self.default_rule = None
         self.policy_path = None
 
-    def load_rules(self, force_reload=False):
+    def load_rules(self, project_id, force_reload=False):
         """Loads policy_path's rules.
 
         Policy file is cached and will be reloaded if modified.
@@ -265,13 +265,13 @@ class Enforcer(object):
 
         if self.use_conf:
             if not self.policy_path:
-                self.policy_path = self._get_policy_path(self.policy_file)
+                self.policy_path = self._get_policy_path(self.policy_file, project_id)
 
             self._load_policy_file(self.policy_path, force_reload,
                                    overwrite=self.overwrite)
             for path in CONF.policy_dirs:
                 try:
-                    path = self._get_policy_path(path)
+                    path = self._get_policy_path(path, project_id)
                 except cfg.ConfigFilesNotFoundError:
                     continue
                 self._walk_through_policy_directory(path,
@@ -295,7 +295,11 @@ class Enforcer(object):
                 LOG.debug("Reloaded policy file: %(path)s",
                           {'path': path})
 
-    def _get_policy_path(self, path):
+    def _fixpath(p):
+        """Apply tilde expansion and absolutization to a path."""
+        return os.path.abspath(os.path.expanduser(p))
+
+    def _get_policy_path(self, path, project_id):
         """Locate the policy json data file/path.
 
         :param path: It's value can be a full path or related path. When
@@ -309,6 +313,17 @@ class Enforcer(object):
                  be located.
         """
         policy_path = CONF.find_file(path)
+
+        # Edited by Yang Luo.
+        if project_id != "" and project_id != None and policy_path != None:
+            file_path = os.path.dirname(policy_path)
+            file_name = os.path.basename(policy_path)
+            custom_policy_path = file_path + "/custom_policy/" + project_id + "/" + file_name
+            if os.path.exists(custom_policy_path):
+                LOG.info("Custom policy path [%s] exists" % custom_policy_path)
+                policy_path = custom_policy_path
+            else:
+                LOG.info("Custom policy path [%s] doesn't exist" % custom_policy_path)
 
         if policy_path:
             return policy_path
@@ -340,7 +355,7 @@ class Enforcer(object):
                 from the expression.
         """
 
-        self.load_rules()
+        self.load_rules(creds['project_id'])
 
         # Allow the rule to be a Check tree
         if isinstance(rule, BaseCheck):
