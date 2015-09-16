@@ -38,6 +38,12 @@ If you get response like:
 (<Response [200]>, {u'action': u'verify', u'res': True, u'project_id': u'85c8848b1dd64c7ebb2c5baeb12e25c3', u'user_id': u'6914d79e61144a8ba71c00d2b859c916', u'rule': u'None'})
 This means that you have successfully configured Patron. 
 
+9. Copy "./rootdir/etc/nova/api-paste.ini" file to "/etc/nova/api-paste.ini" (Overwrite the original file)
+cd patron-config
+cp ./rootdir/etc/nova/api-paste.ini /etc/nova/api-paste.ini
+
+10. Run "service nova-api restart", enter "nova list" to test Nova API with Patron support.
+
 ######################## Comments, DO NOT use it ########################
 # delete the user:
 # userdel -r patron
