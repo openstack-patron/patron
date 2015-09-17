@@ -28,7 +28,7 @@ LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
 
-    def url_to_op_and_target(self, context, path_info, req_inner_action):
+    def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
         # op : is used as the security operation for Patron.
         op = "compute_extension:admin_actions"
         # target : is used to act as the security context of the object for Patron.
@@ -75,20 +75,26 @@ class PatronVerify (wsgi.Middleware):
         # Check policy against patron node
         # Edited by Yang Luo
 
+        # First collect the web path vector.
+        # web path vector = {req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+        req_server_port = req.server_port
+        req_api_version = req.script_name
+        req_method = req.method
         req_path_info = req.path_info
-        if req.is_body_readable:
-            for d, x in req.json.items():
-                req_inner_action = d
-                break
-        else:
-            req_inner_action = ""
+        # if req.is_body_readable:
+        #     for d, x in req.json.items():
+        #         req_inner_action = d
+        #         break
+        # else:
+        #     req_inner_action = ""
+        req_inner_action = req.text
 
-        # Show req_path_info and req_inner_action.
-        LOG.info("req_path_info = %r", req_path_info)
-        LOG.info("req_inner_action = %r", req_inner_action)
+        # Show path vectors.
+        LOG.info("req_server_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r",
+                 req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
 
         # Map the path_info and req_inner_action to op and target for Patron.
-        (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_path_info, req_inner_action)
+        (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
 
         # Get the subject SID.
         subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id
