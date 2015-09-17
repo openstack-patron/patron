@@ -37,7 +37,7 @@ class PatronVerify (wsgi.Middleware):
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
-        cache_enabled = True
+        cache_enabled = False
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 
         user_id = req.headers.get('X_USER')
