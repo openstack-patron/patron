@@ -22,17 +22,23 @@ from keystoneclient import session
 
 from nova.api.patron_cache import PatronCache
 
+from nova.objects.instance import Instance
+
 LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
 
-    def url_to_op_and_target(self, path_info, req_inner_action):
+    def url_to_op_and_target(self, context, path_info, req_inner_action):
         # op : is used as the security operation for Patron.
         op = "compute_extension:admin_actions"
         # target : is used to act as the security context of the object for Patron.
         # if no target is needed, can do it as: target = None
         # target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
-        target = None
+
+        uuid = "cb5e2885-ebf1-438a-89db-26284bdf75c1"
+        target = Instance.get_by_uuid(context, uuid)
+        # target = None
+
         return (op, target)
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
@@ -82,7 +88,7 @@ class PatronVerify (wsgi.Middleware):
         LOG.info("req_inner_action = %r", req_inner_action)
 
         # Map the path_info and req_inner_action to op and target for Patron.
-        (op, target) = self.url_to_op_and_target(req_path_info, req_inner_action)
+        (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_path_info, req_inner_action)
 
         # Get the subject SID.
         subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id
@@ -90,7 +96,7 @@ class PatronVerify (wsgi.Middleware):
         if target == None:
             object_sid = "None"
         else:
-            object_sid = target["project_id"] + ":" + target["server_id"]
+            object_sid = target["project_id"] + ":" + target["uuid"]
         LOG.info("op = %r, subject_sid = %r, object_sid = %r", op, subject_sid, object_sid)
 
         # Check the cache first for (op, context_project_id, target_project_id) pair.

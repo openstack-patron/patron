@@ -326,6 +326,10 @@ class Instance(BASE, NovaBase):
     # Records whether an instance has been deleted from disk
     cleaned = Column(Integer, default=0)
 
+    # Security label for Patron access control
+    # Added by Yang Luo
+    security_label = Column(String(255))
+
 
 class InstanceInfoCache(BASE, NovaBase):
     """Represents a cache of information about an instance
@@ -850,6 +854,10 @@ class Network(BASE, NovaBase):
     dhcp_server = Column(types.IPAddress())
     enable_dhcp = Column(Boolean, default=True)
     share_address = Column(Boolean, default=False)
+
+    # Security label for Patron access control
+    # Added by Yang Luo
+    security_label = Column(String(255))
 
 
 class VirtualInterface(BASE, NovaBase):

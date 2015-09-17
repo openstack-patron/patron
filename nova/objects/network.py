@@ -78,6 +78,7 @@ class Network(obj_base.NovaPersistentObject, obj_base.NovaObject,
         'dhcp_server': fields.IPAddressField(nullable=True),
         'enable_dhcp': fields.BooleanField(),
         'share_address': fields.BooleanField(),
+        'security_label': fields.StringField(nullable=True), # Added by Yang Luo.
         }
 
     @staticmethod

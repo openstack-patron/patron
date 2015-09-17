@@ -248,6 +248,7 @@ class Instance(base.NovaPersistentObject, base.NovaObject,
         'old_flavor': fields.ObjectField('Flavor', nullable=True),
         'new_flavor': fields.ObjectField('Flavor', nullable=True),
         'vcpu_model': fields.ObjectField('VirtCPUModel', nullable=True),
+        'security_label': fields.StringField(nullable=True), # Added by Yang Luo.
         }
 
     obj_extra_fields = ['name']
