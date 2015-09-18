@@ -36,6 +36,7 @@ class PatronVerify (wsgi.Middleware):
                      "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
                      "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
                      "os-networks": "nova.network.neutronv2.api.API.get(id)", #"nova.objects.network.Network.get_by_id(uuid)"
+                     "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
                      "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
                      "images": ""
                      }
@@ -168,12 +169,17 @@ class PatronVerify (wsgi.Middleware):
             object_sid = ""
             try:
                 object_sid += target["project_id"] + ":"
-            except NotImplementedError, AttributeError:
+            # KeyError, NotImplementedError, AttributeError
+            except:
                 object_sid += "None" + ":"
             try:
                 object_sid += target["uuid"]
-            except NotImplementedError, AttributeError:
-                object_sid += str(target["id"])
+            # KeyError, NotImplementedError, AttributeError
+            except:
+                try:
+                    object_sid += str(target["id"])
+                except:
+                    object_sid += "None"
         LOG.info("op = %r, subject_sid = %r, object_sid = %r", op, subject_sid, object_sid)
 
         #import pydevd
