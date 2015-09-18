@@ -74,7 +74,6 @@ class PatronAccessController(object):
                     'op': op,
                     'context.project_id': context.project_id,
                     'context.user_id': context.user_id,
-                    'target.project_id': target['project_id'],
                     'res': res}
         except Exception:
             # Policy doesn't allow "op" to be performed. (HTTP 403)
@@ -82,7 +81,6 @@ class PatronAccessController(object):
                     'op': op,
                     'context.project_id': context.project_id,
                     'context.user_id': context.user_id,
-                    'target.project_id': target['project_id'],
                     'exception': Exception,
                     'reason': "Policy doesn't allow [%s] to be performed. (HTTP 403)" % op,
                     'res': False}
