@@ -21,23 +21,71 @@ from patronclient import client
 from keystoneclient import session
 
 from nova.api.patron_cache import PatronCache
-
-from nova.objects.instance import Instance
+import importlib
+import re
 
 LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
 
     def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
-        # op : is used as the security operation for Patron.
-        op = "compute_extension:admin_actions"
+        id_pattern = "[0-9a-f]{32}"
+        uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid",
+                     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid",
+                     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name",
+                     "flavors": "",
+                     "images": ""
+                     }
+        key_ids = {}
+
+        path_info_list = req_path_info.strip("/").split("/")
+        if len(path_info_list) > 0:
+            key_ids["project_id"] = path_info_list[0]
+            if re.match(id_pattern, path_info_list[0]) != None:
+                    path_info_list[0] = "%ID%"
+            elif re.match(uuid_patern, path_info_list[0]) != None:
+                path_info_list[0] = "%UUID%"
+            else:
+                path_info_list[0] = "%NAME%"
+
+        for i in range(len(path_info_list) - 1):
+            if path_info_list[i] in key_calls and path_info_list[i + 1] != "detail":
+                key_ids[path_info_list[i]] = path_info_list[i + 1]
+                if re.match(id_pattern, path_info_list[i + 1]) != None:
+                    path_info_list[i + 1] = "%ID%"
+                elif re.match(uuid_patern, path_info_list[i + 1]) != None:
+                    path_info_list[i + 1] = "%UUID%"
+                else:
+                    path_info_list[i + 1] = "%NAME%"
+        template_path_info = "/" + "/".join(path_info_list)
+
+        if key_ids.has_key("servers"):
+            key_name = "servers"
+        else:
+            key_name = None
+            for tmp_key_name in key_ids.keys():
+                if tmp_key_name != "project_id":
+                    key_name = tmp_key_name
+                    break
+
         # target : is used to act as the security context of the object for Patron.
         # if no target is needed, can do it as: target = None
         # target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
+        if key_name != None and key_calls[key_name] != "":
+            (module_name, class_name, method_name) = key_calls[key_name].rsplit(".", 2)
+            mod = importlib.import_module(module_name)
+            method_obj = getattr(getattr(mod, class_name), method_name)
+            target = method_obj(context, key_ids[key_name])
+        else:
+            method_obj = None
+            target = None
 
-        uuid = "cb5e2885-ebf1-438a-89db-26284bdf75c1"
-        #target = Instance.get_by_uuid(context, uuid)
-        target = None
+        LOG.info("key_calls = %r, key_ids = %r, key_name = %r, template_path_info = %r, method_obj = %r",
+                 key_calls, key_ids, key_name, template_path_info, method_obj)
+
+        # op : is used as the security operation for Patron.
+        op = "compute_extension:admin_actions"
 
         return (op, target)
 
