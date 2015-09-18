@@ -82,7 +82,11 @@ class PatronCache(object):
         #mm = ObjectMmap(-1, 1024*1024, access=mmap.ACCESS_READ, tagname='share_mmap')
         cache = mm.jsonread_follower()
         if cache:
-            return cache[op + "**" + subject_sid + "**" + object_sid]
+            try:
+                res = cache[op + "**" + subject_sid + "**" + object_sid]
+            except KeyError:
+                return None
+            return res
         else:
             return None
 
