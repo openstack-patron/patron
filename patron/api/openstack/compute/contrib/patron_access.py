@@ -1,4 +1,4 @@
-# add by lwyeluo
+# add by Wu Luo
 # /%(project_id)s/access_control_verify/%(user_id)s/resource/%(res_id)s/action/%(action)s/ ->patron
 # /%(project_id)s/os-patron-access/
 
