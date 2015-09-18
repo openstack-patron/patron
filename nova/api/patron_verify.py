@@ -34,7 +34,9 @@ class PatronVerify (wsgi.Middleware):
         key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
                      "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
                      "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
-                     "flavors": "",
+                     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
+                     "os-networks": "nova.network.neutronv2.api.API.get(id)", #"nova.objects.network.Network.get_by_id(uuid)"
+                     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
                      "images": ""
                      }
         key_ids = {}
@@ -79,12 +81,17 @@ class PatronVerify (wsgi.Middleware):
             mod = importlib.import_module(module_name)
             param_values = []
             for param in param_list:
-                if param == "uuid" or param == "name":
+                if param == "id" or param == "uuid" or param == "name":
                     param_values.append(key_ids[key_name])
                 else:
                     param_values.append(getattr(context, param))
             method_obj = getattr(getattr(mod, class_name), method_name)
-            target = method_obj(context, *param_values)
+            try:
+                target = method_obj(context, *param_values)
+            # the method is then a instance method, first instantiate the class.
+            except TypeError:
+                method_obj = getattr(getattr(mod, class_name)(), method_name)
+                target = method_obj(context, *param_values)
         else:
             method_obj = None
             target = None
@@ -161,11 +168,11 @@ class PatronVerify (wsgi.Middleware):
             object_sid = ""
             try:
                 object_sid += target["project_id"] + ":"
-            except AttributeError:
+            except NotImplementedError, AttributeError:
                 object_sid += "None" + ":"
             try:
                 object_sid += target["uuid"]
-            except AttributeError:
+            except NotImplementedError, AttributeError:
                 object_sid += str(target["id"])
         LOG.info("op = %r, subject_sid = %r, object_sid = %r", op, subject_sid, object_sid)
 
