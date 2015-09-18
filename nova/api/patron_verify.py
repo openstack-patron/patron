@@ -1,4 +1,4 @@
-#Add by Luo Wu
+#Add by Wu Luo
 
 """
 Common Middleware which is used to realize Access Control by communicating with Patron.
@@ -36,14 +36,14 @@ class PatronVerify (wsgi.Middleware):
         # target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
 
         uuid = "cb5e2885-ebf1-438a-89db-26284bdf75c1"
-        target = Instance.get_by_uuid(context, uuid)
-        # target = None
+        #target = Instance.get_by_uuid(context, uuid)
+        target = None
 
         return (op, target)
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
-        cache_enabled = False
+        cache_enabled = True
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 
         user_id = req.headers.get('X_USER')
@@ -105,9 +105,14 @@ class PatronVerify (wsgi.Middleware):
             object_sid = target["project_id"] + ":" + target["uuid"]
         LOG.info("op = %r, subject_sid = %r, object_sid = %r", op, subject_sid, object_sid)
 
+        #import pydevd
+        #pydevd.settrace("localhost", port=12345, stderrToServer=True, stdoutToServer=True)
+
+        patronCache = PatronCache()
+
         # Check the cache first for (op, context_project_id, target_project_id) pair.
         if cache_enabled:
-            result = PatronCache.get_from_cache(op, subject_sid, object_sid)
+            result = patronCache.get_from_cache(op, subject_sid, object_sid)
         else:
             result = None
 
@@ -135,7 +140,8 @@ class PatronVerify (wsgi.Middleware):
             result = response[1]['res']
             if cache_enabled:
                 LOG.info("Cache was missed, requested result = %r, saved to cache..", result)
-                PatronCache.save_to_cache(op, subject_sid, object_sid, result)
+                patronCache.save_to_cache(op, subject_sid, object_sid, result)
+                LOG.info(">>>>>get cache info:%r", patronCache.get_from_cache(op, subject_sid, object_sid))
             else:
                 LOG.info("Cache was disabled, requested result = %r", result)
 
