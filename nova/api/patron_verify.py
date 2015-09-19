@@ -39,12 +39,14 @@ class PatronVerify (wsgi.Middleware):
                      "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
                      "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
                      "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
-                     "os-networks": "nova.network.neutronv2.api.API.get(id)", #"nova.objects.network.Network.get_by_id(uuid)"
+                     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
                      "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
                      "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
                      "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
+                     "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
                      "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
-                     "images": ""
+                     "images": "",
+                     "volumes": ""
                      }
         key_ids = {}
 
