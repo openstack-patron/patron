@@ -28,6 +28,10 @@ LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
 
+    @classmethod
+    def get_tenant_by_id(cls, context, id):
+        return {"id": id}
+
     def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
         id_pattern = "[0-9a-f]{32}"
         uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
@@ -36,7 +40,9 @@ class PatronVerify (wsgi.Middleware):
                      "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
                      "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
                      "os-networks": "nova.network.neutronv2.api.API.get(id)", #"nova.objects.network.Network.get_by_id(uuid)"
+                     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
                      "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+                     "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
                      "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
                      "images": ""
                      }
