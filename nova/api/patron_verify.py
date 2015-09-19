@@ -201,7 +201,7 @@ class PatronVerify (wsgi.Middleware):
 
         # If cache fails to be hit, then make a normal request.
         if result != None:
-            LOG.info("Cache has been hit for (op = %r, subject_sid = %r, object_sid = %r), result = %r",
+            LOG.info(">>>>>>>>>>>>>>Cache has been hit for (op = %r, subject_sid = %r, object_sid = %r), result = %r",
                      op, subject_sid, object_sid, result)
         else:
             # 1) User/Password request way
@@ -224,7 +224,7 @@ class PatronVerify (wsgi.Middleware):
             if cache_enabled:
                 LOG.info("Cache was missed, requested result = %r, saved to cache..", result)
                 PatronCache.save_to_cache(op, subject_sid, object_sid, result)
-                LOG.info(">>>>>get cache info:%r", PatronCache.get_from_cache(op, subject_sid, object_sid))
+                #LOG.info(">>>>>get cache info:%r", PatronCache.get_from_cache(op, subject_sid, object_sid))
             else:
                 LOG.info("Cache was disabled, requested result = %r", result)
 
@@ -235,5 +235,8 @@ class PatronVerify (wsgi.Middleware):
         else:
             LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
                       result, user_name, auth_token, project_name, user_auth_plugin)
+
+        # for test
+        PatronCache.get_memory()
 
         return self.application
