@@ -193,11 +193,9 @@ class PatronVerify (wsgi.Middleware):
         #import pydevd
         #pydevd.settrace("localhost", port=12345, stderrToServer=True, stdoutToServer=True)
 
-        patronCache = PatronCache()
-
         # Check the cache first for (op, context_project_id, target_project_id) pair.
         if cache_enabled:
-            result = patronCache.get_from_cache(op, subject_sid, object_sid)
+            result = PatronCache.get_from_cache(op, subject_sid, object_sid)
         else:
             result = None
 
@@ -225,8 +223,8 @@ class PatronVerify (wsgi.Middleware):
             result = response[1]['res']
             if cache_enabled:
                 LOG.info("Cache was missed, requested result = %r, saved to cache..", result)
-                patronCache.save_to_cache(op, subject_sid, object_sid, result)
-                LOG.info(">>>>>get cache info:%r", patronCache.get_from_cache(op, subject_sid, object_sid))
+                PatronCache.save_to_cache(op, subject_sid, object_sid, result)
+                LOG.info(">>>>>get cache info:%r", PatronCache.get_from_cache(op, subject_sid, object_sid))
             else:
                 LOG.info("Cache was disabled, requested result = %r", result)
 
