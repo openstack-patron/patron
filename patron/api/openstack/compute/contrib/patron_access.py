@@ -50,12 +50,14 @@ class PatronAccessController(object):
         try:
             body = jsonutils.loads(req.body)
             if body != None:
-                target = body['target']
-                op = body['op']
+                target = body.get('target', None)
+                op = body.get('op', None)
+                file_object.write("\npatron.target:\n")
                 if target != None:
-                    file_object.write("\npatron.target:\n")
                     for d,x in target.items():
                         file_object.write("%s = %s\n" % (d, x))
+                else:
+                    file_object.write("None\n")
         except ValueError or KeyError:
             target = dict()
             target['project_id'] = context.project_id
@@ -63,7 +65,10 @@ class PatronAccessController(object):
 
         file_object.write("\npatron.op:\n")
         # op: used as the access control rule name for Patron.
-        file_object.write(op)
+        if op != None:
+            file_object.write(op)
+        else:
+            file_object.write("None\n")
 
         file_object.write("\n")
         file_object.close()

@@ -28,7 +28,7 @@ class PatronAccessManager(base.Manager):
     help=_('User op for example:\n\tcompute_extension:admin_actions'))
 def do_verify(cs, args):
     """patron verify. Args:op. For example:\n\tcompute_extension:admin_actions"""
-    ans = cs.patron_access.verify({'op': args.op})
+    ans = cs.patron_access.verify(json = {'op': args.op})
     print ans
 
 # @cliutils.arg(

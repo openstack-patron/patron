@@ -219,7 +219,7 @@ class PatronVerify (wsgi.Middleware):
                                   session=sess,
                                   service_type="access")
 
-            response = patron_client.patrons.verify(json ={'target': target, 'op': op})
+            response = patron_client.patrons.verify(json = {'target': target, 'op': op})
             result = response[1]['res']
             if cache_enabled:
                 LOG.info("Cache was missed, requested result = %r, saved to cache..", result)
