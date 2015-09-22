@@ -44,6 +44,8 @@ cp ./rootdir/etc/nova/api-paste.ini /etc/nova/api-paste.ini
 
 10. Run "service nova-api restart", enter "nova list" to test Nova API with Patron support.
 
+11. Run "nova-manage db sync" to update db to version 281.
+
 ######################## Comments, DO NOT use it ########################
 # delete the user:
 # userdel -r patron
