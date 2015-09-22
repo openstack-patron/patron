@@ -105,6 +105,7 @@ from patron.openstack.common import fileutils
 from patron.openstack.common._i18n import _, _LE
 
 from patron.openstack.common.policystore import default
+from patron.openstack.common.policystore import all_pass
 
 
 policy_opts = [
@@ -170,6 +171,7 @@ class Enforcer(object):
         # self.default_rule = default_rule or CONF.policy_default_rule
         # self.rules = Rules(rules, self.default_rule)
         self.default_enforcer = default.DefaultEnforcer(rules, default_rule, use_conf, overwrite)
+        self.all_pass_enforcer = all_pass.AllPassEnforcer()
         self.current_enforcer = self.default_enforcer
 
         self.metadata_path = None
@@ -215,6 +217,11 @@ class Enforcer(object):
                                    overwrite=self.overwrite)
                 current_policy_file = self.current_policy['name'] + ".json"
                 current_policy_type = self.current_policy['type']
+                # Switch the enforcer according to the policy type in "metadata.json"
+                if current_policy_type == "default":
+                    self.current_enforcer = self.default_enforcer
+                elif current_policy_type == "all-pass":
+                    self.current_enforcer = self.all_pass_enforcer
                 LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
             else:
                 current_policy_file = None
