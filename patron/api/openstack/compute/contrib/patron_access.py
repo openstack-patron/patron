@@ -23,7 +23,14 @@ class PatronAccessController(object):
     def __init__(self, ext_mgr):
         self.ext_mgr = ext_mgr
 
-    def verify(self, req,  op):
+    def policy(self, req):
+        all_the_text = '>>>>>>>>> enter PatronAccessController:policy\n'
+        file_object = open('/var/log/patron/mylog.txt', 'a+')
+        file_object.write(all_the_text)
+        file_object.close()
+        return {'res': True}
+
+    def verify(self, req):
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
@@ -39,16 +46,17 @@ class PatronAccessController(object):
             file_object.write("null\n")
             return {'res': False}
 
-        file_object.write("\npatron.target:\n")
+        #parse patron.body
         try:
-            # target: used as the security context of the object for Patron.
-            target = jsonutils.loads(req.body)
-            if target != None:
-                for d,x in target.items():
-                    file_object.write("%s = %s\n" % (d, x))
-        except ValueError:
-            # No target found, so we use the subject itself as target.
-            file_object.write("null\n")
+            body = jsonutils.loads(req.body)
+            if body != None:
+                target = body['target']
+                op = body['op']
+                if target != None:
+                    file_object.write("\npatron.target:\n")
+                    for d,x in target.items():
+                        file_object.write("%s = %s\n" % (d, x))
+        except ValueError or KeyError:
             target = dict()
             target['project_id'] = context.project_id
             target['user_id'] = context.user_id
@@ -104,10 +112,13 @@ class Patron_access(extensions.ExtensionDescriptor):
                 'capacities': 'GET',
                 }
 
-        # /%(project_id)s/os-patron-access/op/%(op)s/
-        res = extensions.ResourceExtension('os-patron-access/op/{op}',
+        #/%(project_id)s/os-patron-access/
+        res = extensions.ResourceExtension('os-patron-access',
                 controller=PatronAccessController(self.ext_mgr), collection_actions=coll_actions,
                 member_actions=memb_actions)
+
+
+
 
         # res = extensions.ResourceExtension('os-patron-access/{user_id}/resource/{res_id}/action',
         #         controller=PatronAccessController(self.ext_mgr), collection_actions=coll_actions,

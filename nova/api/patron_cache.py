@@ -61,10 +61,10 @@ class ObjectMmap(mmap.mmap):
         index = self.rfind("\n")
         if index != -1:
             memory = self.read(index + 1)
-            file_object = open('/var/log/nova/mylog.txt', 'a+')
-            file_object.write('\n\n!!!!This is patron_cache:getMemory:\n')
-            file_object.write(memory)
-            file_object.close()
+            # file_object = open('/var/log/nova/mylog.txt', 'a+')
+            # file_object.write('\n\n!!!!This is patron_cache:getMemory:\n')
+            # file_object.write(memory)
+            # file_object.close()
             return memory
 
 global mm
