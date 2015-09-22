@@ -117,23 +117,6 @@ def check_is_admin(context):
     return _ENFORCER.enforce('context_is_admin', target, credentials)
 
 
-@policy.register('is_admin')
-class IsAdminCheck(policy.Check):
-    """An explicit check for is_admin."""
-
-    def __init__(self, kind, match):
-        """Initialize the check."""
-
-        self.expected = (match.lower() == 'true')
-
-        super(IsAdminCheck, self).__init__(kind, str(self.expected))
-
-    def __call__(self, target, creds, enforcer):
-        """Determine whether is_admin matches the requested value."""
-
-        return creds['is_admin'] == self.expected
-
-
 def get_rules():
     if _ENFORCER:
         return _ENFORCER.rules

@@ -104,6 +104,8 @@ import six.moves.urllib.request as urlrequest
 from patron.openstack.common import fileutils
 from patron.openstack.common._i18n import _, _LE
 
+from patron.openstack.common.policystore import default
+
 
 policy_opts = [
     cfg.StrOpt('policy_file',
@@ -144,61 +146,6 @@ class PolicyNotAuthorized(Exception):
         super(PolicyNotAuthorized, self).__init__(msg)
 
 
-class Rules(dict):
-    """A store for rules. Handles the default_rule setting directly."""
-
-    @classmethod
-    def load_json(cls, data, default_rule=None):
-        """Allow loading of JSON rule data."""
-
-        # Suck in the JSON data and parse the rules
-        rules = dict((k, parse_rule(v)) for k, v in
-                     jsonutils.loads(data).items())
-
-        return cls(rules, default_rule)
-
-    def __init__(self, rules=None, default_rule=None):
-        """Initialize the Rules store."""
-
-        super(Rules, self).__init__(rules or {})
-        self.default_rule = default_rule
-
-    def __missing__(self, key):
-        """Implements the default rule handling."""
-
-        if isinstance(self.default_rule, dict):
-            raise KeyError(key)
-
-        # If the default rule isn't actually defined, do something
-        # reasonably intelligent
-        if not self.default_rule:
-            raise KeyError(key)
-
-        if isinstance(self.default_rule, BaseCheck):
-            return self.default_rule
-
-        # We need to check this or we can get infinite recursion
-        if self.default_rule not in self:
-            raise KeyError(key)
-
-        elif isinstance(self.default_rule, six.string_types):
-            return self[self.default_rule]
-
-    def __str__(self):
-        """Dumps a string representation of the rules."""
-
-        # Start by building the canonical strings for the rules
-        out_rules = {}
-        for key, value in self.items():
-            # Use empty string for singleton TrueCheck instances
-            if isinstance(value, TrueCheck):
-                out_rules[key] = ''
-            else:
-                out_rules[key] = str(value)
-
-        # Dump a pretty-printed JSON representation
-        return jsonutils.dumps(out_rules, indent=4)
-
 
 class Enforcer(object):
     """Responsible for loading and enforcing rules.
@@ -219,8 +166,11 @@ class Enforcer(object):
 
     def __init__(self, policy_file=None, rules=None,
                  default_rule=None, use_conf=True, overwrite=True):
-        self.default_rule = default_rule or CONF.policy_default_rule
-        self.rules = Rules(rules, self.default_rule)
+        # Edited by Yang Luo.
+        # self.default_rule = default_rule or CONF.policy_default_rule
+        # self.rules = Rules(rules, self.default_rule)
+        self.default_enforcer = default.DefaultEnforcer(rules, default_rule, use_conf, overwrite)
+        self.current_enforcer = self.default_enforcer
 
         self.metadata_path = None
         self.policy_path = None
@@ -230,30 +180,18 @@ class Enforcer(object):
 
         self.current_policy = {}
 
-    def set_rules(self, rules, overwrite=True, use_conf=False):
-        """Create a new Rules object based on the provided dict of rules.
-
-        :param rules: New rules to use. It should be an instance of dict.
-        :param overwrite: Whether to overwrite current rules or update them
-                          with the new rules.
-        :param use_conf: Whether to reload rules from cache or config file.
-        """
-
-        if not isinstance(rules, dict):
-            raise TypeError(_("Rules must be an instance of dict or Rules, "
-                            "got %s instead") % type(rules))
-        self.use_conf = use_conf
-        if overwrite:
-            self.rules = Rules(rules, self.default_rule)
-        else:
-            self.rules.update(rules)
-
     def clear(self):
         """Clears Enforcer rules, policy's cache and policy's path."""
-        self.set_rules({})
+
+        # self.set_rules({})
+        self.current_enforcer.clear()
+
         fileutils.delete_cached_file(self.metadata_path)
         fileutils.delete_cached_file(self.policy_path)
-        self.default_rule = None
+
+        # self.default_rule = None
+        self.current_enforcer.default_rule = None
+
         self.metadata_path = None
         self.policy_path = None
 
@@ -310,7 +248,7 @@ class Enforcer(object):
     def _load_metadata_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
                 path, force_reload=force_reload)
-            if reloaded or not self.rules or not overwrite:
+            if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
                 json_metadata = jsonutils.loads(data)
                 LOG.debug("Reloaded metadata file: %(path)s",
                           {'path': path})
@@ -320,9 +258,9 @@ class Enforcer(object):
     def _load_policy_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
                 path, force_reload=force_reload)
-            if reloaded or not self.rules or not overwrite:
-                rules = Rules.load_json(data, self.default_rule)
-                self.set_rules(rules, overwrite=overwrite, use_conf=True)
+            if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
+                # Edited by Yang Luo.
+                self.current_enforcer.set_policy(data, None, overwrite=overwrite, use_conf=True)
                 LOG.debug("Reloaded policy file: %(path)s",
                           {'path': path})
 
@@ -414,20 +352,8 @@ class Enforcer(object):
 
         self.load_rules(creds['project_id'])
 
-        # Allow the rule to be a Check tree
-        if isinstance(rule, BaseCheck):
-            result = rule(target, creds, self)
-        elif not self.rules:
-            # No rules to reference means we're going to fail closed
-            result = False
-        else:
-            try:
-                # Evaluate the rule
-                result = self.rules[rule](target, creds, self)
-            except KeyError:
-                LOG.debug("Rule [%s] doesn't exist" % rule)
-                # If the rule doesn't exist, fail closed
-                result = False
+        # Edited by Yang Luo.
+        result = self.current_enforcer.enforce(rule, target, creds)
 
         # If it is False, raise the exception if requested
         if do_raise and not result:
@@ -438,598 +364,3 @@ class Enforcer(object):
 
         return result
 
-
-@six.add_metaclass(abc.ABCMeta)
-class BaseCheck(object):
-    """Abstract base class for Check classes."""
-
-    @abc.abstractmethod
-    def __str__(self):
-        """String representation of the Check tree rooted at this node."""
-
-        pass
-
-    @abc.abstractmethod
-    def __call__(self, target, cred, enforcer):
-        """Triggers if instance of the class is called.
-
-        Performs the check. Returns False to reject the access or a
-        true value (not necessary True) to accept the access.
-        """
-
-        pass
-
-
-class FalseCheck(BaseCheck):
-    """A policy check that always returns False (disallow)."""
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "!"
-
-    def __call__(self, target, cred, enforcer):
-        """Check the policy."""
-
-        return False
-
-
-class TrueCheck(BaseCheck):
-    """A policy check that always returns True (allow)."""
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "@"
-
-    def __call__(self, target, cred, enforcer):
-        """Check the policy."""
-
-        return True
-
-
-class Check(BaseCheck):
-    """A base class to allow for user-defined policy checks."""
-
-    def __init__(self, kind, match):
-        """Initiates Check instance.
-
-        :param kind: The kind of the check, i.e., the field before the
-                     ':'.
-        :param match: The match of the check, i.e., the field after
-                      the ':'.
-        """
-
-        self.kind = kind
-        self.match = match
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "%s:%s" % (self.kind, self.match)
-
-
-class NotCheck(BaseCheck):
-    """Implements the "not" logical operator.
-
-    A policy check that inverts the result of another policy check.
-    """
-
-    def __init__(self, rule):
-        """Initialize the 'not' check.
-
-        :param rule: The rule to negate.  Must be a Check.
-        """
-
-        self.rule = rule
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "not %s" % self.rule
-
-    def __call__(self, target, cred, enforcer):
-        """Check the policy.
-
-        Returns the logical inverse of the wrapped check.
-        """
-
-        return not self.rule(target, cred, enforcer)
-
-
-class AndCheck(BaseCheck):
-    """Implements the "and" logical operator.
-
-    A policy check that requires that a list of other checks all return True.
-    """
-
-    def __init__(self, rules):
-        """Initialize the 'and' check.
-
-        :param rules: A list of rules that will be tested.
-        """
-
-        self.rules = rules
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "(%s)" % ' and '.join(str(r) for r in self.rules)
-
-    def __call__(self, target, cred, enforcer):
-        """Check the policy.
-
-        Requires that all rules accept in order to return True.
-        """
-
-        for rule in self.rules:
-            if not rule(target, cred, enforcer):
-                return False
-
-        return True
-
-    def add_check(self, rule):
-        """Adds rule to be tested.
-
-        Allows addition of another rule to the list of rules that will
-        be tested.  Returns the AndCheck object for convenience.
-        """
-
-        self.rules.append(rule)
-        return self
-
-
-class OrCheck(BaseCheck):
-    """Implements the "or" operator.
-
-    A policy check that requires that at least one of a list of other
-    checks returns True.
-    """
-
-    def __init__(self, rules):
-        """Initialize the 'or' check.
-
-        :param rules: A list of rules that will be tested.
-        """
-
-        self.rules = rules
-
-    def __str__(self):
-        """Return a string representation of this check."""
-
-        return "(%s)" % ' or '.join(str(r) for r in self.rules)
-
-    def __call__(self, target, cred, enforcer):
-        """Check the policy.
-
-        Requires that at least one rule accept in order to return True.
-        """
-
-        for rule in self.rules:
-            if rule(target, cred, enforcer):
-                return True
-        return False
-
-    def add_check(self, rule):
-        """Adds rule to be tested.
-
-        Allows addition of another rule to the list of rules that will
-        be tested.  Returns the OrCheck object for convenience.
-        """
-
-        self.rules.append(rule)
-        return self
-
-
-def _parse_check(rule):
-    """Parse a single base check rule into an appropriate Check object."""
-
-    # Handle the special checks
-    if rule == '!':
-        return FalseCheck()
-    elif rule == '@':
-        return TrueCheck()
-
-    try:
-        kind, match = rule.split(':', 1)
-    except Exception:
-        LOG.exception(_LE("Failed to understand rule %s") % rule)
-        # If the rule is invalid, we'll fail closed
-        return FalseCheck()
-
-    # Find what implements the check
-    if kind in _checks:
-        return _checks[kind](kind, match)
-    elif None in _checks:
-        return _checks[None](kind, match)
-    else:
-        LOG.error(_LE("No handler for matches of kind %s") % kind)
-        return FalseCheck()
-
-
-def _parse_list_rule(rule):
-    """Translates the old list-of-lists syntax into a tree of Check objects.
-
-    Provided for backwards compatibility.
-    """
-
-    # Empty rule defaults to True
-    if not rule:
-        return TrueCheck()
-
-    # Outer list is joined by "or"; inner list by "and"
-    or_list = []
-    for inner_rule in rule:
-        # Elide empty inner lists
-        if not inner_rule:
-            continue
-
-        # Handle bare strings
-        if isinstance(inner_rule, six.string_types):
-            inner_rule = [inner_rule]
-
-        # Parse the inner rules into Check objects
-        and_list = [_parse_check(r) for r in inner_rule]
-
-        # Append the appropriate check to the or_list
-        if len(and_list) == 1:
-            or_list.append(and_list[0])
-        else:
-            or_list.append(AndCheck(and_list))
-
-    # If we have only one check, omit the "or"
-    if not or_list:
-        return FalseCheck()
-    elif len(or_list) == 1:
-        return or_list[0]
-
-    return OrCheck(or_list)
-
-
-# Used for tokenizing the policy language
-_tokenize_re = re.compile(r'\s+')
-
-
-def _parse_tokenize(rule):
-    """Tokenizer for the policy language.
-
-    Most of the single-character tokens are specified in the
-    _tokenize_re; however, parentheses need to be handled specially,
-    because they can appear inside a check string.  Thankfully, those
-    parentheses that appear inside a check string can never occur at
-    the very beginning or end ("%(variable)s" is the correct syntax).
-    """
-
-    for tok in _tokenize_re.split(rule):
-        # Skip empty tokens
-        if not tok or tok.isspace():
-            continue
-
-        # Handle leading parens on the token
-        clean = tok.lstrip('(')
-        for i in range(len(tok) - len(clean)):
-            yield '(', '('
-
-        # If it was only parentheses, continue
-        if not clean:
-            continue
-        else:
-            tok = clean
-
-        # Handle trailing parens on the token
-        clean = tok.rstrip(')')
-        trail = len(tok) - len(clean)
-
-        # Yield the cleaned token
-        lowered = clean.lower()
-        if lowered in ('and', 'or', 'not'):
-            # Special tokens
-            yield lowered, clean
-        elif clean:
-            # Not a special token, but not composed solely of ')'
-            if len(tok) >= 2 and ((tok[0], tok[-1]) in
-                                  [('"', '"'), ("'", "'")]):
-                # It's a quoted string
-                yield 'string', tok[1:-1]
-            else:
-                yield 'check', _parse_check(clean)
-
-        # Yield the trailing parens
-        for i in range(trail):
-            yield ')', ')'
-
-
-class ParseStateMeta(type):
-    """Metaclass for the ParseState class.
-
-    Facilitates identifying reduction methods.
-    """
-
-    def __new__(mcs, name, bases, cls_dict):
-        """Create the class.
-
-        Injects the 'reducers' list, a list of tuples matching token sequences
-        to the names of the corresponding reduction methods.
-        """
-
-        reducers = []
-
-        for key, value in cls_dict.items():
-            if not hasattr(value, 'reducers'):
-                continue
-            for reduction in value.reducers:
-                reducers.append((reduction, key))
-
-        cls_dict['reducers'] = reducers
-
-        return super(ParseStateMeta, mcs).__new__(mcs, name, bases, cls_dict)
-
-
-def reducer(*tokens):
-    """Decorator for reduction methods.
-
-    Arguments are a sequence of tokens, in order, which should trigger running
-    this reduction method.
-    """
-
-    def decorator(func):
-        # Make sure we have a list of reducer sequences
-        if not hasattr(func, 'reducers'):
-            func.reducers = []
-
-        # Add the tokens to the list of reducer sequences
-        func.reducers.append(list(tokens))
-
-        return func
-
-    return decorator
-
-
-@six.add_metaclass(ParseStateMeta)
-class ParseState(object):
-    """Implement the core of parsing the policy language.
-
-    Uses a greedy reduction algorithm to reduce a sequence of tokens into
-    a single terminal, the value of which will be the root of the Check tree.
-
-    Note: error reporting is rather lacking.  The best we can get with
-    this parser formulation is an overall "parse failed" error.
-    Fortunately, the policy language is simple enough that this
-    shouldn't be that big a problem.
-    """
-
-    def __init__(self):
-        """Initialize the ParseState."""
-
-        self.tokens = []
-        self.values = []
-
-    def reduce(self):
-        """Perform a greedy reduction of the token stream.
-
-        If a reducer method matches, it will be executed, then the
-        reduce() method will be called recursively to search for any more
-        possible reductions.
-        """
-
-        for reduction, methname in self.reducers:
-            if (len(self.tokens) >= len(reduction) and
-                    self.tokens[-len(reduction):] == reduction):
-                # Get the reduction method
-                meth = getattr(self, methname)
-
-                # Reduce the token stream
-                results = meth(*self.values[-len(reduction):])
-
-                # Update the tokens and values
-                self.tokens[-len(reduction):] = [r[0] for r in results]
-                self.values[-len(reduction):] = [r[1] for r in results]
-
-                # Check for any more reductions
-                return self.reduce()
-
-    def shift(self, tok, value):
-        """Adds one more token to the state.  Calls reduce()."""
-
-        self.tokens.append(tok)
-        self.values.append(value)
-
-        # Do a greedy reduce...
-        self.reduce()
-
-    @property
-    def result(self):
-        """Obtain the final result of the parse.
-
-        Raises ValueError if the parse failed to reduce to a single result.
-        """
-
-        if len(self.values) != 1:
-            raise ValueError("Could not parse rule")
-        return self.values[0]
-
-    @reducer('(', 'check', ')')
-    @reducer('(', 'and_expr', ')')
-    @reducer('(', 'or_expr', ')')
-    def _wrap_check(self, _p1, check, _p2):
-        """Turn parenthesized expressions into a 'check' token."""
-
-        return [('check', check)]
-
-    @reducer('check', 'and', 'check')
-    def _make_and_expr(self, check1, _and, check2):
-        """Create an 'and_expr'.
-
-        Join two checks by the 'and' operator.
-        """
-
-        return [('and_expr', AndCheck([check1, check2]))]
-
-    @reducer('and_expr', 'and', 'check')
-    def _extend_and_expr(self, and_expr, _and, check):
-        """Extend an 'and_expr' by adding one more check."""
-
-        return [('and_expr', and_expr.add_check(check))]
-
-    @reducer('check', 'or', 'check')
-    def _make_or_expr(self, check1, _or, check2):
-        """Create an 'or_expr'.
-
-        Join two checks by the 'or' operator.
-        """
-
-        return [('or_expr', OrCheck([check1, check2]))]
-
-    @reducer('or_expr', 'or', 'check')
-    def _extend_or_expr(self, or_expr, _or, check):
-        """Extend an 'or_expr' by adding one more check."""
-
-        return [('or_expr', or_expr.add_check(check))]
-
-    @reducer('not', 'check')
-    def _make_not_expr(self, _not, check):
-        """Invert the result of another check."""
-
-        return [('check', NotCheck(check))]
-
-
-def _parse_text_rule(rule):
-    """Parses policy to the tree.
-
-    Translates a policy written in the policy language into a tree of
-    Check objects.
-    """
-
-    # Empty rule means always accept
-    if not rule:
-        return TrueCheck()
-
-    # Parse the token stream
-    state = ParseState()
-    for tok, value in _parse_tokenize(rule):
-        state.shift(tok, value)
-
-    try:
-        return state.result
-    except ValueError:
-        # Couldn't parse the rule
-        LOG.exception(_LE("Failed to understand rule %s") % rule)
-
-        # Fail closed
-        return FalseCheck()
-
-
-def parse_rule(rule):
-    """Parses a policy rule into a tree of Check objects."""
-
-    # If the rule is a string, it's in the policy language
-    if isinstance(rule, six.string_types):
-        return _parse_text_rule(rule)
-    return _parse_list_rule(rule)
-
-
-def register(name, func=None):
-    """Register a function or Check class as a policy check.
-
-    :param name: Gives the name of the check type, e.g., 'rule',
-                 'role', etc.  If name is None, a default check type
-                 will be registered.
-    :param func: If given, provides the function or class to register.
-                 If not given, returns a function taking one argument
-                 to specify the function or class to register,
-                 allowing use as a decorator.
-    """
-
-    # Perform the actual decoration by registering the function or
-    # class.  Returns the function or class for compliance with the
-    # decorator interface.
-    def decorator(func):
-        _checks[name] = func
-        return func
-
-    # If the function or class is given, do the registration
-    if func:
-        return decorator(func)
-
-    return decorator
-
-
-@register("rule")
-class RuleCheck(Check):
-    def __call__(self, target, creds, enforcer):
-        """Recursively checks credentials based on the defined rules."""
-
-        try:
-            return enforcer.rules[self.match](target, creds, enforcer)
-        except KeyError:
-            # We don't have any matching rule; fail closed
-            return False
-
-
-@register("role")
-class RoleCheck(Check):
-    def __call__(self, target, creds, enforcer):
-        """Check that there is a matching role in the cred dict."""
-
-        return self.match.lower() in [x.lower() for x in creds['roles']]
-
-
-@register('http')
-class HttpCheck(Check):
-    def __call__(self, target, creds, enforcer):
-        """Check http: rules by calling to a remote server.
-
-        This example implementation simply verifies that the response
-        is exactly 'True'.
-        """
-
-        url = ('http:' + self.match) % target
-
-        # Convert instances of object() in target temporarily to
-        # empty dict to avoid circular reference detection
-        # errors in jsonutils.dumps().
-        temp_target = copy.deepcopy(target)
-        for key in target.keys():
-            element = target.get(key)
-            if type(element) is object:
-                temp_target[key] = {}
-
-        data = {'target': jsonutils.dumps(temp_target),
-                'credentials': jsonutils.dumps(creds)}
-        post_data = urlparse.urlencode(data)
-        f = urlrequest.urlopen(url, post_data)
-        return f.read() == "True"
-
-
-@register(None)
-class GenericCheck(Check):
-    def __call__(self, target, creds, enforcer):
-        """Check an individual match.
-
-        Matches look like:
-
-            tenant:%(tenant_id)s
-            role:compute:admin
-            True:%(user.enabled)s
-            'Member':%(role.name)s
-        """
-
-        try:
-            match = self.match % target
-        except KeyError:
-            # While doing GenericCheck if key not
-            # present in Target return false
-            return False
-
-        try:
-            # Try to interpret self.kind as a literal
-            leftval = ast.literal_eval(self.kind)
-        except ValueError:
-            try:
-                kind_parts = self.kind.split('.')
-                leftval = creds
-                for kind_part in kind_parts:
-                    leftval = leftval[kind_part]
-            except KeyError:
-                return False
-        return match == six.text_type(leftval)
