@@ -222,10 +222,13 @@ class Enforcer(object):
         self.default_rule = default_rule or CONF.policy_default_rule
         self.rules = Rules(rules, self.default_rule)
 
+        self.metadata_path = None
         self.policy_path = None
         self.policy_file = policy_file or CONF.policy_file
         self.use_conf = use_conf
         self.overwrite = overwrite
+
+        self.current_policy = {}
 
     def set_rules(self, rules, overwrite=True, use_conf=False):
         """Create a new Rules object based on the provided dict of rules.
@@ -248,8 +251,10 @@ class Enforcer(object):
     def clear(self):
         """Clears Enforcer rules, policy's cache and policy's path."""
         self.set_rules({})
+        fileutils.delete_cached_file(self.metadata_path)
         fileutils.delete_cached_file(self.policy_path)
         self.default_rule = None
+        self.metadata_path = None
         self.policy_path = None
 
     def load_rules(self, project_id, force_reload=False):
@@ -264,14 +269,30 @@ class Enforcer(object):
             self.use_conf = force_reload
 
         if self.use_conf:
+            if not self.metadata_path:
+                self.metadata_path = self._get_metadata_path(self.policy_file, project_id)
+
+            if self.metadata_path:
+                self._load_metadata_file(self.metadata_path, force_reload,
+                                   overwrite=self.overwrite)
+                current_policy_file = self.current_policy['name'] + ".json"
+                current_policy_type = self.current_policy['type']
+                LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
+            else:
+                current_policy_file = None
+                current_policy_type = None
+                LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
+                LOG.info("Metadata file not found, disable the multi-policy feature.")
+                project_id = None
+
             if not self.policy_path:
-                self.policy_path = self._get_policy_path(self.policy_file, project_id)
+                self.policy_path = self._get_policy_path(self.policy_file, project_id, current_policy_file)
 
             self._load_policy_file(self.policy_path, force_reload,
                                    overwrite=self.overwrite)
             for path in CONF.policy_dirs:
                 try:
-                    path = self._get_policy_path(path, project_id)
+                    path = self._get_policy_path(path, project_id, current_policy_file)
                 except cfg.ConfigFilesNotFoundError:
                     continue
                 self._walk_through_policy_directory(path,
@@ -286,6 +307,16 @@ class Enforcer(object):
         for policy_file in [p for p in policy_files if not p.startswith('.')]:
             func(os.path.join(path, policy_file), *args)
 
+    def _load_metadata_file(self, path, force_reload, overwrite=True):
+            reloaded, data = fileutils.read_cached_file(
+                path, force_reload=force_reload)
+            if reloaded or not self.rules or not overwrite:
+                json_metadata = jsonutils.loads(data)
+                LOG.debug("Reloaded metadata file: %(path)s",
+                          {'path': path})
+                self.current_policy['name'] = json_metadata['current-policy']
+                self.current_policy['type'] = json_metadata[json_metadata['current-policy']]['type']
+
     def _load_policy_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
                 path, force_reload=force_reload)
@@ -299,7 +330,32 @@ class Enforcer(object):
         """Apply tilde expansion and absolutization to a path."""
         return os.path.abspath(os.path.expanduser(p))
 
-    def _get_policy_path(self, path, project_id):
+    def _get_metadata_path(self, path, project_id, file_name = "metadata.json"):
+        """Locate the metadata json data file/path.
+
+        :param path: It's value can be a full path or related path. When
+                     full path specified, this function just returns the full
+                     path. When related path specified, this function will
+                     search configuration directories to find one that exists.
+
+        :returns: The metadata path
+        """
+        policy_path = CONF.find_file(path)
+
+        # Edited by Yang Luo.
+        if project_id != "" and project_id != None and policy_path != None:
+            file_path = os.path.dirname(policy_path)
+            if file_name == None:
+                file_name = os.path.basename(policy_path)
+            custom_policy_path = file_path + "/custom_policy/" + project_id + "/" + file_name
+            if os.path.exists(custom_policy_path):
+                LOG.info("Custom metadata path [%s] exists" % custom_policy_path)
+                return custom_policy_path
+            else:
+                LOG.info("Custom metadata path [%s] doesn't exist" % custom_policy_path)
+                return None
+
+    def _get_policy_path(self, path, project_id, file_name = None):
         """Locate the policy json data file/path.
 
         :param path: It's value can be a full path or related path. When
@@ -317,7 +373,8 @@ class Enforcer(object):
         # Edited by Yang Luo.
         if project_id != "" and project_id != None and policy_path != None:
             file_path = os.path.dirname(policy_path)
-            file_name = os.path.basename(policy_path)
+            if file_name == None:
+                file_name = os.path.basename(policy_path)
             custom_policy_path = file_path + "/custom_policy/" + project_id + "/" + file_name
             if os.path.exists(custom_policy_path):
                 LOG.info("Custom policy path [%s] exists" % custom_policy_path)
