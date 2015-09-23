@@ -1,0 +1,18 @@
+{
+	"current-policy": "default-policy",
+	"default-policy": {
+		"type": "default",
+		"version": "v1.0",
+		"content": "default-policy.json"
+	},
+	"all-pass-policy": {
+		"type": "all-pass",
+		"version": "v1.0",
+		"content": ""
+	},
+	"all-forbid-policy": {
+		"type": "all-forbid",
+		"version": "v1.0",
+		"content": ""
+	}
+}

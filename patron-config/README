@@ -1,50 +1,58 @@
 ######################## Configuration Commands ########################
-1. Copy "./rootdir/usr/bin/patron-api" file to "/usr/bin/patron-api"
+# 1. Copy "./rootdir/usr/bin/patron-api" file to "/usr/bin/patron-api"
 cd patron-config
 cp ./rootdir/usr/bin/patron-api /usr/bin/patron-api
 
-2. Copy "./rootdir/etc/init.d/patron-api" file to "/etc/init.d/patron-api"
+# 2. Copy "./rootdir/etc/init.d/patron-api" file to "/etc/init.d/patron-api"
 cd patron-config
 cp ./rootdir/etc/init.d/patron-api /etc/init.d/patron-api
 cd /etc/init.d
 sudo update-rc.d patron-api defaults 95
 
-3. Copy "./rootdir/etc/patron/" folder to "/etc/patron/"
+# 3. Copy "./rootdir/etc/patron/" folder to "/etc/patron/"
 cd patron-config
 cp -r ./rootdir/etc/patron/* /etc/patron/
-Remember to change all hostnames (default is "ly-controller") and passwords (default is "123") to your own
+# Remember to change all hostnames (default is "ly-controller") and passwords (default is "123") to your own
+# custom_policy dir stores tenant-wide custom policy
+# Need to rename /etc/patron/custom_policy/85c8848b1dd64c7ebb2c5baeb12e25c3 to your own "admin" tenent id
+# then rename /etc/patron/custom_policy/b52703a841604021902133822c9496e1 to your own "demo" tenent id
 
-4. Create the service credentials
+# 4. Create the service credentials
 openstack user create --password-prompt patron
 openstack role add --project service --user patron admin
 openstack service create --name patron --description "OpenStack Access Control" access
 openstack endpoint create --publicurl http://ly-controller:8292/v2/%\(tenant_id\)s --internalurl http://ly-controller:8292/v2/%\(tenant_id\)s --adminurl http://ly-controller:8292/v2/%\(tenant_id\)s --region RegionOne access
-(change the above hostname to your own!)
+# Remember to change the above hostname to your own!
 
-5. Create linux user "patron", use the same settings as "nova"
+# 5. Create linux user "patron", use the same settings as "nova"
 adduser patron --system --home /var/lib/patron --shell /bin/false
 addgroup patron --system
 usermod -g patron patron
 
-6. Set file owners to "patron"
+# 6. Set file owners to "patron"
 chown -R patron:patron /etc/patron
 
-7. Copy "./rootdir/usr/bin/patron" file to "/usr/bin/patron" (used by patronclient)
+# 7. Copy "./rootdir/usr/bin/patron" file to "/usr/bin/patron" (used by patronclient)
 cd patron-config
 cp ./rootdir/usr/bin/patron /usr/bin/patron
 
-8. Run "service patron-api start", enter "patron verify" to test Patron API.
-If you get response like:
-(<Response [200]>, {u'action': u'verify', u'res': True, u'project_id': u'85c8848b1dd64c7ebb2c5baeb12e25c3', u'user_id': u'6914d79e61144a8ba71c00d2b859c916', u'rule': u'None'})
-This means that you have successfully configured Patron. 
+# 8. Run "service patron-api start", enter "patron verify" to test Patron API.
+service patron-api start
+patron verify
+# If you get response like:
+# (<Response [200]>, {u'action': u'verify', u'res': True, u'project_id': u'85c8848b1dd64c7ebb2c5baeb12e25c3', u'user_id': u'6914d79e61144a8ba71c00d2b859c916', u'rule': u'None'})
+# This means that you have successfully configured Patron. 
 
-9. Copy "./rootdir/etc/nova/api-paste.ini" file to "/etc/nova/api-paste.ini" (Overwrite the original file)
+# 9. Copy "./rootdir/etc/nova/api-paste.ini" file to "/etc/nova/api-paste.ini" (Overwrite the original file)
 cd patron-config
 cp ./rootdir/etc/nova/api-paste.ini /etc/nova/api-paste.ini
 
-10. Run "service nova-api restart", enter "nova list" to test Nova API with Patron support.
+# 10. Run "service nova-api restart", enter "nova list" to test Nova API with Patron support.
+service nova-api restart
+nova list
 
-11. Run "nova-manage db sync" to update db to version 281.
+# 11. Run "nova-manage db sync" to update db to version 281.
+nova-manage db sync
 
 ######################## Comments, DO NOT use it ########################
 # delete the user:
