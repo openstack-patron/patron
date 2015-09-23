@@ -16,8 +16,8 @@
 #    under the License.
 
 # Edited by Yang Luo.
-# This is the simplest example for an enforcer, permit all acceses.
-class AllPassEnforcer(object):
+# This is the simplest example for an enforcer, deny all acceses.
+class AllForbidEnforcer(object):
 
     def __init__(self):
         self.loaded = False
@@ -32,4 +32,4 @@ class AllPassEnforcer(object):
         self.loaded = True
 
     def enforce(self, rule, target, creds):
-        return True
+        return False

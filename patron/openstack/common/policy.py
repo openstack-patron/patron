@@ -106,6 +106,7 @@ from patron.openstack.common._i18n import _, _LE
 
 from patron.openstack.common.policystore import default
 from patron.openstack.common.policystore import all_pass
+from patron.openstack.common.policystore import all_forbid
 
 
 policy_opts = [
@@ -172,6 +173,7 @@ class Enforcer(object):
         # self.rules = Rules(rules, self.default_rule)
         self.default_enforcer = default.DefaultEnforcer(rules, default_rule, use_conf, overwrite)
         self.all_pass_enforcer = all_pass.AllPassEnforcer()
+        self.all_forbid_enforcer = all_forbid.AllForbidEnforcer()
         self.current_enforcer = self.default_enforcer
 
         self.metadata_path = None
@@ -212,37 +214,44 @@ class Enforcer(object):
             if not self.metadata_path:
                 self.metadata_path = self._get_metadata_path(self.policy_file, project_id)
 
-            if self.metadata_path:
-                self._load_metadata_file(self.metadata_path, force_reload,
-                                   overwrite=self.overwrite)
-                current_policy_file = self.current_policy['name'] + ".json"
+            if self.metadata_path and self._load_metadata_file(
+                    self.metadata_path, force_reload, overwrite=self.overwrite) == True:
+                # current_policy_file will be "" if no policy file needed
+                current_policy_file = self.current_policy['name']
                 current_policy_type = self.current_policy['type']
+
                 # Switch the enforcer according to the policy type in "metadata.json"
                 if current_policy_type == "default":
                     self.current_enforcer = self.default_enforcer
                 elif current_policy_type == "all-pass":
                     self.current_enforcer = self.all_pass_enforcer
+                elif current_policy_type == "all-forbid":
+                    self.current_enforcer = self.all_forbid_enforcer
+
                 LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
             else:
                 current_policy_file = None
                 current_policy_type = None
                 LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
-                LOG.info("Metadata file not found, disable the multi-policy feature.")
+                LOG.info("Metadata file not found or format error, disable the multi-policy feature.")
                 project_id = None
 
-            if not self.policy_path:
-                self.policy_path = self._get_policy_path(self.policy_file, project_id, current_policy_file)
+            if current_policy_file != "":
+                if not self.policy_path:
+                    self.policy_path = self._get_policy_path(self.policy_file, project_id, current_policy_file)
 
-            self._load_policy_file(self.policy_path, force_reload,
-                                   overwrite=self.overwrite)
-            for path in CONF.policy_dirs:
-                try:
-                    path = self._get_policy_path(path, project_id, current_policy_file)
-                except cfg.ConfigFilesNotFoundError:
-                    continue
-                self._walk_through_policy_directory(path,
-                                                    self._load_policy_file,
-                                                    force_reload, False)
+                self._load_policy_file(self.policy_path, force_reload,
+                                       overwrite=self.overwrite)
+                for path in CONF.policy_dirs:
+                    try:
+                        path = self._get_policy_path(path, project_id, current_policy_file)
+                    except cfg.ConfigFilesNotFoundError:
+                        continue
+                    self._walk_through_policy_directory(path,
+                                                        self._load_policy_file,
+                                                        force_reload, False)
+            else:
+                LOG.info("No policy file needed for policy type: %s" % current_policy_type)
 
     @staticmethod
     def _walk_through_policy_directory(path, func, *args):
@@ -257,10 +266,18 @@ class Enforcer(object):
                 path, force_reload=force_reload)
             if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
                 json_metadata = jsonutils.loads(data)
-                LOG.debug("Reloaded metadata file: %(path)s",
-                          {'path': path})
-                self.current_policy['name'] = json_metadata['current-policy']
-                self.current_policy['type'] = json_metadata[json_metadata['current-policy']]['type']
+                LOG.info("Reloaded metadata file: %(path)s", {'path': path})
+                if json_metadata == None or not json_metadata.has_key('current-policy'):
+                    return False
+                if not json_metadata.has_key(json_metadata['current-policy']):
+                    return False
+                self.current_policy['name'] = json_metadata[json_metadata['current-policy']].get('content', None)
+                self.current_policy['type'] = json_metadata[json_metadata['current-policy']].get('type', None)
+                if self.current_policy['name'] == None or self.current_policy['type'] == None:
+                    return False
+            else:
+                LOG.info("No need to reload metadata file: %(path)s", {'path': path})
+            return True
 
     def _load_policy_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
@@ -268,8 +285,9 @@ class Enforcer(object):
             if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
                 # Edited by Yang Luo.
                 self.current_enforcer.set_policy(data, None, overwrite=overwrite, use_conf=True)
-                LOG.debug("Reloaded policy file: %(path)s",
-                          {'path': path})
+                LOG.info("Reloaded policy file: %(path)s", {'path': path})
+            else:
+                LOG.info("No need to reload policy file: %(path)s", {'path': path})
 
     def _fixpath(p):
         """Apply tilde expansion and absolutization to a path."""
