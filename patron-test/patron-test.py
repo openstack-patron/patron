@@ -26,20 +26,20 @@ params2 = urllib.urlencode({})
 #print url2, "%s/os-patron-access/123/resource/456/action/verify" % apiurlt[2], '\n'
 headers2 = { "X-Auth-Token":apitoken, "Content-type":"application/json" }
 conn2 = httplib.HTTPConnection(url2)
-conn2.request("GET", "%s/os-patron-access/123/resource/456/action/verify" % apiurlt[2], params2, headers2)
+conn2.request("GET", "%s/os-patron-access/verify" % apiurlt[2], params2, headers2)
 response2 = conn2.getresponse()
 data2 = response2.read()
 
 print data2
 
-print 'cat /var/lib/nova/mylog.txt'
-f = open('/var/lib/nova/mylog.txt', "rw")
+print 'cat /var/log/patron/mylog.txt'
+f = open('/var/log/patron/mylog.txt', "r")
 for k in f :
     print k
 
 k = raw_input("delete mylog.txt[y/n]:")
 if k=="y":
-    os.remove('/var/lib/nova/mylog.txt')
+    os.remove('/var/log/patron/mylog.txt')
 
 #dd2 = json.loads(data2)
 conn2.close()

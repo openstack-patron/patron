@@ -58,8 +58,8 @@ _ROUTES_METHODS = [
 ]
 
 _METHODS_WITH_BODY = [
-    'POST',
-    'PUT',
+    #'POST',
+    #'PUT',
 ]
 
 # The default api version request if none is requested in the headers

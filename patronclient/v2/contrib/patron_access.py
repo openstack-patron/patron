@@ -21,6 +21,32 @@ class PatronAccessManager(base.Manager):
         # pattern : "/os-patron-access/op/compute_extension:admin_actions/verify"
         return self.api.client.get("/os-patron-access/verify", **kwargs)
 
+    def setpolicy(self, **kwargs):
+        """
+        patron setpolicy
+        """
+        return self.api.client.post("/os-patron-access/setpolicy", **kwargs)
+
+
+    def getpolicy(self, **kwargs):
+        """
+        patron setpolicy
+        """
+        return self.api.client.get("/os-patron-access/getpolicy", **kwargs)
+
+    def setlabel(self, **kwargs):
+        """
+        patron setpolicy
+        """
+        return self.api.client.post("/os-patron-access/setlabel", **kwargs)
+
+
+    def getlabel(self, **kwargs):
+        """
+        patron setpolicy
+        """
+        return self.api.client.get("/os-patron-access/getlabel", **kwargs)
+
 
 @cliutils.arg(
     '--op',
@@ -31,15 +57,31 @@ def do_verify(cs, args):
     ans = cs.patron_access.verify(json = {'op': args.op})
     print ans
 
-# @cliutils.arg(
-#     '--user_id',
-#     metavar='<user_id>',
-#     help=_('User id.'))
-# @cliutils.arg(
-#     '--resource_id',
-#     metavar='<resource_id>',
-#     help=_('Resource id.'))
-# def do_verify(cs, args):
-#     """patron verify"""
-#     ans = cs.patron_access.verify(args.user_id, args.resource_id)
-#     print ans
+@cliutils.arg(
+    '--policy',
+    metavar='<policy>',
+    help=_('User policy'))
+def do_setpolicy(cs, args):
+    """patron setpolicy. Args:policy."""
+    ans = cs.patron_access.setpolicy(json = {'policy': args.policy})
+    print ans
+
+def do_getpolicy(cs, args):
+    """patron setpolicy. Args:policy."""
+    ans = cs.patron_access.getpolicy()
+    print ans
+
+@cliutils.arg(
+    '--label',
+    metavar='<label>',
+    help=_('User label'))
+def do_setlabel(cs, args):
+    """patron setlabel. Args:label."""
+    ans = cs.patron_access.setlabel(json = {'label': args.label})
+    print ans
+
+def do_getlabel(cs, args):
+    """patron setlabel"""
+    ans = cs.patron_access.getlabel()
+    print ans
+

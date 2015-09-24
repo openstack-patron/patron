@@ -23,12 +23,34 @@ class PatronAccessController(object):
     def __init__(self, ext_mgr):
         self.ext_mgr = ext_mgr
 
-    def policy(self, req):
-        all_the_text = '>>>>>>>>> enter PatronAccessController:policy\n'
+    def getpolicy(self, req):
+        all_the_text = '>>>>>>>>> enter PatronAccessController:getpolicy\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
         file_object.write(all_the_text)
         file_object.close()
-        return {'res': True}
+        return {'action': 'getpolicy'}
+
+    def setpolicy(self, req):
+        all_the_text = '>>>>>>>>> enter PatronAccessController:setpolicy\n'
+        file_object = open('/var/log/patron/mylog.txt', 'a+')
+        file_object.write(all_the_text)
+        file_object.close()
+        return {'action': 'setpolicy'}
+
+    def getlabel(self, req):
+        all_the_text = '>>>>>>>>> enter PatronAccessController:getlabel\n'
+        file_object = open('/var/log/patron/mylog.txt', 'a+')
+        file_object.write(all_the_text)
+        file_object.close()
+        return {'action': 'getlabel'}
+
+    def setlabel(self, req):
+        all_the_text = '>>>>>>>>> enter PatronAccessController:setlabel\n'
+        file_object = open('/var/log/patron/mylog.txt', 'a+')
+        file_object.write(all_the_text)
+        file_object.close()
+        return {'action': 'setlabel'}
+
 
     def verify(self, req):
         """Return all cells in detail."""
@@ -45,6 +67,8 @@ class PatronAccessController(object):
         except KeyError:
             file_object.write("null\n")
             return {'res': False}
+
+        op = None
 
         #parse patron.body
         try:
@@ -112,6 +136,10 @@ class Patron_access(extensions.ExtensionDescriptor):
     def get_resources(self):
         coll_actions = {
                 'verify': 'GET',
+                'getpolicy': 'GET',
+                'setpolicy': 'POST',
+                'getlabel': 'GET',
+                'setlabel': 'POST',
                 }
         memb_actions = {
                 'capacities': 'GET',
