@@ -1,6 +1,11 @@
-__author__ = 'root'
+#Add by Yang Luo
 
-from novaclient import client
+"""
+Used to test Patron API's verify method.
+
+"""
+
+from patronclient import client
 import socket
 
 if socket.gethostname() == "controller":
@@ -16,8 +21,8 @@ else :
     PROJECT_ID = "admin"
     AUTH_URL = "http://ly-controller:5000/v2.0/"
 
-nova = client.Client(VERSION, USERNAME, PASSWORD, PROJECT_ID, AUTH_URL)
-response = nova.patrons.verify("compute_extension:admin_actions")
+cli = client.Client(VERSION, USERNAME, PASSWORD, PROJECT_ID, AUTH_URL, service_type="access")
+response = cli.patrons.verify(json = {'op': "compute_extension:admin_actions"})
 print response
 if response[1]['res'] == True:
     print "Access permitted."
