@@ -165,6 +165,25 @@ class PatronVerify (wsgi.Middleware):
         LOG.info("req_server_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r",
                  req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
 
+        #handle wipecache
+        pattern = re.compile("/([0-9a-f]{32})/os-aem-access/wipecache")
+        match = pattern.match(req_path_info)
+        if match:
+            try:
+                body = jsonutils.loads(req.body)
+                if body != None:
+                    wipercache_id = body.get('project_id', None)
+                    if req.environ['nova.context'].project_id != wipercache_id:
+                        # our policy for future usage, but now...
+                        PatronCache.wipecache(req.environ['nova.context'].project_id)
+                        PatronCache.get_memory()
+                        return webob.exc.HTTPAccepted()
+                return webob.exc.HTTPForbidden()
+            except KeyError:
+                PatronCache.wipecache(req.environ['nova.context'].project_id)
+                PatronCache.get_memory()
+                return webob.exc.HTTPForbidden()
+
         # Map the path_info and req_inner_action to op and target for Patron.
         (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
 
@@ -189,9 +208,6 @@ class PatronVerify (wsgi.Middleware):
                 except:
                     object_sid += "None"
         LOG.info("op = %r, subject_sid = %r, object_sid = %r", op, subject_sid, object_sid)
-
-        #import pydevd
-        #pydevd.settrace("localhost", port=12345, stderrToServer=True, stdoutToServer=True)
 
         # Check the cache first for (op, context_project_id, target_project_id) pair.
         if cache_enabled:

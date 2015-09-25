@@ -47,6 +47,7 @@ from novaclient.v2 import virtual_interfaces
 from novaclient.v2 import volume_snapshots
 from novaclient.v2 import volume_types
 from novaclient.v2 import volumes
+from novaclient.v2.contrib import aem_access
 
 
 class Client(object):
@@ -159,6 +160,9 @@ class Client(object):
         self.availability_zones = \
             availability_zones.AvailabilityZoneManager(self)
         self.server_groups = server_groups.ServerGroupsManager(self)
+
+        #add by Wu Luo
+        self.aem_access = aem_access.AEMAccessManager(self)
 
         # Add in any extensions...
         if extensions:
