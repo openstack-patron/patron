@@ -173,16 +173,18 @@ class PatronVerify (wsgi.Middleware):
                 body = jsonutils.loads(req.body)
                 if body != None:
                     wipercache_id = body.get('project_id', None)
-                    if req.environ['nova.context'].project_id != wipercache_id:
+                    if req.environ['nova.context'].project_id == wipercache_id:
                         # our policy for future usage, but now...
                         PatronCache.wipecache(req.environ['nova.context'].project_id)
-                        PatronCache.get_memory()
-                        return webob.exc.HTTPAccepted()
-                return webob.exc.HTTPForbidden()
+                        return webob.exc.HTTPOk()
+                    else:
+                        return webob.exc.HTTPForbidden()
+                else:
+                    PatronCache.wipecache(req.environ['nova.context'].project_id)
+                    return webob.exc.HTTPOk()
             except KeyError:
                 PatronCache.wipecache(req.environ['nova.context'].project_id)
-                PatronCache.get_memory()
-                return webob.exc.HTTPForbidden()
+                return webob.exc.HTTPOk()
 
         # Map the path_info and req_inner_action to op and target for Patron.
         (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
