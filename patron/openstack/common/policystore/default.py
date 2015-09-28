@@ -15,6 +15,8 @@ import six.moves.urllib.request as urlrequest
 from patron.openstack.common import fileutils
 from patron.openstack.common._i18n import _, _LE
 
+from patron.openstack.common.policystore.base import BaseAdapter
+
 LOG = logging.getLogger(__name__)
 
 _checks = {}
@@ -75,7 +77,7 @@ class Rules(dict):
         return jsonutils.dumps(out_rules, indent=4)
 
 
-class DefaultAdapter(object):
+class DefaultAdapter(BaseAdapter):
 
     def __init__(self, rules=None, default_rule=None,
                  use_conf=True, overwrite=True):
