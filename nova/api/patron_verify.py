@@ -172,7 +172,7 @@ class PatronVerify (wsgi.Middleware):
             try:
                 body = jsonutils.loads(req.body)
                 if body != None:
-                    wipercache_id = body.get('project_id', None)
+                    wipercache_id = body.get('project-id', None)
                     if req.environ['nova.context'].project_id == wipercache_id:
                         # our policy for future usage, but now...
                         PatronCache.wipecache(req.environ['nova.context'].project_id)
