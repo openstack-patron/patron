@@ -171,9 +171,16 @@ class Enforcer(object):
         # Edited by Yang Luo.
         # self.default_rule = default_rule or CONF.policy_default_rule
         # self.rules = Rules(rules, self.default_rule)
+
         self.default_adapter = default.DefaultAdapter(rules, default_rule, use_conf, overwrite)
+        self.default_adapter.setDetails("default-policy", "default", "v1.0", "policy.json", "")
+
         self.all_pass_adapter = all_pass.AllPassAdapter()
+        self.all_pass_adapter.setDetails("all-pass-policy", "all-pass", "v1.0", "", "")
+
         self.all_forbid_adapter = all_forbid.AllForbidAdapter()
+        self.all_forbid_adapter.setDetails("all-forbid-policy", "all-forbid", "v1.0", "", "")
+
         self.current_adapter = self.default_adapter
 
         self.metadata_path = None
@@ -236,22 +243,7 @@ class Enforcer(object):
                 LOG.info("Metadata file not found or format error, disable the multi-policy feature.")
                 project_id = None
 
-            if current_policy_file != "":
-                if not self.policy_path:
-                    self.policy_path = self._get_policy_path(self.policy_file, project_id, current_policy_file)
-
-                self._load_policy_file(self.policy_path, force_reload,
-                                       overwrite=self.overwrite)
-                for path in CONF.policy_dirs:
-                    try:
-                        path = self._get_policy_path(path, project_id, current_policy_file)
-                    except cfg.ConfigFilesNotFoundError:
-                        continue
-                    self._walk_through_policy_directory(path,
-                                                        self._load_policy_file,
-                                                        force_reload, False)
-            else:
-                LOG.info("No policy file needed for policy type: %s" % current_policy_type)
+            self.current_adapter.load_rules(force_reload)
 
     @staticmethod
     def _walk_through_policy_directory(path, func, *args):
@@ -262,32 +254,32 @@ class Enforcer(object):
             func(os.path.join(path, policy_file), *args)
 
     def _load_metadata_file(self, path, force_reload, overwrite=True):
-            reloaded, data = fileutils.read_cached_file(
-                path, force_reload=force_reload)
-            if reloaded or not self.current_adapter.is_loaded() or not overwrite:
-                json_metadata = jsonutils.loads(data)
-                LOG.info("Reloaded metadata file: %(path)s", {'path': path})
-                if json_metadata == None or not json_metadata.has_key('current-policy'):
-                    return False
-                if not json_metadata.has_key(json_metadata['current-policy']):
-                    return False
-                self.current_policy['name'] = json_metadata[json_metadata['current-policy']].get('content', None)
-                self.current_policy['type'] = json_metadata[json_metadata['current-policy']].get('type', None)
-                if self.current_policy['name'] == None or self.current_policy['type'] == None:
-                    return False
-            else:
-                LOG.info("No need to reload metadata file: %(path)s", {'path': path})
-            return True
+        reloaded, data = fileutils.read_cached_file(
+            path, force_reload=force_reload)
+        if reloaded or not self.current_adapter.is_loaded() or not overwrite:
+            json_metadata = jsonutils.loads(data)
+            LOG.info("Reloaded metadata file: %(path)s", {'path': path})
+            if json_metadata == None or not json_metadata.has_key('current-policy'):
+                return False
+            if not json_metadata.has_key(json_metadata['current-policy']):
+                return False
+            self.current_policy['name'] = json_metadata[json_metadata['current-policy']].get('content', None)
+            self.current_policy['type'] = json_metadata[json_metadata['current-policy']].get('type', None)
+            if self.current_policy['name'] == None or self.current_policy['type'] == None:
+                return False
+        else:
+            LOG.info("No need to reload metadata file: %(path)s", {'path': path})
+        return True
 
     def _load_policy_file(self, path, force_reload, overwrite=True):
-            reloaded, data = fileutils.read_cached_file(
-                path, force_reload=force_reload)
-            if reloaded or not self.current_adapter.is_loaded() or not overwrite:
-                # Edited by Yang Luo.
-                self.current_adapter.set_policy(data, None, overwrite=overwrite, use_conf=True)
-                LOG.info("Reloaded policy file: %(path)s", {'path': path})
-            else:
-                LOG.info("No need to reload policy file: %(path)s", {'path': path})
+        reloaded, data = fileutils.read_cached_file(
+            path, force_reload=force_reload)
+        if reloaded or not self.current_adapter.is_loaded() or not overwrite:
+            # Edited by Yang Luo.
+            self.current_adapter.set_policy(data, None, overwrite=overwrite, use_conf=True)
+            LOG.info("Reloaded policy file: %(path)s", {'path': path})
+        else:
+            LOG.info("No need to reload policy file: %(path)s", {'path': path})
 
     def _fixpath(p):
         """Apply tilde expansion and absolutization to a path."""
