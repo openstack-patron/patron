@@ -70,6 +70,7 @@ class BaseAdapter(object):
         self.project_id = project_id
 
         self.policy_path = None
+        self.use_conf = True
 
     def clear(self):
         self.loaded = False
