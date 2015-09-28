@@ -171,10 +171,10 @@ class Enforcer(object):
         # Edited by Yang Luo.
         # self.default_rule = default_rule or CONF.policy_default_rule
         # self.rules = Rules(rules, self.default_rule)
-        self.default_enforcer = default.DefaultEnforcer(rules, default_rule, use_conf, overwrite)
-        self.all_pass_enforcer = all_pass.AllPassEnforcer()
-        self.all_forbid_enforcer = all_forbid.AllForbidEnforcer()
-        self.current_enforcer = self.default_enforcer
+        self.default_adapter = default.DefaultAdapter(rules, default_rule, use_conf, overwrite)
+        self.all_pass_adapter = all_pass.AllPassAdapter()
+        self.all_forbid_adapter = all_forbid.AllForbidAdapter()
+        self.current_adapter = self.default_adapter
 
         self.metadata_path = None
         self.policy_path = None
@@ -188,13 +188,13 @@ class Enforcer(object):
         """Clears Enforcer rules, policy's cache and policy's path."""
 
         # self.set_rules({})
-        self.current_enforcer.clear()
+        self.current_adapter.clear()
 
         fileutils.delete_cached_file(self.metadata_path)
         fileutils.delete_cached_file(self.policy_path)
 
         # self.default_rule = None
-        self.current_enforcer.default_rule = None
+        self.current_adapter.default_rule = None
 
         self.metadata_path = None
         self.policy_path = None
@@ -222,11 +222,11 @@ class Enforcer(object):
 
                 # Switch the enforcer according to the policy type in "metadata.json"
                 if current_policy_type == "default":
-                    self.current_enforcer = self.default_enforcer
+                    self.current_adapter = self.default_adapter
                 elif current_policy_type == "all-pass":
-                    self.current_enforcer = self.all_pass_enforcer
+                    self.current_adapter = self.all_pass_adapter
                 elif current_policy_type == "all-forbid":
-                    self.current_enforcer = self.all_forbid_enforcer
+                    self.current_adapter = self.all_forbid_adapter
 
                 LOG.info("current_policy_file = %s, current_policy_type = %s" % (current_policy_file, current_policy_type))
             else:
@@ -264,7 +264,7 @@ class Enforcer(object):
     def _load_metadata_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
                 path, force_reload=force_reload)
-            if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
+            if reloaded or not self.current_adapter.is_loaded() or not overwrite:
                 json_metadata = jsonutils.loads(data)
                 LOG.info("Reloaded metadata file: %(path)s", {'path': path})
                 if json_metadata == None or not json_metadata.has_key('current-policy'):
@@ -282,9 +282,9 @@ class Enforcer(object):
     def _load_policy_file(self, path, force_reload, overwrite=True):
             reloaded, data = fileutils.read_cached_file(
                 path, force_reload=force_reload)
-            if reloaded or not self.current_enforcer.is_loaded() or not overwrite:
+            if reloaded or not self.current_adapter.is_loaded() or not overwrite:
                 # Edited by Yang Luo.
-                self.current_enforcer.set_policy(data, None, overwrite=overwrite, use_conf=True)
+                self.current_adapter.set_policy(data, None, overwrite=overwrite, use_conf=True)
                 LOG.info("Reloaded policy file: %(path)s", {'path': path})
             else:
                 LOG.info("No need to reload policy file: %(path)s", {'path': path})
@@ -378,7 +378,7 @@ class Enforcer(object):
         self.load_rules(creds['project_id'])
 
         # Edited by Yang Luo.
-        result = self.current_enforcer.enforce(rule, target, creds)
+        result = self.current_adapter.enforce(rule, target, creds)
 
         # If it is False, raise the exception if requested
         if do_raise and not result:

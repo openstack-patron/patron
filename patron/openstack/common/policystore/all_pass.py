@@ -17,7 +17,7 @@
 
 # Edited by Yang Luo.
 # This is the simplest example for an enforcer, permit all acceses.
-class AllPassEnforcer(object):
+class AllPassAdapter(object):
 
     def __init__(self):
         self.loaded = False

@@ -75,7 +75,7 @@ class Rules(dict):
         return jsonutils.dumps(out_rules, indent=4)
 
 
-class DefaultEnforcer(object):
+class DefaultAdapter(object):
 
     def __init__(self, rules=None, default_rule=None,
                  use_conf=True, overwrite=True):
