@@ -3,6 +3,7 @@
 	"and-policy": {
 		"name": "and-policy",
 		"type": "op-and",
+		"built-in": "true",
 		"version": "v1.0",
 		"content": "default-policy, not-policy",
 		"default-policy": {
@@ -15,6 +16,7 @@
 		"not-policy": {
 			"name": "not-policy",
 			"type": "op-not",
+			"built-in": "true",
 			"version": "v1.0",
 			"content": "all-forbid-policy",
 			"all-forbid-policy": {
@@ -29,7 +31,7 @@
 		"name": "custom-policy",
 		"type": "default",
 		"version": "v1.0",
-		"content": "default-policy.json"
+		"content": "custom-policy.json"
 	},
 	"all-pass-policy": {
 		"name": "all-pass-policy",
