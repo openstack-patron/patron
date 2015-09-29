@@ -104,7 +104,7 @@ import six.moves.urllib.request as urlrequest
 from patron.openstack.common import fileutils
 from patron.openstack.common._i18n import _, _LE
 
-from patron.openstack.common.policystore import default
+from patron.openstack.common.policystore.base import BaseAdapter
 
 import importlib
 
@@ -198,16 +198,6 @@ class Enforcer(object):
         self.metadata_path = None
         self.policy_path = None
 
-    def get_adapter_by_type(self, policy_type):
-        # example:
-        # module = importlib.import_module("patron.openstack.common.policystore.all_forbid")
-        # class_obj = getattr(module, "AllForbidAdapter")
-        module_name = __name__.replace("policy", "policystore") + "." + policy_type.replace("-", "_")
-        module = importlib.import_module(module_name)
-        class_name = policy_type.replace("-", " ").title().replace(" ", "") + "Adapter"
-        class_obj = getattr(module, class_name)
-        return class_obj()
-
     def load_rules(self, project_id, force_reload=False):
         """Loads policy_path's rules.
 
@@ -225,14 +215,7 @@ class Enforcer(object):
 
             if self.metadata_path != None and self._load_metadata_file(
                     self.metadata_path, force_reload, overwrite=self.overwrite) == True:
-                # Get the adapter according to the policy type in "metadata.json"
-                self.current_adapter = self.get_adapter_by_type(self.current_policy['type'])
-                # If the policy is built-in, then no project_id is provided, use the /etc/patron/ path.
-                if self.current_policy['built-in'].lower() == "true".lower():
-                    self.current_adapter.set_details(self.current_policy, "")
-                else:
-                    self.current_adapter.set_details(self.current_policy, project_id)
-
+                self.current_adapter = BaseAdapter.get_adapter_by_policy_info(self.current_policy, project_id)
                 LOG.info("current_policy = %s" % self.current_policy)
             else:
                 LOG.info("Metadata file not found or format error, disable the multi-policy feature.")

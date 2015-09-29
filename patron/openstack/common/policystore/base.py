@@ -32,6 +32,8 @@ import six
 from patron.openstack.common import fileutils
 from patron.openstack.common._i18n import _, _LE
 
+import importlib
+
 policy_opts = [
     cfg.StrOpt('policy_file',
                default='policy.json',
@@ -59,6 +61,29 @@ class BaseAdapter(object):
 
     # def __init__(self):
     #     self.policy_path = None
+
+    @classmethod
+    def get_adapter_by_type(cls, policy_type):
+        # example:
+        # module = importlib.import_module("patron.openstack.common.policystore.all_forbid")
+        # class_obj = getattr(module, "AllForbidAdapter")
+        module_name = __name__.replace("policystore.base", "policystore") + "." + policy_type.replace("-", "_")
+        module = importlib.import_module(module_name)
+        class_name = policy_type.replace("-", " ").title().replace(" ", "") + "Adapter"
+        class_obj = getattr(module, class_name)
+        return class_obj()
+
+    @classmethod
+    def get_adapter_by_policy_info(cls, policy_info, project_id):
+        # Get the adapter according to the policy type in "metadata.json"
+        tmp_adapter = cls.get_adapter_by_type(policy_info['type'])
+
+        # If the policy is built-in, then no project_id is provided, use the /etc/patron/ path.
+        if policy_info.has_key("built-in") and policy_info["built-in"] != None and policy_info["built-in"].lower() == "true".lower():
+            tmp_adapter.set_details(policy_info, "")
+        else:
+            tmp_adapter.set_details(policy_info, project_id)
+        return tmp_adapter
 
     def set_details(self, policy_name="default-policy", type="default",
                  version="v1.0", file_name="default-policy.json", project_id = ""):
