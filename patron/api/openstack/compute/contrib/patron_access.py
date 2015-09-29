@@ -16,6 +16,8 @@ from patron import objects
 
 from oslo_serialization import jsonutils
 
+import os
+
 # os-patron-access/op/{op}
 class PatronAccessController(object):
     """Controller for Cell resources."""
@@ -31,11 +33,42 @@ class PatronAccessController(object):
         return {'action': 'getpolicy'}
 
     def setpolicy(self, req):
-        all_the_text = '>>>>>>>>> enter PatronAccessController:setpolicy\n'
-        file_object = open('/var/log/patron/mylog.txt', 'a+')
-        file_object.write(all_the_text)
-        file_object.close()
-        return {'action': 'setpolicy'}
+
+        #get project_id
+        try:
+            project_id = req.environ['patron.context'].project_id
+        except KeyError:
+            return {'action': 'setpolicy', 'res': False}
+
+        #directory exists
+        dir = '/etc/patron/custom_policy/%s/' % project_id
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        #metadata file path
+        metadata_path = '/etc/patron/custom_policy/%s/metadata.json' % project_id
+
+        # get policy file content
+        try:
+            body = jsonutils.loads(req.body)
+            if body != None:
+                policy = dict(body.get('policy', None))
+                if policy != None:
+                    # write into metadata.json
+                    metadata_fp = open(metadata_path, 'w')
+                    metadata_fp.write(jsonutils.dumps(policy))
+                    metadata_fp.close()
+                    # find content key
+                    for (k, v) in policy.items():
+                        if type(v) == dict and v.has_key('content') and v['content'] != '':
+                            filename = '/etc/patron/custom_policy/%s/%s.json' % (project_id, k)
+                            fp = open(filename, 'w')
+                            fp.write(jsonutils.dumps(v['content']))
+                            fp.close()
+                    return {'action': 'setpolicy', 'res': True}
+                return {'action': 'setpolicy', 'res': False}
+        except ValueError or KeyError:
+            return {'action': 'setpolicy', 'res': False}
 
     def getlabel(self, req):
         all_the_text = '>>>>>>>>> enter PatronAccessController:getlabel\n'

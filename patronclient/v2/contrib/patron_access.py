@@ -4,6 +4,8 @@ from patronclient import base
 from patronclient.i18n import _
 from patronclient.openstack.common import cliutils
 from patronclient import utils
+import os
+import json
 
 
 class PatronResource(base.Resource):
@@ -58,13 +60,19 @@ def do_verify(cs, args):
     print ans
 
 @cliutils.arg(
-    '--policy',
-    metavar='<policy>',
-    help=_('User policy'))
+    '--file',
+    metavar='<file>',
+    help=_('User policy file path'))
 def do_setpolicy(cs, args):
     """patron setpolicy. Args:policy."""
-    ans = cs.patron_access.setpolicy(json = {'policy': args.policy})
-    print ans
+    #check file exists?
+    if os.path.exists(args.file) and os.path.isfile(args.file) :
+        policy = open(args.file, 'r')
+        obj = dict(json.loads(policy.read()))
+        ans = cs.patron_access.setpolicy(json = {'policy': obj})
+        print ans
+    else :
+        print 'ERROR: file not exists'
 
 def do_getpolicy(cs, args):
     """patron setpolicy. Args:policy."""
