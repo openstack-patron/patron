@@ -60,7 +60,9 @@ class PatronAccessController(object):
                     metadata_fp.close()
                     # find content key
                     for (k, v) in policy.items():
-                        if type(v) == dict and v.has_key('content') and v['content'] != '':
+                        if type(v) == dict and\
+                            not (v.has_key('built-in') and v['built-in'].lower() == 'True'.lower()) and\
+                            v.has_key('content') and v['content'] != '':
                             filename = '/etc/patron/custom_policy/%s/%s.json' % (project_id, k)
                             fp = open(filename, 'w')
                             fp.write(jsonutils.dumps(v['content']))
