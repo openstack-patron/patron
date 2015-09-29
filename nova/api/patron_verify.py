@@ -23,6 +23,7 @@ from keystoneclient import session
 from nova.api.patron_cache import PatronCache
 import importlib
 import re
+import patron_parse
 
 LOG = logging.getLogger(__name__)
 
@@ -109,7 +110,8 @@ class PatronVerify (wsgi.Middleware):
                  key_calls, key_ids, key_name, template_path_info, method_obj)
 
         # op : is used as the security operation for Patron.
-        op = "compute_extension:admin_actions"
+        # op = "compute_extension:admin_actions"
+        op = patron_parse.parse(req_method, req_path_info, req_inner_action)
 
         return (op, target)
 
