@@ -221,9 +221,9 @@ class Enforcer(object):
 
         if self.use_conf:
             if not self.metadata_path:
-                self.metadata_path = self._get_metadata_path(self.policy_file, project_id)
+                self.metadata_path = self._get_metadata_path(project_id)
 
-            if self.metadata_path and self._load_metadata_file(
+            if self.metadata_path != None and self._load_metadata_file(
                     self.metadata_path, force_reload, overwrite=self.overwrite) == True:
                 # Get the adapter according to the policy type in "metadata.json"
                 self.current_adapter = self.get_adapter_by_type(self.current_policy['type'])
@@ -263,7 +263,7 @@ class Enforcer(object):
             LOG.info("No need to reload metadata file: %(path)s", {'path': path})
         return True
 
-    def _get_metadata_path(self, path, project_id, file_name = "metadata.json"):
+    def _get_metadata_path(self, project_id, file_name = "metadata.json"):
         """Locate the metadata json data file/path.
 
         :param path: It's value can be a full path or related path. When
@@ -273,20 +273,44 @@ class Enforcer(object):
 
         :returns: The metadata path
         """
-        policy_path = CONF.find_file(path)
+        policy_path = CONF.find_file("policy.json")
 
         # Edited by Yang Luo.
         if project_id != "" and project_id != None and policy_path != None:
             file_path = os.path.dirname(policy_path)
             if file_name == None:
                 file_name = os.path.basename(policy_path)
-            custom_policy_path = file_path + "/custom_policy/" + project_id + "/" + file_name
-            if os.path.exists(custom_policy_path):
-                LOG.info("Custom metadata path [%s] exists" % custom_policy_path)
-                return custom_policy_path
+            custom_metadata_path = file_path + "/custom_policy/" + project_id + "/" + file_name
+            if os.path.exists(custom_metadata_path):
+                LOG.info("Custom metadata path [%s] exists" % custom_metadata_path)
+                return custom_metadata_path
             else:
-                LOG.info("Custom metadata path [%s] doesn't exist" % custom_policy_path)
+                LOG.info("Custom metadata path [%s] doesn't exist" % custom_metadata_path)
+                self._generate_default_metadata_for_project(custom_metadata_path)
                 return None
+
+    def _generate_default_metadata_for_project(self, metadata_file):
+        # This is the default metadata content for all tenants.
+        default_content = \
+'''{
+\t"current-policy": "default-policy",
+\t"default-policy": {
+\t\t"type": "default",
+\t\t"built-in": "true",
+\t\t"version": "v1.0",
+\t\t"content": "policy.json"
+\t}
+}'''
+
+        #Create the dir if not exsits
+        metadata_path = os.path.dirname(metadata_file)
+        if not os.path.exists(metadata_path):
+            os.makedirs(metadata_path)
+
+        # Write default metadata file content
+        metadata_fp = open(metadata_file, 'w')
+        metadata_fp.write(default_content)
+        metadata_fp.close()
 
     def enforce(self, rule, target, creds, do_raise=False,
                 exc=None, *args, **kwargs):
@@ -316,7 +340,11 @@ class Enforcer(object):
         self.load_rules(creds['project_id'])
 
         # Edited by Yang Luo.
-        result = self.current_adapter.enforce(rule, target, creds)
+        if self.current_adapter != None:
+            result = self.current_adapter.enforce(rule, target, creds)
+        else:
+            LOG.info("[THIS IS A BUG!] current_adapter not found, return False for enforce()")
+            result = False
 
         # If it is False, raise the exception if requested
         if do_raise and not result:
