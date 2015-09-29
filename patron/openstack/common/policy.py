@@ -228,7 +228,7 @@ class Enforcer(object):
                 # Get the adapter according to the policy type in "metadata.json"
                 self.current_adapter = self.get_adapter_by_type(self.current_policy['type'])
                 # If the policy is built-in, then no project_id is provided, use the /etc/patron/ path.
-                if self.current_policy['type'] == "true":
+                if self.current_policy['built-in'] == "true":
                     self.current_adapter.setDetails(self.current_policy, "")
                 else:
                     self.current_adapter.setDetails(self.current_policy, project_id)
