@@ -60,7 +60,7 @@ class BaseAdapter(object):
     # def __init__(self):
     #     self.policy_path = None
 
-    def setDetails(self, policy_name="default-policy", type="default",
+    def set_details(self, policy_name="default-policy", type="default",
                  version="v1.0", file_name="default-policy.json", project_id = ""):
         self.loaded = False
         self.policy_name = policy_name
@@ -72,7 +72,7 @@ class BaseAdapter(object):
         self.policy_path = None
         self.use_conf = True
 
-    def setDetails(self, policy_info, project_id = ""):
+    def set_details(self, policy_info, project_id = ""):
         self.loaded = False
         self.policy_name = policy_info.get("name", "default-policy")
         self.type = policy_info.get("type", "default")
