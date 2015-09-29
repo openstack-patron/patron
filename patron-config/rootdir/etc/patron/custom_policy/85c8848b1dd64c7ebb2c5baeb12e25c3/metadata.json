@@ -18,6 +18,7 @@
 			"version": "v1.0",
 			"content": "all-forbid-policy",
 			"all-forbid-policy": {
+				"name": "all-forbid-policy",
 				"type": "all-forbid",
 				"version": "v1.0",
 				"content": ""
