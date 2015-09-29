@@ -16,14 +16,17 @@
 #    under the License.
 
 # Edited by Yang Luo.
-# This is the simplest example for an adapter, deny all acceses.
+# This is the OR adapter, it will enforce False if and only if all sub adapters are False.
 
-from patron.openstack.common.policystore.base import BaseAdapter
+from patron.openstack.common.policystore.op_and import OpAndAdapter
 
-class AllForbidAdapter(BaseAdapter):
+import re
 
-    def is_loaded(self):
-        return True
+class OpOrAdapter(OpAndAdapter):
 
     def enforce(self, rule, target, creds):
+        for adapter in self.adapters:
+            res = adapter.enforce(rule, target, creds)
+            if res == True:
+                return True
         return False

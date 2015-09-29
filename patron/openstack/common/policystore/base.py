@@ -85,18 +85,6 @@ class BaseAdapter(object):
             tmp_adapter.set_details(policy_info, project_id)
         return tmp_adapter
 
-    def set_details(self, policy_name="default-policy", type="default",
-                 version="v1.0", file_name="default-policy.json", project_id = ""):
-        self.loaded = False
-        self.policy_name = policy_name
-        self.type = type
-        self.version = version
-        self.file_name = file_name
-        self.project_id = project_id
-
-        self.policy_path = None
-        self.use_conf = True
-
     def set_details(self, policy_info, project_id = ""):
         self.loaded = False
         self.policy_name = policy_info.get("name", "default-policy")
@@ -129,18 +117,8 @@ class BaseAdapter(object):
 
                 self._load_policy_file(self.policy_path, force_reload,
                                        overwrite=False)
-                # for path in CONF.policy_dirs:
-                #     try:
-                #         path = self._get_policy_path(path, self.project_id, self.file_name)
-                #     except cfg.ConfigFilesNotFoundError:
-                #         continue
-                #     self._walk_through_policy_directory(path,
-                #                                         self._load_policy_file,
-                #                                         force_reload, False)
             else:
                 LOG.info("No policy file needed for policy: %(path)s", {'path': self.policy_path})
-                # LOG.info("No policy file needed for policy: (%s, %s, %s, %s, %s)" %
-                #     (self.policy_name, self.type, self.version, self.file_name, self.project_id))
 
     @staticmethod
     def _walk_through_policy_directory(path, func, *args):

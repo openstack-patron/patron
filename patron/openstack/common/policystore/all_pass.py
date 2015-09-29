@@ -22,5 +22,8 @@ from patron.openstack.common.policystore.base import BaseAdapter
 
 class AllPassAdapter(BaseAdapter):
 
+    def is_loaded(self):
+        return True
+
     def enforce(self, rule, target, creds):
         return True

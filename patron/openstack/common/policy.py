@@ -236,10 +236,7 @@ class Enforcer(object):
             self.current_policy['name'] = json_metadata.get('current-policy', None)
             if self.current_policy['name'] == None:
                 return False
-            self.current_policy['type'] = json_metadata[json_metadata['current-policy']].get('type', None)
-            self.current_policy['version'] = json_metadata[json_metadata['current-policy']].get('version', None)
-            self.current_policy['built-in'] = json_metadata[json_metadata['current-policy']].get('built-in', None)
-            self.current_policy['content'] = json_metadata[json_metadata['current-policy']].get('content', None)
+            self.current_policy = json_metadata[json_metadata['current-policy']]
             if self.current_policy['type'] == None:
                 return False
         else:
