@@ -2,6 +2,12 @@
 	"current-policy": "default-policy",
 	"default-policy": {
 		"type": "default",
+		"built-in": "true",
+		"version": "v1.0",
+		"content": "policy.json"
+	},
+	"custom-policy": {
+		"type": "default",
 		"version": "v1.0",
 		"content": "default-policy.json"
 	},

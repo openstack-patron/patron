@@ -172,9 +172,8 @@ class Enforcer(object):
         # self.default_rule = default_rule or CONF.policy_default_rule
         # self.rules = Rules(rules, self.default_rule)
 
-        # default_adapter will be initialized here, others will be initialized dynamically.
-        self.default_adapter = default.DefaultAdapter(rules, default_rule, use_conf, overwrite)
-        self.current_adapter = self.default_adapter
+        # Initially, current adapter is none.
+        self.current_adapter = None
 
         self.metadata_path = None
         self.policy_path = None
@@ -200,9 +199,6 @@ class Enforcer(object):
         self.policy_path = None
 
     def get_adapter_by_type(self, policy_type):
-        if policy_type == "default":
-            return self.default_adapter
-
         # example:
         # module = importlib.import_module("patron.openstack.common.policystore.all_forbid")
         # class_obj = getattr(module, "AllForbidAdapter")
@@ -229,22 +225,20 @@ class Enforcer(object):
 
             if self.metadata_path and self._load_metadata_file(
                     self.metadata_path, force_reload, overwrite=self.overwrite) == True:
-                # current_policy_file will be "" if no policy file needed
-                current_policy_type = self.current_policy['type']
-                current_policy_file = self.current_policy['content']
-
-                # Switch the enforcer according to the policy type in "metadata.json"
-                self.current_adapter = self.get_adapter_by_type(current_policy_type)
-                self.current_adapter.setDetails(self.current_policy, "")
+                # Get the adapter according to the policy type in "metadata.json"
+                self.current_adapter = self.get_adapter_by_type(self.current_policy['type'])
+                # If the policy is built-in, then no project_id is provided, use the /etc/patron/ path.
+                if self.current_policy['type'] == "true":
+                    self.current_adapter.setDetails(self.current_policy, "")
+                else:
+                    self.current_adapter.setDetails(self.current_policy, project_id)
 
                 LOG.info("current_policy = %s" % self.current_policy)
             else:
-                current_policy_file = None
-                current_policy_type = None
                 LOG.info("Metadata file not found or format error, disable the multi-policy feature.")
-                project_id = None
 
-            self.current_adapter.load_rules(force_reload)
+            if self.current_adapter != None:
+                self.current_adapter.load_rules(force_reload)
 
     def _load_metadata_file(self, path, force_reload, overwrite=True):
         reloaded, data = fileutils.read_cached_file(
@@ -261,6 +255,7 @@ class Enforcer(object):
                 return False
             self.current_policy['type'] = json_metadata[json_metadata['current-policy']].get('type', None)
             self.current_policy['version'] = json_metadata[json_metadata['current-policy']].get('version', None)
+            self.current_policy['built-in'] = json_metadata[json_metadata['current-policy']].get('built-in', None)
             self.current_policy['content'] = json_metadata[json_metadata['current-policy']].get('content', None)
             if self.current_policy['type'] == None:
                 return False

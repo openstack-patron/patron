@@ -100,7 +100,7 @@ class BaseAdapter(object):
         if self.use_conf:
             if self.file_name != "":
                 if not self.policy_path:
-                    self.policy_path = self._get_policy_path(self.file_name, self.project_id, self.file_name)
+                    self.policy_path = self._get_policy_path(self.project_id, self.file_name)
 
                 self._load_policy_file(self.policy_path, force_reload,
                                        overwrite=False)
@@ -135,7 +135,7 @@ class BaseAdapter(object):
         else:
             LOG.info("No need to reload policy file: %(path)s", {'path': path})
 
-    def _get_policy_path(self, path, project_id, file_name = None):
+    def _get_policy_path(self, project_id, file_name = None):
         """Locate the policy json data file/path.
 
         :param path: It's value can be a full path or related path. When
@@ -149,7 +149,7 @@ class BaseAdapter(object):
                  be located.
         """
 
-        policy_path = CONF.find_file(path)
+        policy_path = CONF.find_file("policy.json")
 
         # Edited by Yang Luo.
         if project_id != "" and project_id != None and policy_path != None:
