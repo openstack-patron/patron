@@ -5,7 +5,7 @@
 		"type": "op-and",
 		"built-in": "true",
 		"version": "v1.0",
-		"content": "default-policy, not-policy",
+		"content": "default-policy, or-policy",
 		"default-policy": {
 			"name": "default-policy",
 			"type": "default",
@@ -13,30 +13,25 @@
 			"version": "v1.0",
 			"content": "policy.json"
 		},
-		"not-policy": {
-			"name": "not-policy",
-			"type": "op-not",
+		"or-policy": {
+			"name": "or-policy",
+			"type": "op-or",
 			"built-in": "true",
 			"version": "v1.0",
-			"content": "all-forbid-policy",
-			"all-forbid-policy": {
-				"name": "all-forbid-policy",
-				"type": "all-forbid",
+			"content": "enable-policy, custom-policy",
+			"enable-policy": {
+				"name": "enable-policy",
+				"type": "default",
+				"built-in": "true",
 				"version": "v1.0",
-				"content": ""
+				"content": "enable.json"
+			},
+			"custom-policy": {
+				"name": "custom-policy",
+				"type": "default",
+				"version": "v1.0",
+				"content": "custom-policy.json"
 			}
 		}
-	},
-	"custom-policy": {
-		"name": "custom-policy",
-		"type": "default",
-		"version": "v1.0",
-		"content": "custom-policy.json"
-	},
-	"all-pass-policy": {
-		"name": "all-pass-policy",
-		"type": "all-pass",
-		"version": "v1.0",
-		"content": ""
 	}
 }
