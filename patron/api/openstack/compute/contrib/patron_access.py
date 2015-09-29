@@ -56,7 +56,7 @@ class PatronAccessController(object):
                 if policy != None:
                     # write into metadata.json
                     metadata_fp = open(metadata_path, 'w')
-                    metadata_fp.write(jsonutils.dumps(policy))
+                    metadata_fp.write(jsonutils.dumps(policy, indent=4).replace("    ", "\t"))
                     metadata_fp.close()
                     # find content key
                     for (k, v) in policy.items():
@@ -65,7 +65,7 @@ class PatronAccessController(object):
                             v.has_key('content') and v['content'] != '':
                             filename = '/etc/patron/custom_policy/%s/%s.json' % (project_id, k)
                             fp = open(filename, 'w')
-                            fp.write(jsonutils.dumps(v['content']))
+                            fp.write(jsonutils.dumps(v['content'], indent=4).replace("    ", "\t"))
                             fp.close()
                     return {'action': 'setpolicy', 'res': True}
                 return {'action': 'setpolicy', 'res': False}
