@@ -227,6 +227,9 @@ class Enforcer(object):
         reloaded, data = fileutils.read_cached_file(
             path, force_reload=force_reload)
         if reloaded or not self.current_adapter.is_loaded() or not overwrite:
+            if data == None or data == "":
+                LOG.info("Empty metadata file: %(path)s", {'path': path})
+                return False
             json_metadata = jsonutils.loads(data)
             LOG.info("Reloaded metadata file: %(path)s", {'path': path})
             if json_metadata == None or not json_metadata.has_key('current-policy'):
