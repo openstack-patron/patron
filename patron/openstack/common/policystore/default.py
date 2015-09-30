@@ -81,7 +81,7 @@ class DefaultAdapter(BaseAdapter):
 
     def __init__(self, rules=None, default_rule=None,
                  use_conf=True, overwrite=True):
-        self.default_rule = default_rule
+        self.default_rule = "default" if default_rule == None else default_rule
         self.rules = Rules(rules, self.default_rule)
         self.use_conf = use_conf
         self.overwrite = overwrite
