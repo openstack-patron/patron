@@ -10,6 +10,7 @@ import socket
 re_run_time = re.compile('Command run time is: (.*) seconds')
 re_http_error = re.compile('^ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
+re_error = re.compile('^ERROR:(.*)')
 
 ######################################################################
 # Explanation for "answer" field:
@@ -132,21 +133,37 @@ def do_the_test(test_cases):
         # Uncommented it to see the real response.
         # print response
 
+        # Get the time.
         re_res = re_run_time.search(response)
         if re_res != None:
             seconds = re_res.group(1)
         else:
             seconds = "N/A"
 
-        re_res = re_http_error.search(response)
-        if re_res != None:
-            http_error = re_res.group(2)
-            if http_error != "403":
-                answer = "HTTP " + http_error + " Error"
-            else:
-                answer = "Denied"
-        else:
+        while True:
+            # HTTP Error check.
+            re_res = re_http_error.search(response)
+            if re_res != None:
+                http_error = re_res.group(2)
+                if http_error != "403":
+                    answer = "HTTP " + http_error + " Error"
+                    break
+                else:
+                    answer = "Denied"
+                    break
+
+            # Usage Error check.
+            if re_usage_error.match(response):
+                answer = "Usage Error"
+                break
+
+            # Other Errors check.
+            if re_error.match(response):
+                answer = "Other Errors"
+                break
+
             answer = "Permitted"
+            break
 
         test_case["time"] = seconds
         test_case["answer"] = answer
