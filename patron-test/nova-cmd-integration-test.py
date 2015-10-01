@@ -57,20 +57,25 @@ def macro_replace_callback(matchobj):
 def get_macro_removed_command(cmd):
     return re_remove_macro.sub(macro_replace_callback, cmd)
 
-def init_test_cases_from_script():
+def init_test_cases_from_script(start_line=0, end_line=99999):
     file_object = open('/usr/lib/python2.7/dist-packages/patron-test/nova-cmd-test.sh', 'r')
     lines = file_object.readlines()
     file_object.close()
 
     test_cases = []
 
+    line_cnt = 0
     cnt = 0
     for line in lines:
+        line_cnt = line_cnt + 1
+        if line_cnt < start_line or line_cnt >= end_line:
+            continue
         if re.match("^nova", line):
             cnt = cnt + 1
             line=line.strip('\n')
             test_case = {}
             test_case["no"] = cnt
+            test_case["line-no"] = line_cnt
             test_case["command"] = line
             test_case["user"] = "admin"
             test_cases.append(test_case)
@@ -82,6 +87,7 @@ def init_test_cases_example2():
 
     test_case = {}
     test_case["no"] = 1
+    test_case["line-no"] = 1
     test_case["command"] = "nova dns-domains"
     test_case["user"] = "admin"
     test_cases.append(test_case)
@@ -94,6 +100,7 @@ def init_test_cases_example():
     # Error
     test_case = {}
     test_case["no"] = 1
+    test_case["line-no"] = 1
     test_case["command"] = "nova flavor-list"
     test_case["user"] = "admin"
     test_cases.append(test_case)
@@ -101,6 +108,7 @@ def init_test_cases_example():
     # Permitted
     test_case = {}
     test_case["no"] = 2
+    test_case["line-no"] = 2
     test_case["command"] = "nova list"
     test_case["user"] = "admin"
     test_cases.append(test_case)
@@ -108,6 +116,7 @@ def init_test_cases_example():
     # Denied
     test_case = {}
     test_case["no"] = 3
+    test_case["line-no"] = 3
     test_case["command"] = "nova service-list"
     test_case["user"] = "demo"
     test_cases.append(test_case)
@@ -145,8 +154,8 @@ def do_the_test(test_cases):
     return test_cases
 
 def print_test_case(test_case):
-    print('no: %-5s    cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
-          (test_case["no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
+    print('no: %-5s    line-no: %-5s    cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
+          (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_cases(test_cases):
     for test_case in test_cases:
