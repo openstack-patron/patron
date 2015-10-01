@@ -52,24 +52,22 @@ nova aggregate-remove-host $AGGRE_NAME $SERVER_NAME
 nova aggregate-delete $AGGRE_NAME
 nova availability-zone-list
 #image
-nova image-create $INSTANCE_NAME demoimage1
+nova image-create $INSTANCE_NAME demo-image1
 nova image-list
-nova image-meta demoimage1 set 'key'='value'
-nova image-meta demoimage1 delete 'key'='value'
-nova image-show demoimage1
-nova image-delete demoimage1
+nova image-meta demo-image1 set 'key'='value'
+nova image-meta demo-image1 delete 'key'='value'
+nova image-show demo-image1
+nova image-delete demo-image1
 # while instance is running
 nova console-log $INSTANCE_NAME
 nova diagnostics $INSTANCE_NAME
 nova get-password $INSTANCE_NAME
-nova console-log $INSTANCE_NAME
-nova diagnostics $INSTANCE_NAME
 nova interface-list $INSTANCE_NAME
 nova instance-action-list $INSTANCE_NAME
 nova get-serial-console $INSTANCE_NAME
 nova interface-attach $INSTANCE_NAME
-nova add-secgroup $INSTANCE_NAME demosecgroup
-nova remove-secgroup $INSTANCE_NAME demosecgroup
+nova add-secgroup $INSTANCE_NAME demo-secgroup1
+nova remove-secgroup $INSTANCE_NAME demo-secgroup1
 #nova clear-password $INSTANCE_NAME
 nova refresh-network $INSTANCE_NAME
 nova reset-network $INSTANCE_NAME
@@ -122,9 +120,9 @@ nova floating-ip-bulk-list
 nova floating-ip-create
 nova secgroup-list
 nova secgroup-list-default-rules
-nova secgroup-create demosecgroup "demo secgroup"
-nova secgroup-update demosecgroup demosecgroup1 "demo secgroup1"
-nova secgroup-delete demosecgroup1
+nova secgroup-create demo-secgroup1 "demo secgroup 1"
+nova secgroup-update demo-secgroup1 demo-secgroup1-new "demo secgroup 1 new"
+nova secgroup-delete demo-secgroup1-new
 nova secgroup-list-rules default
 nova endpoints
 read -p "Input server-group name:" SERVER_GROUP_NAME
