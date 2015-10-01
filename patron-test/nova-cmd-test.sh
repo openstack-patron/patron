@@ -47,9 +47,9 @@ nova aggregate-create $AGGRE_NAME
 nova aggregate-details $AGGRE_NAME
 nova aggregate-list
 read -p "Input your server's name:" SERVER_NAME
-nova aggregate-add-host demo1 $SERVER_NAME
-nova aggregate-remove-host demo1 $SERVER_NAME
-nova aggregate-delete demo1
+nova aggregate-add-host $AGGRE_NAME $SERVER_NAME
+nova aggregate-remove-host $AGGRE_NAME $SERVER_NAME
+nova aggregate-delete $AGGRE_NAME
 nova availability-zone-list
 #image
 nova image-create $INSTANCE_NAME demoimage1

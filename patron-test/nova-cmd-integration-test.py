@@ -5,11 +5,44 @@ import os
 import time
 import subprocess
 from pprint import pprint
+import socket
 
 re_run_time = re.compile('Command run time is: (.*) seconds')
 re_http_error = re.compile('^ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
+re_remove_macro = re.compile('\$NET_ID|\$KEY_NAME')
 
+# HTTP 409 Error: ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
+# HTTP 501 Error: HTTPNotImplemented
+
+
+if socket.gethostname() == "controller":
+    macros_to_replace = {
+        "$NET_ID": "net1",
+        "$KEY_NAME": "key1",
+        "$HOSTNAME": "ly-compute1"
+    }
+else: # "ly-controller"
+    macros_to_replace = {
+        "$NET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
+        "$DEMONET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41",
+        "$KEY_NAME": "key1",
+        "$INSTANCE_NAME": "demo-instance1",
+        "$HOSTNAME": "ly-compute1",
+        "$AGGRE_NAME": "aggregate1",
+        "$SERVER_NAME": "",
+        "$NEW_INSTANCE_NAME": "demo-instance1-new"
+    }
+
+
+
+def macro_replace_callback(matchobj):
+    if matchobj.group(0) in macros_to_replace:
+        return macros_to_replace[matchobj.group(0)]
+    return "!Re Replace Error!"
+
+def get_macro_removed_command(cmd):
+    return re_remove_macro.sub(macro_replace_callback, cmd)
 
 def init_test_cases_from_script():
     file_object = open('/usr/lib/python2.7/dist-packages/patron-test/nova-cmd-test.sh', 'r')
@@ -63,6 +96,7 @@ def init_test_cases_example():
 
 def do_the_test(test_cases):
     for test_case in test_cases:
+        test_case["command"] = get_macro_removed_command(test_case["command"])
         mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + test_case["command"] + "'", shell=True,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         response= mytask.stdout.read()
 
