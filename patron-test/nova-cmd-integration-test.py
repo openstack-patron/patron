@@ -10,11 +10,17 @@ import socket
 re_run_time = re.compile('Command run time is: (.*) seconds')
 re_http_error = re.compile('^ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
-re_remove_macro = re.compile('\$NET_ID|\$KEY_NAME')
 
-# HTTP 409 Error: ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
-# HTTP 501 Error: HTTPNotImplemented
-
+######################################################################
+# Explanation for "answer" field:
+# Permitted:        the command is permitted by access controls
+# Denied:           the command is denied by access controls, the same with HTTP 403 error
+# HTTP 400 Error:   ERROR (BadRequest): Compute service of ly-compute1 is unavailable at this time. (HTTP 400)
+# HTTP 409 Error:   ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
+# HTTP 412 Error:   ERROR (ClientException): Unknown Error (HTTP 412), this error is actually because path_to_op fails to find an op
+# HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
+# HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
+######################################################################
 
 if socket.gethostname() == "controller":
     macros_to_replace = {
@@ -34,6 +40,12 @@ else: # "ly-controller"
         "$NEW_INSTANCE_NAME": "demo-instance1-new"
     }
 
+remove_macro_pattern = ""
+for k in macros_to_replace:
+    remove_macro_pattern += ("\\" + k + "|")
+remove_macro_pattern = remove_macro_pattern[:-1]
+
+re_remove_macro = re.compile(remove_macro_pattern)
 
 
 def macro_replace_callback(matchobj):
@@ -125,7 +137,7 @@ def do_the_test(test_cases):
     return test_cases
 
 def print_test_case(test_case):
-    print('cmd: %-40s    user: %-10s    answer: %-15s    time: %-10s' %
+    print('cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
           (test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_cases(test_cases):
