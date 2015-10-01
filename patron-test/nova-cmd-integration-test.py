@@ -18,6 +18,7 @@ re_usage_error = re.compile('(.*)usage:(.*)')
 # HTTP 400 Error:   ERROR (BadRequest): Compute service of ly-compute1 is unavailable at this time. (HTTP 400)
 # HTTP 409 Error:   ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
 # HTTP 412 Error:   ERROR (ClientException): Unknown Error (HTTP 412), this error is actually because path_to_op fails to find an op
+# HTTP 413 Error:   ERROR (OverLimit): Over limit (HTTP 413), this error is actually because op tuple returned by path_to_op is empty
 # HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
 ######################################################################
@@ -63,10 +64,13 @@ def init_test_cases_from_script():
 
     test_cases = []
 
+    cnt = 0
     for line in lines:
         if re.match("^nova", line):
+            cnt = cnt + 1
             line=line.strip('\n')
             test_case = {}
+            test_case["no"] = cnt
             test_case["command"] = line
             test_case["user"] = "admin"
             test_cases.append(test_case)
@@ -77,6 +81,7 @@ def init_test_cases_example2():
     test_cases = []
 
     test_case = {}
+    test_case["no"] = 1
     test_case["command"] = "nova dns-domains"
     test_case["user"] = "admin"
     test_cases.append(test_case)
@@ -88,18 +93,21 @@ def init_test_cases_example():
 
     # Error
     test_case = {}
+    test_case["no"] = 1
     test_case["command"] = "nova flavor-list"
     test_case["user"] = "admin"
     test_cases.append(test_case)
 
     # Permitted
     test_case = {}
+    test_case["no"] = 2
     test_case["command"] = "nova list"
     test_case["user"] = "admin"
     test_cases.append(test_case)
 
     # Denied
     test_case = {}
+    test_case["no"] = 3
     test_case["command"] = "nova service-list"
     test_case["user"] = "demo"
     test_cases.append(test_case)
@@ -137,8 +145,8 @@ def do_the_test(test_cases):
     return test_cases
 
 def print_test_case(test_case):
-    print('cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
-          (test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
+    print('no: %-5s    cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
+          (test_case["no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_cases(test_cases):
     for test_case in test_cases:
