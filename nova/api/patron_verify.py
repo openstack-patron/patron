@@ -193,6 +193,9 @@ class PatronVerify (wsgi.Middleware):
         if op == "KEY_ERROR":
             # If the mappings failed to find an op, we return the rare HTTP 412 error, to let the user know this is the error position.
             return webob.exc.HTTPPreconditionFailed()
+        elif op == "INDEX_ERROR":
+            # If the mapped op tuple is empty, we return the rare HTTP 413 error, to let the user know this is the error position.
+            return webob.exc.HTTPRequestEntityTooLarge()
 
         # Get the subject SID.
         subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id

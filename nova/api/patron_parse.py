@@ -163,7 +163,10 @@ def parse(req_method, path_info, req_inner_action):
         op = path_op_map[(req_method, path, inner_action)]
     except KeyError:
         return "KEY_ERROR"
-    op = op[0]
+    try:
+        op = op[0]
+    except IndexError:
+        return "INDEX_ERROR"
     return op
 
 """
