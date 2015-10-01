@@ -8,9 +8,9 @@ from pprint import pprint
 import socket
 
 re_run_time = re.compile('Command run time is: (.*) seconds')
-re_http_error = re.compile('^ERROR(.*)\(HTTP (.*)\) \((.*)')
+re_http_error = re.compile('(.*)ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
-re_error = re.compile('^ERROR:(.*)')
+re_error = re.compile('(.*)ERROR:(.*)')
 
 ######################################################################
 # Explanation for "answer" field:
@@ -124,10 +124,25 @@ def init_test_cases_example():
 
     return test_cases
 
+# Wrap the command using expect like belows if it is a "nova root-password" command:
+# expect <<- DONE
+# spawn nova root-password demo-instance1
+# expect "New password: "
+# send -- "123\r"
+# expect "Again: "
+# send -- "123\r"
+# expect eof
+# DONE
+def wrap_command(cmd):
+    if cmd.startswith("nova root-password"):
+        return 'expect <<- DONE\nspawn ' + cmd + '\nexpect "New password: "\nsend -- "123\r"\nexpect "Again: "\nsend -- "123\r"\nexpect eof\nDONE'
+    else:
+        return cmd
+
 def do_the_test(test_cases):
     for test_case in test_cases:
         test_case["command"] = get_macro_removed_command(test_case["command"])
-        mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + test_case["command"] + "'", shell=True,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(test_case["command"]) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         response= mytask.stdout.read()
 
         # Uncommented it to see the real response.
@@ -144,7 +159,7 @@ def do_the_test(test_cases):
             # HTTP Error check.
             re_res = re_http_error.search(response)
             if re_res != None:
-                http_error = re_res.group(2)
+                http_error = re_res.group(3)
                 if http_error != "403":
                     answer = "HTTP " + http_error + " Error"
                     break
