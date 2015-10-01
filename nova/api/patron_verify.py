@@ -190,6 +190,9 @@ class PatronVerify (wsgi.Middleware):
 
         # Map the path_info and req_inner_action to op and target for Patron.
         (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+        if op == "KEY_ERROR":
+            # If the mappings failed to find an op, we return the rare HTTP 412 error, to let the user know this is the error position.
+            return webob.exc.HTTPPreconditionFailed()
 
         # Get the subject SID.
         subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id

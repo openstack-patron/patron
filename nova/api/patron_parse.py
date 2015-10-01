@@ -159,7 +159,10 @@ def parse_inner_anction(req_innner_action, req_path_info):
 def parse(req_method, path_info, req_inner_action):
     path = parse_path(path_info)
     inner_action = parse_inner_anction(req_inner_action, path_info)
-    op = path_op_map[(req_method, path, inner_action)]
+    try:
+        op = path_op_map[(req_method, path, inner_action)]
+    except KeyError:
+        return "KEY_ERROR"
     op = op[0]
     return op
 
