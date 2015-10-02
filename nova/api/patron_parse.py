@@ -9,7 +9,8 @@ import re
 # from pprint import pprint
 # pprint(path_op_map)
 path_op_map = \
-{('GET', u'/%ID%/flavors/%SRCID%', ''): ('compute_extension:flavor_swap',
+{('DELETE', u'/%ID%/os-aggregates/%NAME%', ''): ('compute_extension:aggregates',),
+ ('GET', u'/%ID%/flavors/%NAME%', ''): ('compute_extension:flavor_swap',
                                          'compute_extension:flavor_rxtx',
                                          'compute_extension:flavor_access',
                                          'compute_extension:flavorextradata',
@@ -21,7 +22,7 @@ path_op_map = \
                                        'compute_extension:disk_config'),
  ('GET', u'/%ID%/limits', ''): (),
  ('GET', u'/%ID%/os-aggregates', ''): ('compute_extension:aggregates',),
- ('GET', u'/%ID%/os-aggregates/%SRCID%', ''): ('compute_extension:aggregates',),
+ ('GET', u'/%ID%/os-aggregates/%NAME%', ''): ('compute_extension:aggregates',),
  ('GET', u'/%ID%/os-availability-zone/detail', ''): ('compute_extension:availability_zone:detail',),
  ('GET', u'/%ID%/os-cloudpipe', ''): ('compute_extension:cloudpipe',
                                       'compute:get_all'),
@@ -29,12 +30,12 @@ path_op_map = \
  ('GET', u'/%ID%/os-hosts', ''): ('compute_extension:hosts',),
  ('GET', u'/%ID%/os-hosts/compute1', ''): (),
  ('GET', u'/%ID%/os-hypervisors', ''): ('compute_extension:hypervisors',),
- ('GET', u'/%ID%/os-hypervisors/%SRCID%/uptime', ''): ('compute_extension:hypervisors',),
+ ('GET', u'/%ID%/os-hypervisors/%NAME%/uptime', ''): ('compute_extension:hypervisors',),
  ('GET', u'/%ID%/os-hypervisors/compute1/servers', ''): ('compute_extension:hypervisors',),
  ('GET', u'/%ID%/os-hypervisors/detail', ''): ('compute_extension:hypervisors',),
  ('GET', u'/%ID%/os-hypervisors/statistics', ''): ('compute_extension:hypervisors',),
  ('GET', u'/%ID%/os-keypairs', ''): ('compute_extension:keypairs:index',),
- ('GET', u'/%ID%/os-keypairs/%KEYNAME%', ''): ('compute_extension:keypairs:show',),
+ ('GET', u'/%ID%/os-keypairs/%NAME%', ''): ('compute_extension:keypairs:show',),
  ('GET', u'/%ID%/os-networks', ''): ('compute_extension:networks:view',),
  ('GET', u'/%ID%/os-services', ''): ('compute_extension:services',),
  ('GET', u'/%ID%/os-tenant-networks', ''): ('compute_extension:os-tenant-networks',),
@@ -127,40 +128,19 @@ path_op_map = \
  ('PUT', u'/%ID%/os-services/enable', ''): ('compute_extension:services',)}
 
 
-# Editted by puyangsky
-def parse_path(req_path_info):
-    id_pattern = "[0-9a-f]{32}"
-    uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-    sourceid_patern = "[0-9]{1}"
-    path = ""
-    paths = req_path_info[1:].split("/")
-
-    for i in range(len(paths)):
-        if re.match(id_pattern, paths[i]):
-            paths[i] = "%ID%"
-        if re.match(uuid_patern, paths[i]):
-            paths[i] = "%UUID%"
-        if re.match(sourceid_patern, paths[i]):
-            paths[i] = "%SRCID%"
-        if i < (len(paths)-1) and paths[i] == "os-keypairs" and len(paths[i+1]) != 0:
-            paths[i+1] = "%KEYNAME%"
-        path += "/"
-        path += paths[i]
-    return path
 
 # Editted by puyangsky
 def parse_inner_anction(req_innner_action, req_path_info):
-    if re.search(r"action", req_path_info):
+    if re.search("action", req_path_info):
         parsed_inner_action = req_innner_action
     else:
         parsed_inner_action = ""
     return parsed_inner_action
 
-def parse(req_method, path_info, req_inner_action):
-    path = parse_path(path_info)
+def parse(req_method, path_info, req_inner_action, template_path_info):
     inner_action = parse_inner_anction(req_inner_action, path_info)
     try:
-        op = path_op_map[(req_method, path, inner_action)]
+        op = path_op_map[(req_method, template_path_info, inner_action)]
     except KeyError:
         return "KEY_ERROR"
     try:
