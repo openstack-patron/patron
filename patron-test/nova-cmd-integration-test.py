@@ -52,7 +52,7 @@ else: # "ly-controller"
         "$INSTANCE_NAME": "demo-instance1",
         "$HOSTNAME": "ly-compute1",
         "$AGGRE_NAME": "aggregate1",
-        "$SERVER_NAME": "",
+        "$SERVER_NAME": "ly-compute1",
         "$NEW_INSTANCE_NAME": "demo-instance1-new",
         "$SERVER_GROUP_NAME": "server-group1"
     }
@@ -207,7 +207,7 @@ def do_the_test(test_cases):
 def get_path_info_from_testcase(test_case):
     test_case["command"] = get_macro_removed_command(test_case["command"])
     debug_command = re_add_debug.sub(add_debug_replace_str, test_case["command"])
-    mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + debug_command + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(debug_command) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     response= mytask.stdout.read()
 
     # Uncommented it to see the real response.
@@ -242,7 +242,7 @@ def print_test_case_path_info(test_case):
 #         print_test_case(test_case)
 
 
-do_the_get_path_info(init_test_cases_from_script())
+do_the_get_path_info(init_test_cases_from_script(83))
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
