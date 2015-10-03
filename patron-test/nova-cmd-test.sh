@@ -113,7 +113,7 @@ nova flavor-list
 nova flavor-show 1
 nova flavor-create m1.demo 6 512 10 1
 nova flavor-delete 6
-nova flavor-access-list
+nova flavor-access-list --flavor m1.tiny
 #floating-ip
 nova floating-ip-list
 nova floating-ip-pool-list
@@ -125,7 +125,8 @@ nova secgroup-create demo-secgroup1 "demo secgroup 1"
 nova secgroup-update demo-secgroup1 demo-secgroup1-new "demo secgroup 1 new"
 nova secgroup-delete demo-secgroup1-new
 nova secgroup-list-rules default
-nova endpoints
+# this is the keystone command, we do not care about it
+# nova endpoints
 read -p "Input server-group name:" SERVER_GROUP_NAME
 nova server-group-create $SERVER_GROUP_NAME "affinity"
 SERVER_GROUP_ID=`nova server-group-list`

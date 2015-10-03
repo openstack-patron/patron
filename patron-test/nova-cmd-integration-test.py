@@ -23,8 +23,7 @@ re_add_debug = re.compile('^nova')
 add_debug_replace_str = "nova --debug"
 
 # RE to get path_info.
-#re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-z-/]*) -H \"User-Agent: python-' + service_name + 'client\".*')
-re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-z-/]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
+re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[0-9a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-zA-Z-/\?&_=.]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
 
 ######################################################################
 # Explanation for "answer" field:
@@ -217,6 +216,7 @@ def get_path_info_from_testcase(test_case):
     re_res = re_get_path_info.search(response)
     if re_res != None:
         try:
+            # print "abcd: " + re_res.group(0)
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
         except IndexError:
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), "")
@@ -242,7 +242,7 @@ def print_test_case_path_info(test_case):
 #         print_test_case(test_case)
 
 
-do_the_get_path_info(init_test_cases_from_script(83))
+do_the_get_path_info(init_test_cases_from_script(131))
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
