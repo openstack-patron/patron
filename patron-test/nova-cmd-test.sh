@@ -131,18 +131,22 @@ read -p "Input server-group name:" SERVER_GROUP_NAME
 nova server-group-create $SERVER_GROUP_NAME "affinity"
 SERVER_GROUP_ID=`nova server-group-list`
 SERVER_GROUP_ID=`echo $SERVER_GROUP_ID | cut -d '|' -f 8 | cut -d ' ' -f 2`
-nova server-group-delete $SERVER_GROUP_ID
 nova server-group-get $SERVER_GROUP_ID
+nova server-group-delete $SERVER_GROUP_ID
 nova server-group-list
-nova tenant-network-create "tenant-network" 0.0.0.0
+read -p "Input tenant-network name:" TENANT_NETWORK_NAME
+# this call will face HTTP 503 error
+nova tenant-network-create $TENANT_NETWORK_NAME 172.16.0.0/24
 nova tenant-network-list
-nova tenant-network-delete <network_id>
-nova tenant-network-show <network_id>
-nova quota-class-show "a"
-nova quota-class-update "a"
-nova quota-defaults
-#nova quota-delete --tenant <tenant-id> [--user <user-id>]
-nova quota-show
+nova tenant-network-show $TENANT_NETWORK_ID
+nova tenant-network-delete $TENANT_NETWORK_ID
+# these two commands seems to be not implemented by nova.
+# nova quota-class-show "demo-quota"
+# nova quota-class-update "demo-quota"
+nova quota-show --tenant $DEMO_TENANT_ID
+nova quota-defaults --tenant $DEMO_TENANT_ID
+nova quota-update --cores 100 $DEMO_TENANT_ID
+nova quota-delete --tenant $DEMO_TENANT_ID
 
 #nova network-associate-host <network> <host>
 #nova network-associate-project <network>
@@ -155,10 +159,11 @@ nova quota-show
 #nova dns-delete <domain> <name>
 #nova dns-delete-domain <domain>
 #nova dns-list <domain>
-nova quota-update <tenant-id>
+
 nova usage
 nova usage-list
-nova version-list
+# this is the keystone command, we do not care about it
+#nova version-list
 nova cloudpipe-list
 nova x509-get-root-cert
 

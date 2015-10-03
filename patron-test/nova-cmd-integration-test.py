@@ -23,7 +23,13 @@ re_add_debug = re.compile('^nova')
 add_debug_replace_str = "nova --debug"
 
 # RE to get path_info.
-re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[0-9a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-zA-Z-/\?&_=.]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
+re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[0-9a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-zA-Z-/\?&_=.:]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
+
+# RE about created ID retrieval and reuse.
+id_pattern = "[0-9a-f]{32}"
+uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+re_get_creative_macro = re.compile('-create (\$[A-Z_]*)')
+re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 
 ######################################################################
 # Explanation for "answer" field:
@@ -35,6 +41,7 @@ re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[0-9a-zA-Z-]*:([
 # HTTP 413 Error:   ERROR (OverLimit): Over limit (HTTP 413), this error is actually because op tuple returned by path_to_op is empty
 # HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
+# HTTP 503 Error:   ERROR (ClientException): Create networks failed (HTTP 503)
 ######################################################################
 
 if socket.gethostname() == "controller":
@@ -53,7 +60,9 @@ else: # "ly-controller"
         "$AGGRE_NAME": "aggregate1",
         "$SERVER_NAME": "ly-compute1",
         "$NEW_INSTANCE_NAME": "demo-instance1-new",
-        "$SERVER_GROUP_NAME": "server-group1"
+        "$SERVER_GROUP_NAME": "server-group1",
+        "$TENANT_NETWORK_NAME": "tenant-network1",
+        "$DEMO_TENANT_ID": "b52703a841604021902133822c9496e1"
     }
 
 remove_macro_pattern = ""
@@ -63,6 +72,38 @@ remove_macro_pattern = remove_macro_pattern[:-1]
 
 re_remove_macro = re.compile(remove_macro_pattern)
 
+def add_macro_to_replace(macro_name, macro_value):
+    # Update the RE macro.
+    global remove_macro_pattern
+    global re_remove_macro
+    global macros_to_replace
+    remove_macro_pattern += ("|\\" + macro_name)
+    re_remove_macro = re.compile(remove_macro_pattern)
+    # Update the map.
+    macros_to_replace[macro_name] = macro_value
+
+# text will be something like this:
+# root@controller:~# nova server-group-create server-group1 "affinity"
+# +--------------------------------------+---------------+---------------+---------+----------+
+# | Id                                   | Name          | Policies      | Members | Metadata |
+# +--------------------------------------+---------------+---------------+---------+----------+
+# | ae318dd3-29a3-4f5d-96e8-9e46785df4b8 | server-group1 | [u'affinity'] | []      | {}       |
+# +--------------------------------------+---------------+---------------+---------+----------+
+def get_created_id(text):
+    re_res = re_get_created_id.search(text)
+    if re_res != None:
+        return re_res.group(1)
+    else:
+        return None
+
+# cmd is something like:
+# nova server-group-create $SERVER_GROUP_NAME "affinity"
+def get_creative_macro(cmd):
+    re_res = re_get_creative_macro.search(cmd)
+    if re_res != None:
+        return re_res.group(1)
+    else:
+        return None
 
 def macro_replace_callback(matchobj):
     if matchobj.group(0) in macros_to_replace:
@@ -150,11 +191,15 @@ def init_test_cases_example():
 def wrap_command(cmd):
     if cmd.startswith("nova root-password") or cmd.startswith("nova --debug root-password"):
         return 'expect <<- DONE\nspawn ' + cmd + '\nexpect "New password: "\nsend -- "123\r"\nexpect "Again: "\nsend -- "123\r"\nexpect eof\nDONE'
+    if cmd.startswith("nova x509-get-root-cert") or cmd.startswith("nova --debug x509-get-root-cert"):
+        os.system('rm ./cacert.pem')
+        return cmd
     else:
         return cmd
 
 def do_the_test(test_cases):
     for test_case in test_cases:
+        test_case["creative_macro"] = get_creative_macro(test_case["command"])
         test_case["command"] = get_macro_removed_command(test_case["command"])
         mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(test_case["command"]) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         response= mytask.stdout.read()
@@ -199,30 +244,48 @@ def do_the_test(test_cases):
             answer = "Permitted"
             break
 
+        # Added the created id to macros_to_replace.
+        if test_case["creative_macro"] != None:
+            test_case["created_id"] = get_created_id(response)
+            if test_case["created_id"] != None:
+                add_macro_to_replace(test_case["creative_macro"].replace("NAME", "ID"), test_case["created_id"])
+            else:
+                print "Error: Created_ID not found!!"
+
         test_case["time"] = seconds
         test_case["answer"] = answer
         print_test_case(test_case)
 
 def get_path_info_from_testcase(test_case):
+    test_case["creative_macro"] = get_creative_macro(test_case["command"])
     test_case["command"] = get_macro_removed_command(test_case["command"])
     debug_command = re_add_debug.sub(add_debug_replace_str, test_case["command"])
     mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(debug_command) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     response= mytask.stdout.read()
 
     # Uncommented it to see the real response.
-    # print response
+    print response
 
     # Get the path_info.
     re_res = re_get_path_info.search(response)
     if re_res != None:
         try:
-            # print "abcd: " + re_res.group(0)
+            print "abcd: " + re_res.group(0)
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
         except IndexError:
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), "")
         test_case["path_info"] = path_info_tuple
     else:
         test_case["path_info"] = "Failed to find!!"
+
+    # Added the created id to macros_to_replace.
+    if test_case["creative_macro"] != None:
+        test_case["created_id"] = get_created_id(response)
+        if test_case["created_id"] != None:
+            add_macro_to_replace(test_case["creative_macro"].replace("NAME", "ID"), test_case["created_id"])
+        else:
+            print "Error: Created_ID not found!!"
+
     print_test_case_path_info(test_case)
 
 def do_the_get_path_info(test_cases):
@@ -237,12 +300,12 @@ def print_test_case_path_info(test_case):
     print('no: %-5s    line-no: %-5s    cmd: %-55s    answer: %-50s' %
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"]))
 
-# def print_test_cases(test_cases):
+# def print_test_cases(test_cases):s
 #     for test_case in test_cases:
 #         print_test_case(test_case)
 
 
-do_the_get_path_info(init_test_cases_from_script(131))
+do_the_get_path_info(init_test_cases_from_script(168))
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
