@@ -8,14 +8,14 @@ nova net $NET_ID
 nova dns-domains
 nova list
 #start a new instance
-DEMONET_ID=`neutron net-list`
-DEMONET_ID=`echo $DEMONET_ID | cut -d '|' -f 6 | cut -d ' ' -f 2`
+NET_ID=`neutron net-list`
+NET_ID=`echo $NET_ID | cut -d '|' -f 6 | cut -d ' ' -f 2`
 read -p "Input your key's name:" KEY_NAME
 nova keypair-add --pub_key ~/.ssh/id_rsa.pub $KEY_NAME
 nova keypair-list
 nova keypair-show $KEY_NAME
 read -p "Input your instance's name:" INSTANCE_NAME
-nova boot --flavor 1 --image "cirros-0.3.4-x86_64" --key-name $KEY_NAME --nic net-id=$DEMONET_ID --security-group default $INSTANCE_NAME
+nova boot --flavor 1 --image "cirros-0.3.4-x86_64" --key-name $KEY_NAME --nic net-id=$NET_ID --security-group default $INSTANCE_NAME
 nova absolute-limits
 # this is the keystone command, we do not care about it
 #nova credentials

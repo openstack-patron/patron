@@ -46,14 +46,10 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 
 if socket.gethostname() == "controller":
     macros_to_replace = {
-        "$NET_ID": "net1",
-        "$KEY_NAME": "key1",
-        "$HOSTNAME": "ly-compute1"
     }
 else: # "ly-controller"
     macros_to_replace = {
         "$NET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
-        "$DEMONET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41",
         "$KEY_NAME": "key1",
         "$INSTANCE_NAME": "demo-instance1",
         "$HOSTNAME": "ly-compute1",
@@ -62,6 +58,7 @@ else: # "ly-controller"
         "$NEW_INSTANCE_NAME": "demo-instance1-new",
         "$SERVER_GROUP_NAME": "server-group1",
         "$TENANT_NETWORK_NAME": "tenant-network1",
+        "$TENANT_NETWORK_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
         "$DEMO_TENANT_ID": "b52703a841604021902133822c9496e1"
     }
 
@@ -99,11 +96,12 @@ def get_created_id(text):
 # cmd is something like:
 # nova server-group-create $SERVER_GROUP_NAME "affinity"
 def get_creative_macro(cmd):
-    re_res = re_get_creative_macro.search(cmd)
-    if re_res != None:
-        return re_res.group(1)
-    else:
-        return None
+    if cmd.startswith("nova server-group-create"):
+        re_res = re_get_creative_macro.search(cmd)
+        if re_res != None:
+            return re_res.group(1)
+        else:
+            return None
 
 def macro_replace_callback(matchobj):
     if matchobj.group(0) in macros_to_replace:
@@ -202,7 +200,7 @@ def do_the_test(test_cases):
         test_case["creative_macro"] = get_creative_macro(test_case["command"])
         test_case["command"] = get_macro_removed_command(test_case["command"])
         mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(test_case["command"]) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        response= mytask.stdout.read()
+        response = mytask.stdout.read()
 
         # Uncommented it to see the real response.
         # print response
@@ -261,16 +259,16 @@ def get_path_info_from_testcase(test_case):
     test_case["command"] = get_macro_removed_command(test_case["command"])
     debug_command = re_add_debug.sub(add_debug_replace_str, test_case["command"])
     mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(debug_command) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    response= mytask.stdout.read()
+    response = mytask.stdout.read()
 
     # Uncommented it to see the real response.
-    print response
+    # print response
 
     # Get the path_info.
     re_res = re_get_path_info.search(response)
     if re_res != None:
         try:
-            print "abcd: " + re_res.group(0)
+            # print "abcd: " + re_res.group(0)
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
         except IndexError:
             path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), "")
@@ -297,7 +295,7 @@ def print_test_case(test_case):
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_case_path_info(test_case):
-    print('no: %-5s    line-no: %-5s    cmd: %-55s    answer: %-50s' %
+    print('no: %-5s    line-no: %-5s    cmd: %-55s    path_info: %-50s' %
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"]))
 
 # def print_test_cases(test_cases):s
@@ -305,7 +303,7 @@ def print_test_case_path_info(test_case):
 #         print_test_case(test_case)
 
 
-do_the_get_path_info(init_test_cases_from_script(168))
+do_the_get_path_info(init_test_cases_from_script())
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
