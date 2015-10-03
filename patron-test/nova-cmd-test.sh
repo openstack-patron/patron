@@ -17,7 +17,8 @@ nova keypair-show $KEY_NAME
 read -p "Input your instance's name:" INSTANCE_NAME
 nova boot --flavor 1 --image "cirros-0.3.4-x86_64" --key-name $KEY_NAME --nic net-id=$DEMONET_ID --security-group default $INSTANCE_NAME
 nova absolute-limits
-nova credentials
+# this is the keystone command, we do not care about it
+#nova credentials
 nova cloudpipe-list
 nova network-list
 nova network-show demo-net

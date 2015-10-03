@@ -7,10 +7,24 @@ import subprocess
 from pprint import pprint
 import socket
 
+service_name = "nova"
+
+# RE to get execution time.
 re_run_time = re.compile('Command run time is: (.*) seconds')
+
+# REs to extract errors.
 re_http_error = re.compile('(.*)ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
+re_bash_error = re.compile('(.*)bash(.*)line(.*)syntax error(.*)')
 re_error = re.compile('(.*)ERROR:(.*)')
+
+# RE to add "--debug" to original command.
+re_add_debug = re.compile('^nova')
+add_debug_replace_str = "nova --debug"
+
+# RE to get path_info.
+#re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-z-/]*) -H \"User-Agent: python-' + service_name + 'client\".*')
+re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-z-/]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
 
 ######################################################################
 # Explanation for "answer" field:
@@ -39,7 +53,8 @@ else: # "ly-controller"
         "$HOSTNAME": "ly-compute1",
         "$AGGRE_NAME": "aggregate1",
         "$SERVER_NAME": "",
-        "$NEW_INSTANCE_NAME": "demo-instance1-new"
+        "$NEW_INSTANCE_NAME": "demo-instance1-new",
+        "$SERVER_GROUP_NAME": "server-group1"
     }
 
 remove_macro_pattern = ""
@@ -59,7 +74,7 @@ def get_macro_removed_command(cmd):
     return re_remove_macro.sub(macro_replace_callback, cmd)
 
 def init_test_cases_from_script(start_line=0, end_line=99999):
-    file_object = open('/usr/lib/python2.7/dist-packages/patron-test/nova-cmd-test.sh', 'r')
+    file_object = open('/usr/lib/python2.7/dist-packages/patron-test/' + service_name + '-cmd-test.sh', 'r')
     lines = file_object.readlines()
     file_object.close()
 
@@ -71,7 +86,7 @@ def init_test_cases_from_script(start_line=0, end_line=99999):
         line_cnt = line_cnt + 1
         if line_cnt < start_line or line_cnt >= end_line:
             continue
-        if re.match("^nova", line):
+        if re.match("^" + service_name, line):
             cnt = cnt + 1
             line=line.strip('\n')
             test_case = {}
@@ -134,7 +149,7 @@ def init_test_cases_example():
 # expect eof
 # DONE
 def wrap_command(cmd):
-    if cmd.startswith("nova root-password"):
+    if cmd.startswith("nova root-password") or cmd.startswith("nova --debug root-password"):
         return 'expect <<- DONE\nspawn ' + cmd + '\nexpect "New password: "\nsend -- "123\r"\nexpect "Again: "\nsend -- "123\r"\nexpect eof\nDONE'
     else:
         return cmd
@@ -173,6 +188,11 @@ def do_the_test(test_cases):
                 break
 
             # Other Errors check.
+            if re_bash_error.match(response):
+                answer = "Bash Syntax Error"
+                break
+
+            # Other Errors check.
             if re_error.match(response):
                 answer = "Other Errors"
                 break
@@ -183,18 +203,47 @@ def do_the_test(test_cases):
         test_case["time"] = seconds
         test_case["answer"] = answer
         print_test_case(test_case)
-    return test_cases
+
+def get_path_info_from_testcase(test_case):
+    test_case["command"] = get_macro_removed_command(test_case["command"])
+    debug_command = re_add_debug.sub(add_debug_replace_str, test_case["command"])
+    mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + debug_command + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    response= mytask.stdout.read()
+
+    # Uncommented it to see the real response.
+    # print response
+
+    # Get the path_info.
+    re_res = re_get_path_info.search(response)
+    if re_res != None:
+        try:
+            path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
+        except IndexError:
+            path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), "")
+        test_case["path_info"] = path_info_tuple
+    else:
+        test_case["path_info"] = "Failed to find!!"
+    print_test_case_path_info(test_case)
+
+def do_the_get_path_info(test_cases):
+    for test_case in test_cases:
+        get_path_info_from_testcase(test_case)
 
 def print_test_case(test_case):
-    print('no: %-5s    line-no: %-5s    cmd: %-50s    user: %-10s    answer: %-15s    time: %-10s' %
+    print('no: %-5s    line-no: %-5s    cmd: %-55s    user: %-10s    answer: %-20s    time: %-10s' %
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
-def print_test_cases(test_cases):
-    for test_case in test_cases:
-        print_test_case(test_case)
+def print_test_case_path_info(test_case):
+    print('no: %-5s    line-no: %-5s    cmd: %-55s    answer: %-50s' %
+          (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"]))
+
+# def print_test_cases(test_cases):
+#     for test_case in test_cases:
+#         print_test_case(test_case)
 
 
-test_cases = do_the_test(init_test_cases_from_script())
-# test_cases = do_the_test(init_test_cases_example2())
+do_the_get_path_info(init_test_cases_from_script())
+#do_the_test(init_test_cases_from_script())
+# do_the_test(init_test_cases_example2())
 
 
