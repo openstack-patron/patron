@@ -33,23 +33,9 @@ class PatronVerify (wsgi.Middleware):
     def get_tenant_by_id(cls, context, id):
         return {"id": id}
 
-    def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
+    def get_template_path_info(self, req_path_info, key_calls, key_ids):
         id_pattern = "[0-9a-f]{32}"
         uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-        key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
-                     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
-                     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
-                     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
-                     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
-                     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
-                     "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
-                     "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
-                     "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
-                     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
-                     "images": "",
-                     "volumes": ""
-                     }
-        key_ids = {}
 
         path_info_list = req_path_info.strip("/").split("/")
         if len(path_info_list) > 0:
@@ -71,6 +57,25 @@ class PatronVerify (wsgi.Middleware):
                 else:
                     path_info_list[i + 1] = "%NAME%"
         template_path_info = "/" + "/".join(path_info_list)
+        return template_path_info
+
+    def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
+        key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
+                     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
+                     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+                     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
+                     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
+                     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
+                     "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+                     "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
+                     "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
+                     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
+                     "images": "",
+                     "volumes": ""
+                     }
+        key_ids = {}
+
+        template_path_info = self.get_template_path_info(req_path_info, key_calls, key_ids)
 
         if key_ids.has_key("servers"):
             key_name = "servers"
