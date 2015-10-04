@@ -16,6 +16,7 @@ re_run_time = re.compile('Command run time is: (.*) seconds')
 re_http_error = re.compile('(.*)ERROR(.*)\(HTTP (.*)\) \((.*)')
 re_usage_error = re.compile('(.*)usage:(.*)')
 re_bash_error = re.compile('(.*)bash(.*)line(.*)syntax error(.*)')
+re_cmd_error = re.compile('ERROR \((.*)\):')
 re_error = re.compile('(.*)ERROR:(.*)')
 
 # RE to add "--debug" to original command.
@@ -36,13 +37,18 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 # Permitted:        the command is permitted by access controls
 # Denied:           the command is denied by access controls, the same with HTTP 403 error
 # HTTP 400 Error:   ERROR (BadRequest): Compute service of ly-compute1 is unavailable at this time. (HTTP 400)
+# HTTP 404 Error:   ERROR (NotFound): No instances found for any event (HTTP 404)
 # HTTP 409 Error:   ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
 # HTTP 412 Error:   ERROR (ClientException): Unknown Error (HTTP 412), this error is actually because path_to_op fails to find an op
 # HTTP 413 Error:   ERROR (OverLimit): Over limit (HTTP 413), this error is actually because op tuple returned by path_to_op is empty
+# HTTP 422 Error:   ERROR (ClientException): Unable to process the contained instructions (HTTP 422)
 # HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
 # HTTP 503 Error:   ERROR (ClientException): Create networks failed (HTTP 503)
+# Command Error:    ERROR (CommandError): No image with a name or ID of 'demo-image1' exists.
 ######################################################################
+
+debuglog_file_object = open('/root/cmd-integration-test-debuglog.txt', 'w')
 
 if socket.gethostname() == "controller":
     macros_to_replace = {
@@ -204,6 +210,10 @@ def get_all_from_testcase(test_case):
 
     # Uncommented it to see the real response.
     # print response
+    debuglog_file_object.write("***************************\n")
+    debuglog_file_object.write("no: %s\n" % test_case["no"])
+    debuglog_file_object.write(response)
+    debuglog_file_object.write("\n\n")
 
     # Get the time.
     re_res = re_run_time.search(response)
@@ -231,9 +241,16 @@ def get_all_from_testcase(test_case):
             answer = "Usage Error"
             break
 
-        # Other Errors check.
+        # Bash Syntax Errors check.
         if re_bash_error.match(response):
-            answer = "Bash Syntax Error"
+            answer = "Bash Error"
+            break
+
+        # Command Errors check.
+        re_res = re_cmd_error.search(response)
+        if re_res != None:
+            cmd_error = re_res.group(1)
+            answer = cmd_error
             break
 
         # Other Errors check.
@@ -271,18 +288,14 @@ def get_all_from_testcase(test_case):
         else:
             print "Error: Created_ID not found!!"
 
-    print_test_case_path_info(test_case)
+    print_test_case(test_case)
 
 def do_the_test(test_cases):
     for test_case in test_cases:
         get_all_from_testcase(test_case)
 
 def print_test_case(test_case):
-    print('no: %-5s    line-no: %-5s    cmd: %-65s    user: %-10s    answer: %-20s    time: %-10s' %
-          (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
-
-def print_test_case_path_info(test_case):
-    s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-10s    answer: %-20s    time: %-10s    path_info: %-50s' %\
+    s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-5s    answer: %-15s    time: %-5s    path_info: %-50s' %\
         (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], test_case["path_info"][0])
     print s
     path_info_pos = s.find("path_info: (") + len("path_info: ") - 1
@@ -301,4 +314,5 @@ do_the_test(init_test_cases_from_script())
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
+debuglog_file_object.close()
 
