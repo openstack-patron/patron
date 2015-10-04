@@ -51,7 +51,7 @@ else: # "ly-controller"
     macros_to_replace = {
         "$NET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
         "$KEY_NAME": "key1",
-        "$INSTANCE_NAME": "demo-instance1",
+        "$INSTANCE_NAME": "demo-instance2",
         "$HOSTNAME": "ly-compute1",
         "$AGGRE_NAME": "aggregate1",
         "$SERVER_NAME": "ly-compute1",
@@ -265,16 +265,33 @@ def get_path_info_from_testcase(test_case):
     # print response
 
     # Get the path_info.
-    re_res = re_get_path_info.search(response)
-    if re_res != None:
-        try:
-            # print "abcd: " + re_res.group(0)
-            path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
-        except IndexError:
-            path_info_tuple = (re_res.group(2), re_res.group(3), re_res.group(4), re_res.group(1), "")
-        test_case["path_info"] = path_info_tuple
+    # re_res = re_get_path_info.search(response)
+    # if re_res != None:
+    #     try:
+    #         # print "abcd: " + re_res.group(0)
+    #         path_info_tuple = (int(re_res.group(2)), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
+    #     except IndexError:
+    #         path_info_tuple = (int(re_res.group(2)), re_res.group(3), re_res.group(4), re_res.group(1), "")
+    #     test_case["path_info"] = path_info_tuple
+    # else:
+    #     test_case["path_info"] = "Failed to find!!"
+
+    re_ress = re_get_path_info.findall(response)
+    if re_ress != None:
+        test_case["path_info"] = []
+        if len(re_ress) != 0:
+            for re_res in re_ress:
+                try:
+                    # print "abcd: " + re_res.group(0)
+                    path_info_tuple = (int(re_res[1]), re_res[2], re_res[3], re_res[0], re_res[4])
+                except IndexError:
+                    path_info_tuple = (int(re_res[1]), re_res[2], re_res[3], re_res[0], "")
+                test_case["path_info"].append(path_info_tuple)
+        else:
+            test_case["path_info"].append("Failed to find!!")
     else:
-        test_case["path_info"] = "Failed to find!!"
+        test_case["path_info"] = []
+        test_case["path_info"].append("Failed to find!!")
 
     # Added the created id to macros_to_replace.
     if test_case["creative_macro"] != None:
@@ -291,14 +308,21 @@ def do_the_get_path_info(test_cases):
         get_path_info_from_testcase(test_case)
 
 def print_test_case(test_case):
-    print('no: %-5s    line-no: %-5s    cmd: %-55s    user: %-10s    answer: %-20s    time: %-10s' %
+    print('no: %-5s    line-no: %-5s    cmd: %-65s    user: %-10s    answer: %-20s    time: %-10s' %
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_case_path_info(test_case):
-    print('no: %-5s    line-no: %-5s    cmd: %-55s    path_info: %-50s' %
-          (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"]))
+    s = 'no: %-5s    line-no: %-5s    cmd: %-65s    path_info: %-50s' %\
+        (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"][0])
+    print s
+    path_info_pos = s.find("path_info: (") + len("path_info: ") - 1
+    # print path_info from the 2nd.
+    for i in range(len(test_case["path_info"])):
+        if i != 0:
+            print " " * path_info_pos,
+            print test_case["path_info"][i]
 
-# def print_test_cases(test_cases):s
+# def print_test_cases(test_cases):
 #     for test_case in test_cases:
 #         print_test_case(test_case)
 
