@@ -111,7 +111,7 @@ class PatronVerify (wsgi.Middleware):
 
         # op : is used as the security operation for Patron.
         # op = "compute_extension:admin_actions"
-        op = patron_parse.parse(req_method, req_path_info, req_inner_action, template_path_info)
+        op = patron_parse.parse(req_server_port, req_api_version, req_method, req_path_info, req_inner_action, template_path_info)
 
         return (op, target)
 
