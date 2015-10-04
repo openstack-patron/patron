@@ -1,4 +1,7 @@
-#Written by veotax.
+# cmd-integration-test.py
+# Used to test all APIs and get access control result, execution time, path_info and op.
+# Written by veotax.
+# 2015.10
 
 import re
 import os
@@ -9,6 +12,8 @@ import socket
 
 service_name = "nova"
 
+######################################################################
+# Regex Expressions (RE)
 # RE to get execution time.
 re_run_time = re.compile('Command run time is: (.*) seconds')
 
@@ -46,30 +51,12 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
 # HTTP 503 Error:   ERROR (ClientException): Create networks failed (HTTP 503)
 # Command Error:    ERROR (CommandError): No image with a name or ID of 'demo-image1' exists.
-######################################################################
 
+######################################################################
 # Debug log file path.
 debuglog_file_object = open('/root/cmd-integration-test-debuglog.txt', 'w')
 
-# Preset macros for separate machines.
-if socket.gethostname() == "controller":
-    macros_to_replace = {
-    }
-else: # "ly-controller"
-    macros_to_replace = {
-        "$NET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
-        "$KEY_NAME": "key1",
-        "$INSTANCE_NAME": "demo-instance2",
-        "$HOSTNAME": "ly-compute1",
-        "$AGGRE_NAME": "aggregate1",
-        "$SERVER_NAME": "ly-compute1",
-        "$NEW_INSTANCE_NAME": "demo-instance1-new",
-        "$SERVER_GROUP_NAME": "server-group1",
-        "$TENANT_NETWORK_NAME": "tenant-network1",
-        "$TENANT_NETWORK_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
-        "$DEMO_TENANT_ID": "b52703a841604021902133822c9496e1"
-    }
-
+######################################################################
 # Mappings and functions used to get template path info.
 key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
              "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
@@ -113,6 +100,55 @@ def get_template_path_info(req_path_info):
                 path_info_list[i + 1] = "%NAME%"
     template_path_info = "/" + "/".join(path_info_list)
     return template_path_info
+
+######################################################################
+# Get new lines from the targeting service API log file through /var/log/nova/myapi.txt.
+import threading, Queue, subprocess
+tailq = Queue.Queue(maxsize=10) # buffer at most 100 lines
+
+def tail_forever(fn):
+    p = subprocess.Popen(["tail", "-f", fn], stdout=subprocess.PIPE)
+    while 1:
+        line = p.stdout.readline()
+        tailq.put(line)
+        if not line:
+            break
+
+api_log_file_path = "/var/log/" + service_name + "/myapi.txt"
+api_log_fp = open(api_log_file_path, "w")
+api_log_fp.truncate()
+api_log_fp.close()
+threading.Thread(target=tail_forever, args=(api_log_file_path,)).start()
+
+def get_log_lines():
+    global tailq
+    res_log_lines = []
+    try:
+        while True:
+            res_log_lines.append(tailq.get_nowait())
+    except Queue.Empty:
+        pass
+    return res_log_lines
+
+######################################################################
+# Preset macros for separate machines.
+if socket.gethostname() == "controller":
+    macros_to_replace = {
+    }
+else: # "ly-controller"
+    macros_to_replace = {
+        "$NET_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
+        "$KEY_NAME": "key1",
+        "$INSTANCE_NAME": "demo-instance2",
+        "$HOSTNAME": "ly-compute1",
+        "$AGGRE_NAME": "aggregate1",
+        "$SERVER_NAME": "ly-compute1",
+        "$NEW_INSTANCE_NAME": "demo-instance1-new",
+        "$SERVER_GROUP_NAME": "server-group1",
+        "$TENANT_NETWORK_NAME": "tenant-network1",
+        "$TENANT_NETWORK_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
+        "$DEMO_TENANT_ID": "b52703a841604021902133822c9496e1"
+    }
 
 remove_macro_pattern = ""
 for k in macros_to_replace:
@@ -163,6 +199,8 @@ def macro_replace_callback(matchobj):
 def get_macro_removed_command(cmd):
     return re_remove_macro.sub(macro_replace_callback, cmd)
 
+######################################################################
+# Test case initializations
 def init_test_cases_from_script(start_line=0, end_line=99999):
     file_object = open('/usr/lib/python2.7/dist-packages/patron-test/' + service_name + '-cmd-test.sh', 'r')
     lines = file_object.readlines()
@@ -228,6 +266,9 @@ def init_test_cases_example():
     test_cases.append(test_case)
 
     return test_cases
+
+######################################################################
+# Functions
 
 # Wrap the command using expect like belows if it is a "nova root-password" command:
 # expect <<- DONE
@@ -350,11 +391,10 @@ def print_test_case(test_case):
         if i != 0:
             print " " * path_info_pos,
             print test_case["path_info"][i]
+    pprint(get_log_lines())
 
-# def print_test_cases(test_cases):
-#     for test_case in test_cases:
-#         print_test_case(test_case)
-
+######################################################################
+# Main function.
 
 do_the_test(init_test_cases_from_script())
 #do_the_test(init_test_cases_from_script())
