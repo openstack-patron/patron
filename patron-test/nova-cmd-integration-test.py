@@ -48,8 +48,10 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 # Command Error:    ERROR (CommandError): No image with a name or ID of 'demo-image1' exists.
 ######################################################################
 
+# Debug log file path.
 debuglog_file_object = open('/root/cmd-integration-test-debuglog.txt', 'w')
 
+# Preset macros for separate machines.
 if socket.gethostname() == "controller":
     macros_to_replace = {
     }
@@ -67,6 +69,50 @@ else: # "ly-controller"
         "$TENANT_NETWORK_ID": "7416c4f4-5718-4c41-81df-b9eeb3c7ff41", # "demo-net"
         "$DEMO_TENANT_ID": "b52703a841604021902133822c9496e1"
     }
+
+# Mappings and functions used to get template path info.
+key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
+             "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
+             "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+             "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
+             "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
+             "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
+             "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+             "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
+             "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
+             "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
+             "images": "",
+             "volumes": ""
+             }
+key_ids = {}
+
+def get_template_path_info(req_path_info):
+    global key_calls
+    global key_ids
+    id_pattern = "[0-9a-f]{32}"
+    uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+    path_info_list = req_path_info.strip("/").split("/")
+    if len(path_info_list) > 0:
+        key_ids["project_id"] = path_info_list[0]
+        if re.match(id_pattern, path_info_list[0]) != None:
+                path_info_list[0] = "%ID%"
+        elif re.match(uuid_patern, path_info_list[0]) != None:
+            path_info_list[0] = "%UUID%"
+        else:
+            path_info_list[0] = "%NAME%"
+
+    for i in range(len(path_info_list) - 1):
+        if path_info_list[i] in key_calls and path_info_list[i + 1] != "detail":
+            key_ids[path_info_list[i]] = path_info_list[i + 1]
+            if re.match(id_pattern, path_info_list[i + 1]) != None:
+                path_info_list[i + 1] = "%ID%"
+            elif re.match(uuid_patern, path_info_list[i + 1]) != None:
+                path_info_list[i + 1] = "%UUID%"
+            else:
+                path_info_list[i + 1] = "%NAME%"
+    template_path_info = "/" + "/".join(path_info_list)
+    return template_path_info
 
 remove_macro_pattern = ""
 for k in macros_to_replace:
@@ -270,9 +316,9 @@ def get_all_from_testcase(test_case):
             for re_res in re_ress:
                 try:
                     # print "abcd: " + re_res.group(0)
-                    path_info_tuple = (int(re_res[1]), re_res[2], re_res[3], re_res[0], re_res[4])
+                    path_info_tuple = (int(re_res[1]), re_res[2], get_template_path_info(re_res[3]), re_res[0], re_res[4])
                 except IndexError:
-                    path_info_tuple = (int(re_res[1]), re_res[2], re_res[3], re_res[0], "")
+                    path_info_tuple = (int(re_res[1]), re_res[2], get_template_path_info(re_res[3]), re_res[0], "")
                 test_case["path_info"].append(path_info_tuple)
         else:
             test_case["path_info"].append("Failed to find!!")
