@@ -104,7 +104,7 @@ def get_template_path_info(req_path_info):
 ######################################################################
 # Get new lines from the targeting service API log file through /var/log/nova/myapi.txt.
 import threading, Queue, subprocess
-tailq = Queue.Queue(maxsize=10) # buffer at most 100 lines
+tailq = Queue.Queue(maxsize=100) # Buffer at most 100 lines
 
 def tail_forever(fn):
     p = subprocess.Popen(["tail", "-f", fn], stdout=subprocess.PIPE)
@@ -382,6 +382,7 @@ def do_the_test(test_cases):
         get_all_from_testcase(test_case)
 
 def print_test_case(test_case):
+    print "######################################################################"
     s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-5s    answer: %-15s    time: %-5s    path_info: %-50s' %\
         (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], test_case["path_info"][0])
     print s
