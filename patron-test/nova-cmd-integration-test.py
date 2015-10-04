@@ -195,66 +195,7 @@ def wrap_command(cmd):
     else:
         return cmd
 
-def do_the_test(test_cases):
-    for test_case in test_cases:
-        test_case["creative_macro"] = get_creative_macro(test_case["command"])
-        test_case["command"] = get_macro_removed_command(test_case["command"])
-        mytask = subprocess.Popen("exec bash -c 'source /root/" + test_case["user"] + "-openrc.sh;" + wrap_command(test_case["command"]) + "'", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        response = mytask.stdout.read()
-
-        # Uncommented it to see the real response.
-        # print response
-
-        # Get the time.
-        re_res = re_run_time.search(response)
-        if re_res != None:
-            seconds = re_res.group(1)
-        else:
-            seconds = "N/A"
-
-        while True:
-            # HTTP Error check.
-            re_res = re_http_error.search(response)
-            if re_res != None:
-                http_error = re_res.group(3)
-                if http_error != "403":
-                    answer = "HTTP " + http_error + " Error"
-                    break
-                else:
-                    answer = "Denied"
-                    break
-
-            # Usage Error check.
-            if re_usage_error.match(response):
-                answer = "Usage Error"
-                break
-
-            # Other Errors check.
-            if re_bash_error.match(response):
-                answer = "Bash Syntax Error"
-                break
-
-            # Other Errors check.
-            if re_error.match(response):
-                answer = "Other Errors"
-                break
-
-            answer = "Permitted"
-            break
-
-        # Added the created id to macros_to_replace.
-        if test_case["creative_macro"] != None:
-            test_case["created_id"] = get_created_id(response)
-            if test_case["created_id"] != None:
-                add_macro_to_replace(test_case["creative_macro"].replace("NAME", "ID"), test_case["created_id"])
-            else:
-                print "Error: Created_ID not found!!"
-
-        test_case["time"] = seconds
-        test_case["answer"] = answer
-        print_test_case(test_case)
-
-def get_path_info_from_testcase(test_case):
+def get_all_from_testcase(test_case):
     test_case["creative_macro"] = get_creative_macro(test_case["command"])
     test_case["command"] = get_macro_removed_command(test_case["command"])
     debug_command = re_add_debug.sub(add_debug_replace_str, test_case["command"])
@@ -264,18 +205,47 @@ def get_path_info_from_testcase(test_case):
     # Uncommented it to see the real response.
     # print response
 
-    # Get the path_info.
-    # re_res = re_get_path_info.search(response)
-    # if re_res != None:
-    #     try:
-    #         # print "abcd: " + re_res.group(0)
-    #         path_info_tuple = (int(re_res.group(2)), re_res.group(3), re_res.group(4), re_res.group(1), re_res.group(5))
-    #     except IndexError:
-    #         path_info_tuple = (int(re_res.group(2)), re_res.group(3), re_res.group(4), re_res.group(1), "")
-    #     test_case["path_info"] = path_info_tuple
-    # else:
-    #     test_case["path_info"] = "Failed to find!!"
+    # Get the time.
+    re_res = re_run_time.search(response)
+    if re_res != None:
+        seconds = re_res.group(1)
+    else:
+        seconds = "N/A"
+    test_case["time"] = seconds
 
+    # Get the answer.
+    while True:
+        # HTTP Error check.
+        re_res = re_http_error.search(response)
+        if re_res != None:
+            http_error = re_res.group(3)
+            if http_error != "403":
+                answer = "HTTP " + http_error + " Error"
+                break
+            else:
+                answer = "Denied"
+                break
+
+        # Usage Error check.
+        if re_usage_error.match(response):
+            answer = "Usage Error"
+            break
+
+        # Other Errors check.
+        if re_bash_error.match(response):
+            answer = "Bash Syntax Error"
+            break
+
+        # Other Errors check.
+        if re_error.match(response):
+            answer = "Other Errors"
+            break
+
+        answer = "Permitted"
+        break
+    test_case["answer"] = answer
+
+    # Get the path_info.
     re_ress = re_get_path_info.findall(response)
     if re_ress != None:
         test_case["path_info"] = []
@@ -303,17 +273,17 @@ def get_path_info_from_testcase(test_case):
 
     print_test_case_path_info(test_case)
 
-def do_the_get_path_info(test_cases):
+def do_the_test(test_cases):
     for test_case in test_cases:
-        get_path_info_from_testcase(test_case)
+        get_all_from_testcase(test_case)
 
 def print_test_case(test_case):
     print('no: %-5s    line-no: %-5s    cmd: %-65s    user: %-10s    answer: %-20s    time: %-10s' %
           (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"]))
 
 def print_test_case_path_info(test_case):
-    s = 'no: %-5s    line-no: %-5s    cmd: %-65s    path_info: %-50s' %\
-        (test_case["no"], test_case["line-no"], test_case["command"], test_case["path_info"][0])
+    s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-10s    answer: %-20s    time: %-10s    path_info: %-50s' %\
+        (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], test_case["path_info"][0])
     print s
     path_info_pos = s.find("path_info: (") + len("path_info: ") - 1
     # print path_info from the 2nd.
@@ -327,7 +297,7 @@ def print_test_case_path_info(test_case):
 #         print_test_case(test_case)
 
 
-do_the_get_path_info(init_test_cases_from_script())
+do_the_test(init_test_cases_from_script())
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
