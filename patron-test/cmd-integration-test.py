@@ -72,6 +72,7 @@ key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
              "volumes": ""
              }
 key_ids = {}
+path_to_ops = {}
 
 def get_template_path_info(req_path_info):
     global key_calls
@@ -381,18 +382,60 @@ def do_the_test(test_cases):
     for test_case in test_cases:
         get_all_from_testcase(test_case)
 
+def get_act(log_line):
+    re_get_act = re.compile('act = \'([A-Za-z-_:]*)\', ')
+    re_res = re_get_act.search(log_line)
+    if re_res != None:
+        act = re_res.group(1)
+    else:
+        act = None
+    return act
+
+def get_ops(log_lines):
+    ops = []
+    head_lines = []
+    for i in range(len(log_lines)):
+        if log_lines[i].startswith("request.path_info ="):
+            head_lines.append(i)
+
+    for i in range(len(head_lines)):
+        start_line = head_lines[i] + 1
+        if i != len(head_lines) - 1:
+            end_line = head_lines[i + 1]
+        else:
+            end_line = len(log_lines)
+        ops_per_path_info = []
+        for j in range(start_line, end_line):
+            act = get_act(log_lines[j])
+            if act != None:
+                ops_per_path_info.append(act)
+        ops.append(tuple(ops_per_path_info))
+    return tuple(ops)
+
 def print_test_case(test_case):
-    print "######################################################################"
+    #print "######################################################################"
+
+    # Get the corresponding contents in /var/log/%SERVICE_NAME%/myapi.txt
+    # usually including request.path_info, meth, act (op) and target.
+    log_lines = get_log_lines()
+    ops = get_ops(log_lines)
+
+    # Print the testcase.
     s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-5s    answer: %-15s    time: %-5s    path_info: %-50s' %\
-        (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], test_case["path_info"][0])
+        (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], {test_case["path_info"][0]: ops[0]})
+    path_to_ops[test_case["path_info"][0]] = ops[0]
     print s
-    path_info_pos = s.find("path_info: (") + len("path_info: ") - 1
-    # print path_info from the 2nd.
+    path_info_pos = s.find("path_info: ") + len("path_info: ") - 1
+    # Print extra path_infos from the 2nd line.
     for i in range(len(test_case["path_info"])):
         if i != 0:
             print " " * path_info_pos,
-            print test_case["path_info"][i]
-    pprint(get_log_lines())
+            print {test_case["path_info"][i]: ops[i]}
+            path_to_ops[test_case["path_info"][i]] = ops[i]
+
+    # Print myapi.txt's contents.
+    #pprint(log_lines)
+    # pprint(ops)
 
 ######################################################################
 # Main function.
@@ -401,5 +444,10 @@ do_the_test(init_test_cases_from_script())
 #do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
+# Print the path_to_ops we generated.
+print "\n"
+print "######################################################################"
+print "path_to_ops:\n"
+pprint(path_to_ops)
 debuglog_file_object.close()
 
