@@ -67,6 +67,11 @@ key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
              "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
              "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
              "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
+             "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
+             "os-hypervisors": "nova.compute.api.HostAPI.compute_node_get(name)",
+             "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
+             "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
+             "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
              "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
              "images": "",
              "volumes": ""
@@ -101,6 +106,18 @@ def get_template_path_info(req_path_info):
                 path_info_list[i + 1] = "%NAME%"
     template_path_info = "/" + "/".join(path_info_list)
     return template_path_info
+
+def get_templated_inner_action(req_path_info, req_inner_action):
+    action_word_pattern = "{\"([A-Za-z-]*)\":"
+    if req_path_info.endswith("/action"):
+        re_res = re.search(action_word_pattern, req_inner_action)
+        if re_res != None:
+            action_word = re_res.group(1)
+        else:
+            action_word = "Inner Action Word Error!!"
+        return action_word
+    else:
+        return ""
 
 ######################################################################
 # Get new lines from the targeting service API log file through /var/log/nova/myapi.txt.
@@ -358,7 +375,7 @@ def get_all_from_testcase(test_case):
             for re_res in re_ress:
                 try:
                     # print "abcd: " + re_res.group(0)
-                    path_info_tuple = (int(re_res[1]), re_res[2], get_template_path_info(re_res[3]), re_res[0], re_res[4])
+                    path_info_tuple = (int(re_res[1]), re_res[2], get_template_path_info(re_res[3]), re_res[0], get_templated_inner_action(re_res[3], re_res[4]))
                 except IndexError:
                     path_info_tuple = (int(re_res[1]), re_res[2], get_template_path_info(re_res[3]), re_res[0], "")
                 test_case["path_info"].append(path_info_tuple)
