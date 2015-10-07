@@ -36,6 +36,7 @@ class PatronVerify (wsgi.Middleware):
     def get_template_path_info(self, req_path_info, key_calls, key_ids):
         id_pattern = "[0-9a-f]{32}"
         uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        value_patern = "=([^&]*)(&|$)"
 
         path_info_list = req_path_info.strip("/").split("/")
         if len(path_info_list) > 0:
@@ -57,7 +58,21 @@ class PatronVerify (wsgi.Middleware):
                 else:
                     path_info_list[i + 1] = "%NAME%"
         template_path_info = "/" + "/".join(path_info_list)
+        # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
+        template_path_info = re.sub(value_patern, "=%VALUE%", template_path_info)
         return template_path_info
+
+    def get_templated_inner_action(self, req_path_info, req_inner_action):
+        action_word_pattern = "{\"([A-Za-z-]*)\":"
+        if req_path_info.endswith("/action"):
+            re_res = re.search(action_word_pattern, req_inner_action)
+            if re_res != None:
+                action_word = re_res.group(1)
+            else:
+                action_word = "Inner Action Word Error!!"
+            return action_word
+        else:
+            return ""
 
     def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
         key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
@@ -76,6 +91,7 @@ class PatronVerify (wsgi.Middleware):
         key_ids = {}
 
         template_path_info = self.get_template_path_info(req_path_info, key_calls, key_ids)
+        template_inner_action = self.get_templated_inner_action(req_path_info, req_inner_action)
 
         if key_ids.has_key("servers"):
             key_name = "servers"
@@ -116,7 +132,7 @@ class PatronVerify (wsgi.Middleware):
 
         # op : is used as the security operation for Patron.
         # op = "compute_extension:admin_actions"
-        op = patron_parse.parse(req_server_port, req_api_version, req_method, req_path_info, req_inner_action, template_path_info)
+        op = patron_parse.parse(req_server_port, req_api_version, req_method, req_path_info, template_inner_action, template_path_info)
 
         return (op, target)
 
@@ -198,9 +214,6 @@ class PatronVerify (wsgi.Middleware):
         if op == "KEY_ERROR":
             # If the mappings failed to find an op, we return the rare HTTP 412 error, to let the user know this is the error position.
             return webob.exc.HTTPPreconditionFailed()
-        elif op == "INDEX_ERROR":
-            # If the mapped op tuple is empty, we return the rare HTTP 413 error, to let the user know this is the error position.
-            return webob.exc.HTTPRequestEntityTooLarge()
 
         # Get the subject SID.
         subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id
