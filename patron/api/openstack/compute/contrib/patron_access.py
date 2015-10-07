@@ -133,10 +133,17 @@ class PatronAccessController(object):
         file_object.close()
 
         # If "op" is not valid, then deny the access.
-        if op == None or op == "" or op == "None":
+        if op == None or op == "None":
             return {'command': 'verify',
                     'op': op,
                     'res': False}
+        # If "op" is "", it means no need to check policy, we should just grant the access.
+        elif op == "":
+            return {'command': 'verify',
+                    'op': op,
+                    'context.project_id': context.project_id,
+                    'context.user_id': context.user_id,
+                    'res': True}
 
         try:
             res = policy.enforce(context, op, target)
