@@ -25,8 +25,8 @@ re_cmd_error = re.compile('ERROR \((.*)\):')
 re_error = re.compile('(.*)ERROR:(.*)')
 
 # RE to add "--debug" to original command.
-re_add_debug = re.compile('^nova')
-add_debug_replace_str = "nova --debug"
+re_add_debug = re.compile('^' + service_name)
+add_debug_replace_str = service_name + " --debug"
 
 # RE to get path_info.
 re_get_path_info = re.compile('.*REQ: curl -g -i -X (.*) http://[0-9a-zA-Z-]*:([0-9]*)(/[0-9v]*)(/[0-9a-zA-Z-/\?&_=.:]*) -H \"User-Agent: python-' + service_name + 'client\"(?:.* -d \'(.*)\')?')
@@ -125,12 +125,19 @@ def get_templated_inner_action(req_path_info, req_inner_action):
 ######################################################################
 # Get new lines from the targeting service API log file through /var/log/nova/myapi.txt.
 import threading, Queue, subprocess
+import select
 tailq = Queue.Queue(maxsize=100) # Buffer at most 100 lines
+stop_tail_thread = 0
 
 def tail_forever(fn):
     p = subprocess.Popen(["tail", "-f", fn], stdout=subprocess.PIPE)
-    while 1:
-        line = p.stdout.readline()
+    while stop_tail_thread == 0:
+        # Need to stop this thread using stop_tail_thread
+        # Method comes from: http://blog.webapps.ie/2013/04/10/non-blocking-readline-in-python/
+        (rlist, wlist, xlist) = select.select([p.stdout], [], [], 0.5)
+        if len(rlist) == 0:
+            continue
+        line = rlist[0].readline()
         tailq.put(line)
         if not line:
             break
@@ -469,5 +476,6 @@ print "\n"
 print "######################################################################"
 print "path_to_ops:\n"
 pprint(path_to_ops)
-debuglog_file_object.close()
 
+debuglog_file_object.close()
+stop_tail_thread = 1
