@@ -84,6 +84,7 @@ def get_template_path_info(req_path_info):
     global key_ids
     id_pattern = "[0-9a-f]{32}"
     uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    value_patern = "=([^&]*)(&|$)"
 
     path_info_list = req_path_info.strip("/").split("/")
     if len(path_info_list) > 0:
@@ -105,6 +106,8 @@ def get_template_path_info(req_path_info):
             else:
                 path_info_list[i + 1] = "%NAME%"
     template_path_info = "/" + "/".join(path_info_list)
+    # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
+    template_path_info = re.sub(value_patern, "=%VALUE%", template_path_info)
     return template_path_info
 
 def get_templated_inner_action(req_path_info, req_inner_action):
@@ -458,7 +461,7 @@ def print_test_case(test_case):
 # Main function.
 
 do_the_test(init_test_cases_from_script())
-#do_the_test(init_test_cases_from_script())
+# do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
 
 # Print the path_to_ops we generated.
