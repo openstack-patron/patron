@@ -418,6 +418,15 @@ def get_act(log_line):
         act = None
     return act
 
+# This is the list with safe get method
+# Refers to: http://stackoverflow.com/questions/5125619/why-list-doesnt-have-safe-get-method-like-dictionary
+class safelist(list):
+    def get(self, index, default=None):
+        try:
+            return self.__getitem__(index)
+        except IndexError:
+            return default
+
 def get_ops(log_lines):
     ops = []
     head_lines = []
@@ -437,7 +446,7 @@ def get_ops(log_lines):
             if act != None:
                 ops_per_path_info.append(act)
         ops.append(tuple(ops_per_path_info))
-    return tuple(ops)
+    return safelist(ops)
 
 def print_test_case(test_case):
     #print "######################################################################"
@@ -449,16 +458,16 @@ def print_test_case(test_case):
 
     # Print the testcase.
     s = 'no: %-5s    line-no: %-5s    cmd: %-65s    user: %-5s    answer: %-15s    time: %-5s    path_info: %-50s' %\
-        (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], {test_case["path_info"][0]: ops[0]})
-    path_to_ops[test_case["path_info"][0]] = ops[0]
+        (test_case["no"], test_case["line-no"], test_case["command"], test_case["user"], test_case["answer"], test_case["time"], {test_case["path_info"][0]: ops.get(0, "Get OP Error!!")})
+    path_to_ops[test_case["path_info"][0]] = ops.get(0, "Get OP Error!!")
     print s
     path_info_pos = s.find("path_info: ") + len("path_info: ") - 1
     # Print extra path_infos from the 2nd line.
     for i in range(len(test_case["path_info"])):
         if i != 0:
             print " " * path_info_pos,
-            print {test_case["path_info"][i]: ops[i]}
-            path_to_ops[test_case["path_info"][i]] = ops[i]
+            print {test_case["path_info"][i]: ops.get(i, "Get OP Error!!")}
+            path_to_ops[test_case["path_info"][i]] = ops.get(i, "Get OP Error!!")
 
     # Print myapi.txt's contents.
     #pprint(log_lines)
