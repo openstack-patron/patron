@@ -23,6 +23,7 @@ re_usage_error = re.compile('(.*)usage:(.*)')
 re_bash_error = re.compile('(.*)bash(.*)line(.*)syntax error(.*)')
 re_cmd_error = re.compile('ERROR \((.*)\):')
 re_error = re.compile('(.*)ERROR:(.*)')
+re_failed = re.compile('(.*)failed:(.*)')
 
 # RE to add "--debug" to original command.
 re_add_debug = re.compile('^' + service_name)
@@ -371,6 +372,13 @@ def get_all_from_testcase(test_case):
         # Other Errors check.
         if re_error.match(response):
             answer = "Other Errors"
+            break
+
+        # Other Failures check.
+        # response = "Delete for image demo-image1 failed: No image with a name or ID of 'demo-image1' exists."
+        if response.find("failed:") != -1:
+        # if re_failed.match(response):
+            answer = "Other Failures"
             break
 
         answer = "Permitted"
