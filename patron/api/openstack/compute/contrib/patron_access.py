@@ -113,8 +113,15 @@ class PatronAccessController(object):
                 op = body.get('op', None)
                 file_object.write("\npatron.target:\n")
                 if target != None:
-                    for d,x in target.items():
-                        file_object.write("%s = %s\n" % (d, x))
+                    if isinstance(target, dict):
+                        for d,x in target.items():
+                            file_object.write("%s = %s\n" % (d, x))
+                    # then it is a list-wrapped dict collection.
+                    else:
+                        for target_item in target:
+                            for d,x in target_item.items():
+                                file_object.write("%s = %s\n" % (d, x))
+
                 else:
                     file_object.write("None\n")
         except ValueError or KeyError:
