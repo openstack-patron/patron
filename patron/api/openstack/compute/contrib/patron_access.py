@@ -145,6 +145,11 @@ class PatronAccessController(object):
                     'context.user_id': context.user_id,
                     'res': True}
 
+        # Test patron's functionality by returning False altogether.
+        # return {'command': 'verify',
+        #         'op': op,
+        #         'res': False}
+
         try:
             res = policy.enforce(context, op, target)
             if res != False:
