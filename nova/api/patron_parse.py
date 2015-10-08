@@ -3,6 +3,9 @@ Added by puyangsky
 Dict for parse path_info URL into rule
 """
 import re
+from oslo_log import log as logging
+
+LOG = logging.getLogger(__name__)
 
 # The mappings from URL path to op.
 # This mappings can be sorted, duplicate-removed and formatted by:
@@ -230,6 +233,7 @@ def parse(req_server_port, req_api_version, req_method, path_info, req_inner_act
     try:
         op = path_op_map[(req_server_port, req_api_version, template_path_info, req_method, inner_action)]
     except KeyError:
+        LOG.info("KEY_ERROR, failed to find the key: %r", (req_server_port, req_api_version, template_path_info, req_method, inner_action))
         return "KEY_ERROR"
     try:
         op = op[0]
