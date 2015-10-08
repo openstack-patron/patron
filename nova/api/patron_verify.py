@@ -180,7 +180,12 @@ class PatronVerify (wsgi.Middleware):
         req_server_port = req.server_port
         req_api_version = req.script_name
         req_method = req.method
-        req_path_info = req.path_info
+        # Eventually, req_path_info will look like:
+        # /85c8848b1dd64c7ebb2c5baeb12e25c3/flavors?is_public=None
+        if req.query_string == "":
+            req_path_info = req.path_info
+        else:
+            req_path_info = req.path_info + "?" + req.query_string
         # if req.is_body_readable:
         #     for d, x in req.json.items():
         #         req_inner_action = d
