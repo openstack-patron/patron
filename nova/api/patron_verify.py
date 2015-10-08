@@ -86,7 +86,7 @@ class PatronVerify (wsgi.Middleware):
                      "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
                      "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
                      "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
-                     "os-hypervisors": "nova.compute.api.HostAPI.compute_node_get(name)",
+                     "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
                      "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
                      "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
                      "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",

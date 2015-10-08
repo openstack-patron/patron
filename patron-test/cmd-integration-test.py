@@ -50,7 +50,8 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 # HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
 # HTTP 503 Error:   ERROR (ClientException): Create networks failed (HTTP 503)
-# Command Error:    ERROR (CommandError): No image with a name or ID of 'demo-image1' exists.
+# CommandError:    ERROR (CommandError): No image with a name or ID of 'demo-image1' exists.
+# Other Failures:   Delete for image demo-image1 failed: No image with a name or ID of 'demo-image1' exists.
 
 ######################################################################
 # Debug log file path.
@@ -68,7 +69,7 @@ key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
              "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
              "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
              "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
-             "os-hypervisors": "nova.compute.api.HostAPI.compute_node_get(name)",
+             "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
              "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
              "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
              "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
@@ -487,6 +488,10 @@ def print_test_case(test_case):
 do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_from_script())
 # do_the_test(init_test_cases_example2())
+
+# Remember if you want to get the right OP result:
+# 1) Do not run any commands while running this script, otherwise myapi.txt will log extra information.
+# 2) Do not swtich on AEM, otherwise AEM will possibly deny the access, cause myapi.txt log nothing.
 
 # Print the path_to_ops we generated.
 print "\n"
