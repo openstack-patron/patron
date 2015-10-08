@@ -84,7 +84,7 @@ path_op_map = \
  (8774, '/v2', '/%ID%/os-services/disable', 'PUT', ''): ('compute_extension:services',),
  (8774, '/v2', '/%ID%/os-services/enable', 'PUT', ''): ('compute_extension:services',),
  (8774, '/v2', '/%ID%/os-simple-tenant-usage/%ID%', 'GET', ''): ('compute_extension:simple_tenant_usage:show',),
- (8774, '/v2', '/%ID%/os-simple-tenant-usage?start=%VALUE%end=%VALUE%detailed=%VALUE%', 'GET', ''): ('compute_extension:simple_tenant_usage:list',),
+ (8774, '/v2', '/%ID%/os-simple-tenant-usage?start=%VALUE%&end=%VALUE%&detailed=%VALUE%', 'GET', ''): ('compute_extension:simple_tenant_usage:list',),
  (8774, '/v2', '/%ID%/os-tenant-networks', 'GET', ''): ('compute_extension:os-tenant-networks',),
  (8774, '/v2', '/%ID%/os-tenant-networks', 'POST', ''): ('compute_extension:os-tenant-networks',),
  (8774, '/v2', '/%ID%/os-tenant-networks/%UUID%', 'DELETE', ''): ('compute_extension:os-tenant-networks',),
@@ -215,7 +215,7 @@ path_op_map = \
                                                     'compute_extension:extended_ips',
                                                     'compute_extension:extended_availability_zone',
                                                     'compute_extension:disk_config'),
- (8774, '/v2', '/%ID%/servers?all_tenants=%VALUE%name=%VALUE%', 'GET', ''): ('compute:get_all',),
+ (8774, '/v2', '/%ID%/servers?all_tenants=%VALUE%&name=%VALUE%', 'GET', ''): ('compute:get_all',),
  (8774, '/v2', '/%ID%/servers?name=%VALUE%', 'GET', ''): ('compute:get_all',)}
 
 

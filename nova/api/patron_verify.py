@@ -59,7 +59,8 @@ class PatronVerify (wsgi.Middleware):
                     path_info_list[i + 1] = "%NAME%"
         template_path_info = "/" + "/".join(path_info_list)
         # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
-        template_path_info = re.sub(value_patern, "=%VALUE%", template_path_info)
+        template_path_info = re.sub(value_patern, "=%VALUE%&", template_path_info)
+        template_path_info = template_path_info.strip("&")
         return template_path_info
 
     def get_templated_inner_action(self, req_path_info, req_inner_action):

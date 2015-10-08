@@ -45,7 +45,6 @@ re_get_created_id = re.compile('\| (' + uuid_patern + ') \|')
 # HTTP 404 Error:   ERROR (NotFound): No instances found for any event (HTTP 404)
 # HTTP 409 Error:   ERROR (Conflict): Key pair 'key1' already exists. (HTTP 409)
 # HTTP 412 Error:   ERROR (ClientException): Unknown Error (HTTP 412), this error is actually because path_to_op fails to find an op
-# HTTP 413 Error:   ERROR (OverLimit): Over limit (HTTP 413), this error is actually because op tuple returned by path_to_op is empty
 # HTTP 422 Error:   ERROR (ClientException): Unable to process the contained instructions (HTTP 422)
 # HTTP 500 Error:   ERROR (ClientException): The server has either erred or is incapable of performing the requested operation. (HTTP 500)
 # HTTP 501 Error:   ERROR (HTTPNotImplemented): Unable to get dns domain (HTTP 501)
@@ -107,7 +106,8 @@ def get_template_path_info(req_path_info):
                 path_info_list[i + 1] = "%NAME%"
     template_path_info = "/" + "/".join(path_info_list)
     # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
-    template_path_info = re.sub(value_patern, "=%VALUE%", template_path_info)
+    template_path_info = re.sub(value_patern, "=%VALUE%&", template_path_info)
+    template_path_info = template_path_info.strip("&")
     return template_path_info
 
 def get_templated_inner_action(req_path_info, req_inner_action):
