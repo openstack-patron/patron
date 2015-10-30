@@ -1,10 +1,13 @@
 import re
 
+op_map = {}
+
 def parse_five_keys(test):
 	#print test
 	key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
              "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
              "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+			 "os-agents": "",
              "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
              "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
              "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
@@ -15,13 +18,21 @@ def parse_five_keys(test):
              "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
              "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
              "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
+			 "os-floating-ips":"",
+			 "os-security-group-rules":"",
              "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
+		     "os-extra_specs":"",
+			 "os-instance_usage_audit_log": "",
              "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
              "images": "",
              "volumes": ""
              }
 	key_ids = {}
-	lists = []
+	port = None
+	version = None
+	method = None
+	str_path_info = None
+	str_inner_action = ''
 	#test = "req_port = 8774, req_api_version = u'/v2', req_method = 'POST', req_path_info = u'/df1d1e97c4f54e5a8d790d4684c3fa2a/servers/detail', req_inner_action = u''"
 	port_pattern = re.compile("req_port = (.*), req_api_version")
 	version_pattern = re.compile(".*req_api_version = (.*), req_method.*")
@@ -37,15 +48,16 @@ def parse_five_keys(test):
 	m4 = re.match(path_info_pattern, test)
 	m5 = re.match(inner_action_pattern, test)
 	if m1 != None:
-		lists.append(m1.group(1))
+		port = m1.group(1)
 	if m2 != None:
-		lists.append(m2.group(1))
+		if m2.group(1).startswith('u'):
+			version = m2.group(1)[2:len(m2.group(1))-1]
 	if m3 != None:
-		lists.append(m3.group(1))
+		method = m3.group(1)[1:len(m3.group(1))-1]
 	if m4 != None:
 		path_info = m4.group(1)
 		if path_info.startswith('u'):
-			path_info = path_info[2:]
+			path_info = path_info[2:len(path_info)-1]
 		path_info_list = path_info.strip('/').split('/')
 		#print path_info_list
 		if len(path_info_list) > 0:
@@ -67,12 +79,18 @@ def parse_five_keys(test):
 		temp = "/" + "/".join(path_info_list)
 		temp = re.sub(value_pattern, "=%VALUE%", temp)
 		temp = temp.strip("&")
-		lists.append(temp)
+		str_path_info = temp
 	if m5 != None:
-		lists.append(m5.group(1))
-	#print lists
-	return lists
-
+		inner_action = m5.group(1)
+		if inner_action == '':
+			str_inner_action = ""
+		else:
+			inner_action_pattern1 = re.compile("{\"([A-Za-z]*)\":")
+			m = re.search(inner_action_pattern1, inner_action[1:])
+			if m != None:
+				inner_action = m.group(1)
+	five_key_tuple = (port, version, method, str_path_info, str_inner_action)
+	print five_key_tuple
 
 # parse op
 def op_parse(string):
@@ -128,8 +146,7 @@ def core_parse():
 			else:
 				result = "Dennied"
 			do_write(i,five_key_list, ops, result)
-		else:		
-			do_write(i,five_key_list, ops, result)		
-	
-core_parse()
+		else:
+			do_write(i,five_key_list, ops, result)
 
+core_parse()
