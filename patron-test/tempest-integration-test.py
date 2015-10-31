@@ -28,10 +28,10 @@ def parse_five_keys(test):
              "volumes": ""
              }
 	key_ids = {}
-	port = None
-	version = None
-	method = None
-	str_path_info = None
+	port = ''
+	version = ''
+	method = ''
+	str_path_info = ''
 	str_inner_action = ''
 	#test = "req_port = 8774, req_api_version = u'/v2', req_method = 'POST', req_path_info = u'/df1d1e97c4f54e5a8d790d4684c3fa2a/servers/detail', req_inner_action = u''"
 	port_pattern = re.compile("req_port = (.*), req_api_version")
@@ -89,8 +89,10 @@ def parse_five_keys(test):
 			m = re.search(inner_action_pattern1, inner_action[1:])
 			if m != None:
 				inner_action = m.group(1)
+				str_inner_action = inner_action
 	five_key_tuple = (port, version, method, str_path_info, str_inner_action)
 	print five_key_tuple
+	return five_key_tuple
 
 # parse op
 def op_parse(string):
@@ -102,24 +104,44 @@ def op_parse(string):
 
 #runtime result
 def rs_parse(string):
-	print string
+	#print string
+	rs = []
 	rs_pattern = re.compile(".*Response - Headers: {'status': '([0-9]{3})', 'content-length.*", re.S)
+	time_pattern = re.compile(".* ([0-9]{1}.[0-9]{3}s)\n", re.S)
 	m = re.match(rs_pattern, string)
+	m1 = re.match(time_pattern, string)
 	#print m.group(1)
 	if m != None:
-		return m.group(1)
+		rs.append(m.group(1))
+	if m1 != None:
+		rs.append(m1.group(1))
+	return rs
 
 # write results in file in line
-def do_write(num,five_key, op, result):
+def do_write(num, result, time):
 	f = open('/var/log/op/nova-op.log','a+')
-	f.write("\nno : %r\nfive keys : %r\nop : %r\nresult : %r\n" % (num,five_key, op, result))
+	f.write("\nno : %r\tresult : %r\ttime : %r\n" % (num, result, time))
 	f.close
+
+# write op mapping
+def do_write_opmap():
+	f = open('/var/log/op/nova-op-map.log','a+')
+	for k,v in op_map.items():
+		f.write("%r : %r\n" % (k,v))
+	f.close()
+
+def do_write_time(a):
+	f = open('/var/log/op/nova-op.log','a+')
+	f.write("\n\n----------------------------------------------------------------\n\n")
+	f.write("total time : %r" % a)
+	f.close()
 
 # core parser
 def core_parse():
-	lists = []
-	result = ''
-	five_key_list = []
+	t = ''
+	total = 0
+	result0 = ''
+	five_key_tuple = ()
 	f = open('/root/result.txt')
 	STRING = f.read()
 	lists = STRING.split("### ")
@@ -128,25 +150,39 @@ def core_parse():
 		if lists[i].find("$"):
 			#five keys
 			test = lists[i].split("$")[0]
-			five_key_list = parse_five_keys(test)
+			five_key_tuple = parse_five_keys(test)
 			#op
 			tmp = lists[i].split("$ ")
 			l = len(tmp)
+
 			if l>2:
 				for j in range(1,l-1):
 					tmp[j] = tmp[j].strip()
 					tmp[j] = tmp[j].strip('\n')
 					ops.append(tmp[j])
-			tmp[l-1] = tmp[l-1].strip()
-			ops.append(op_parse(tmp[l-1]))
+			tmp[-1] = tmp[-1].strip()
+			ops.append(op_parse(tmp[-1]))
+			ops_tuple = tuple(ops)
 			#runtime result
 			result = rs_parse(tmp[-1])
-			if result != 403:
-				result = "Permited"
-			else:
-				result = "Dennied"
-			do_write(i,five_key_list, ops, result)
+			if len(result) > 1:
+				t = result[1]
+				each_time = result[1][0:len(result[1])-1]
+				each_time = float(each_time)
+				total = total + each_time
+			if len(result) > 0:
+				if result[0] == '200' or result[0] == '204' or result[0] == '202':
+					result0 = "Permited"
+				elif result[0] == '403':
+					result0 = 'Denied'
+				else:
+					result0 = "HttpCode : " + result[0]
+			do_write(i, result0, t)
+			op_map[five_key_tuple] = ops_tuple
 		else:
-			do_write(i,five_key_list, ops, result)
+			do_write(i, result0, t)
+			op_map[five_key_tuple] = ops_tuple
+	do_write_opmap()
+	do_write_time(total)
 
 core_parse()
