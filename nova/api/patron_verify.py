@@ -45,14 +45,6 @@ class PatronVerify (wsgi.Middleware):
         value_patern = "=([^&]*)(&|$)"
 
         path_info_list = req_path_info.strip("/").split("/")
-        if len(path_info_list) > 0:
-            key_ids["project_id"] = path_info_list[0]
-            if re.match(id_pattern, path_info_list[0]) != None:
-                    path_info_list[0] = "%ID%"
-            elif re.match(uuid_patern, path_info_list[0]) != None:
-                path_info_list[0] = "%UUID%"
-            else:
-                path_info_list[0] = "%NAME%"
 
         for i in range(len(path_info_list) - 1):
             if path_info_list[i] in key_calls and path_info_list[i + 1] != "detail":
@@ -81,7 +73,7 @@ class PatronVerify (wsgi.Middleware):
         else:
             return ""
 
-    def url_to_op_and_target(self, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
+    def url_to_op_and_target(self, caller_project_id, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
         key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
                      "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
                      "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
@@ -101,6 +93,7 @@ class PatronVerify (wsgi.Middleware):
                      "volumes": ""
                      }
         key_ids = {}
+        key_ids["project_id"] = caller_project_id
 
         template_path_info = self.get_template_path_info(req_path_info, key_calls, key_ids)
         template_inner_action = self.get_templated_inner_action(req_path_info, req_inner_action)
@@ -139,8 +132,8 @@ class PatronVerify (wsgi.Middleware):
             method_obj = None
             target = None
 
-        LOG.info("key_calls = %r, key_ids = %r, key_name = %r, template_path_info = %r, method_obj = %r",
-                 key_calls, key_ids, key_name, template_path_info, method_obj)
+        LOG.info("key_ids = %r, key_name = %r, template_path_info = %r, method_obj = %r",
+                 key_ids, key_name, template_path_info, method_obj)
 
         # op : is used as the security operation for Patron.
         # op = "compute_extension:admin_actions"
@@ -205,6 +198,8 @@ class PatronVerify (wsgi.Middleware):
             req_api_version = "/" + s2
             req_path_info = "/" + s3
 
+        id_start_pattern = "^/[0-9a-f]{32}"
+        req_path_info = re.sub(id_start_pattern, "", req_path_info)
         if req.query_string != "":
             req_path_info = req_path_info+ "?" + req.query_string
 
@@ -220,8 +215,8 @@ class PatronVerify (wsgi.Middleware):
         LOG.info("req_server_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r",
                  req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
 
-        #handle wipecache
-        pattern = re.compile("/([0-9a-f]{32})/os-aem-access/wipecache")
+        # Handle wipe-cache function call.
+        pattern = re.compile("/os-aem-access/wipecache")
         match = pattern.match(req_path_info)
         if match:
             try:
@@ -242,7 +237,7 @@ class PatronVerify (wsgi.Middleware):
                 return webob.exc.HTTPOk()
 
         # Map the path_info and req_inner_action to op and target for Patron.
-        (op, target) = self.url_to_op_and_target(caller_context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+        (op, target) = self.url_to_op_and_target(caller_project_id, caller_context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
         if op == "KEY_ERROR":
             # If the mappings failed to find an op, we return the rare HTTP 412 error, to let the user know this is the error position.
             return webob.exc.HTTPPreconditionFailed()
