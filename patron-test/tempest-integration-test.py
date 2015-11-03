@@ -1,5 +1,5 @@
 import re
-
+from pprint import pprint
 op_map = {}
 
 def parse_five_keys(test):
@@ -28,34 +28,26 @@ def parse_five_keys(test):
              "volumes": ""
              }
 	key_ids = {}
-	port = ''
-	version = ''
-	method = ''
-	str_path_info = ''
+
 	str_inner_action = ''
 	#test = "req_port = 8774, req_api_version = u'/v2', req_method = 'POST', req_path_info = u'/df1d1e97c4f54e5a8d790d4684c3fa2a/servers/detail', req_inner_action = u''"
-	port_pattern = re.compile("req_port = (.*), req_api_version")
-	version_pattern = re.compile(".*req_api_version = (.*), req_method.*")
-	method_pattern = re.compile(".*req_method = (.*), req_path.*")
-	inner_action_pattern = re.compile(".*req_inner_action = (.*), op=")
-	path_info_pattern = re.compile(".*req_path_info = (.*), req_inner.*")
+	five_key_pattern = re.compile("req_port = (.*), req_api_version = u'(.*)', req_method = '(.*)', req_path_info = u'(.*)', req_inner_action = (u'.*'),")
+	# port_pattern = re.compile("req_port = (.*), req_api_version")
+	# version_pattern = re.compile(".*req_api_version = (.*), req_method.*")
+	# method_pattern = re.compile(".*req_method = (.*), req_path.*")
+	# inner_action_pattern = re.compile(".*req_inner_action = (.*), op=")
+	# path_info_pattern = re.compile(".*req_path_info = (.*), req_inner.*")
 	id_pattern = "[0-9a-f]{32}"
 	uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 	value_pattern = "=([^&]*)(&|$)"
-	m1 = re.match(port_pattern, test)
-	m2 = re.match(version_pattern, test)
-	m3 = re.match(method_pattern, test)
-	m4 = re.match(path_info_pattern, test)
-	m5 = re.match(inner_action_pattern, test)
-	if m1 != None:
-		port = m1.group(1)
-	if m2 != None:
-		if m2.group(1).startswith('u'):
-			version = m2.group(1)[2:len(m2.group(1))-1]
-	if m3 != None:
-		method = m3.group(1)[1:len(m3.group(1))-1]
-	if m4 != None:
-		path_info = m4.group(1)
+	match = re.match(five_key_pattern, test)
+	if match != None:
+		port = match.group(1)
+		version = match.group(2)
+		method = match.group(3)
+		path_info = match.group(4)
+		inner_action = match.group(5)
+
 		if path_info.startswith('u'):
 			path_info = path_info[2:len(path_info)-1]
 		path_info_list = path_info.strip('/').split('/')
@@ -80,19 +72,23 @@ def parse_five_keys(test):
 		temp = re.sub(value_pattern, "=%VALUE%", temp)
 		temp = temp.strip("&")
 		str_path_info = temp
-	if m5 != None:
-		inner_action = m5.group(1)
+
+
 		if inner_action == '':
 			str_inner_action = ""
-		else:
-			inner_action_pattern1 = re.compile("{\"([A-Za-z]*)\":")
-			m = re.search(inner_action_pattern1, inner_action[1:])
+		elif str_path_info.endswith("action"):
+			inner_action_pattern1 = re.compile("u'{\"([A-Za-z]*)\":")
+			m = re.search(inner_action_pattern1, inner_action)
 			if m != None:
 				inner_action = m.group(1)
 				str_inner_action = inner_action
-	five_key_tuple = (port, version, method, str_path_info, str_inner_action)
-	print five_key_tuple
-	return five_key_tuple
+		else:
+			str_inner_action = ""
+		five_key_tuple = (int(port), version, str_path_info, method, str_inner_action)
+		#print five_key_tuple
+		return five_key_tuple
+	else:
+		return None
 
 # parse op
 def op_parse(string):
@@ -118,22 +114,23 @@ def rs_parse(string):
 	return rs
 
 # write results in file in line
-def do_write(num, result, time):
+
+def do_write(num, five_key_tuple, result, time):
 	f = open('/var/log/tempest/nova-op.log','a+')
-	f.write("\nno : %r\tresult : %r\ttime : %r\n" % (num, result, time))
+	f.write("\nno : %r\nfive_key : %r\nresult : %r\ntime : %r\n" % (num, five_key_tuple,result, time))
 	f.close
 
 # write op mapping
-def do_write_opmap():
-	f = open('/var/log/tempest/nova-op-map.log','a+')
-	for k,v in op_map.items():
-		f.write("%r : %r\n" % (k,v))
-	f.close()
+# def do_write_opmap():
+# 	f = open('/var/log/tempest/nova-op-map.log','a+')
+# 	for k,v in op_map.items():
+# 		f.write("%r : %r\n" % (k,v))
+# 	f.close()
 
 def do_write_time(a):
 	f = open('/var/log/tempest/nova-op.log','a+')
 	f.write("\n\n----------------------------------------------------------------\n\n")
-	f.write("total time : %r" % a)
+	f.write("total time : %rs" % a)
 	f.close()
 
 # core parser
@@ -145,12 +142,41 @@ def core_parse():
 	f = open('/var/log/tempest/tempest.log')
 	STRING = f.read()
 	lists = STRING.split("### ")
+
 	for i in range(1,len(lists)):
+		print lists[i]
 		ops = []
-		if lists[i].find("$"):
+		if lists[i].find("op=2015") != -1:
+			# five keys
+			test = lists[i].split("op=")[0]
+			if parse_five_keys(test) != None:
+				five_key_tuple1 = parse_five_keys(test)
+
+			# op
+			ops_tuple1 = ()
+			#runtime result
+			tmp = lists[i].split("op=")[1]
+			result = rs_parse(tmp)
+			if len(result) > 1:
+				t1 = result[1]
+				each_time = result[1][0:len(result[1])-1]
+				each_time = float(each_time)
+				total = total + each_time
+			if len(result) > 0:
+				if result[0] == '200' or result[0] == '204' or result[0] == '202':
+					result0 = "Permited"
+				elif result[0] == '403':
+					result0 = 'Denied'
+				else:
+					result0 = "HttpCode : " + result[0]
+			do_write(i, five_key_tuple1, result0, t1)
+			op_map[five_key_tuple1] = ops_tuple1
+
+		elif lists[i].find("$") != -1:
 			#five keys
 			test = lists[i].split("$")[0]
-			five_key_tuple = parse_five_keys(test)
+			if parse_five_keys(test) != None:
+				five_key_tuple = parse_five_keys(test)
 			#op
 			tmp = lists[i].split("$ ")
 			l = len(tmp)
@@ -159,6 +185,7 @@ def core_parse():
 				for j in range(1,l-1):
 					tmp[j] = tmp[j].strip()
 					tmp[j] = tmp[j].strip('\n')
+					tmp[j] = tmp[j].strip("'")
 					ops.append(tmp[j])
 			tmp[-1] = tmp[-1].strip()
 			ops.append(op_parse(tmp[-1]))
@@ -177,12 +204,12 @@ def core_parse():
 					result0 = 'Denied'
 				else:
 					result0 = "HttpCode : " + result[0]
-			do_write(i, result0, t)
+			do_write(i, five_key_tuple, result0, t)
 			op_map[five_key_tuple] = ops_tuple
-		else:
-			do_write(i, result0, t)
-			op_map[five_key_tuple] = ops_tuple
-	do_write_opmap()
+
+
+
+	pprint(op_map)
 	do_write_time(total)
 
 core_parse()
