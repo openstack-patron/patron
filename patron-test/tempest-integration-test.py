@@ -119,19 +119,19 @@ def rs_parse(string):
 
 # write results in file in line
 def do_write(num, result, time):
-	f = open('/var/log/op/nova-op.log','a+')
+	f = open('/var/log/tempest/nova-op.log','a+')
 	f.write("\nno : %r\tresult : %r\ttime : %r\n" % (num, result, time))
 	f.close
 
 # write op mapping
 def do_write_opmap():
-	f = open('/var/log/op/nova-op-map.log','a+')
+	f = open('/var/log/tempest/nova-op-map.log','a+')
 	for k,v in op_map.items():
 		f.write("%r : %r\n" % (k,v))
 	f.close()
 
 def do_write_time(a):
-	f = open('/var/log/op/nova-op.log','a+')
+	f = open('/var/log/tempest/nova-op.log','a+')
 	f.write("\n\n----------------------------------------------------------------\n\n")
 	f.write("total time : %r" % a)
 	f.close()
@@ -142,7 +142,7 @@ def core_parse():
 	total = 0
 	result0 = ''
 	five_key_tuple = ()
-	f = open('/root/result.txt')
+	f = open('/var/log/tempest/tempest.log')
 	STRING = f.read()
 	lists = STRING.split("### ")
 	for i in range(1,len(lists)):
