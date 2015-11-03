@@ -83,7 +83,7 @@ class ObjectMmap(mmap.mmap):
             #import pydevd
             #pydevd.settrace("localhost", port=12345, stderrToServer=True, stdoutToServer=True)
 
-            file_object = open('/var/log/nova/mylog.txt', 'a+')
+            file_object = open('/var/log/patron/cache.log', 'a+')
             file_object.write('>>>enter wipe_cache_by_projectid\n')
             self.seek(0)
             d = dict()
@@ -121,7 +121,7 @@ class ObjectMmap(mmap.mmap):
         index = self.rfind("\n")
         if index != -1:
             memory = self.read(index + 1)
-            file_object = open('/var/log/nova/mylog.txt', 'a+')
+            file_object = open('/var/log/patron/cache.log', 'a+')
             file_object.write('\n\n!!!!This is patron_cache:getMemory:\n')
             file_object.write(memory)
             file_object.close()

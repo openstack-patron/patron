@@ -216,7 +216,11 @@ path_op_map = \
                                                     'compute_extension:extended_availability_zone',
                                                     'compute_extension:disk_config'),
  (8774, '/v2', '/servers?all_tenants=%VALUE%&name=%VALUE%', 'GET', ''): ('compute:get_all',),
- (8774, '/v2', '/servers?name=%VALUE%', 'GET', ''): ('compute:get_all',)}
+ (8774, '/v2', '/servers?name=%VALUE%', 'GET', ''): ('compute:get_all',),
+ (9292, '/v2', '/schemas/image', 'GET', ''): ('get_images',),
+ (9292, '/v2', '/images?limit=%VALUE%', 'GET', ''): ('get_images',),
+ (9292, '/v2', '/images/%UUID%', 'GET', ''): ('get_image',)
+ }
 
 
 

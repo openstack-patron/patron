@@ -74,24 +74,28 @@ class PatronVerify (wsgi.Middleware):
             return ""
 
     def url_to_op_and_target(self, caller_project_id, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
-        key_calls = {"servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
-                     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
-                     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
-                     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
-                     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
-                     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
-                     "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
-                     "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
-                     "os-instance-actions": "", # although "instance_action" has its own object, we still use "instance" as the object here
-                     "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
-                     "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
-                     "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
-                     "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
-                     "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
-                     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
-                     "images": "",
-                     "volumes": ""
-                     }
+        key_calls = {
+            # nova
+            "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
+            "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
+            "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+            "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
+            "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
+            "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
+            "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+            "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
+            "os-instance-actions": "nova.objects.instance.Instance.get_by_uuid(uuid)", # although "instance_action" has its own object, we still use "instance" as the object here
+            "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
+            "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
+            "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
+            "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
+            "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
+            "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
+            # glance
+            "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+            # neutron
+            "volumes": ""
+        }
         key_ids = {}
         key_ids["project_id"] = caller_project_id
 
