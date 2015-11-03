@@ -1,4 +1,4 @@
-#Add by Wu Luo
+#Add by lwyeluo
 
 """
 Common Middleware which is used to realize Access Control by communicating with Patron.
@@ -12,18 +12,24 @@ from oslo_serialization import jsonutils
 import webob.dec
 import webob.exc
 
-from nova import context
-from nova.i18n import _
-from nova.openstack.common import versionutils
-from nova import wsgi
+# Customize AEM for different services.
+import inspect
+import os
+service_name = os.path.basename(inspect.stack()[-1][1]).split('-')[0]
+if service_name == "nova":
+    from nova import wsgi
+elif service_name == "glance":
+    from glance.common import wsgi
+else:
+    raise Exception("AEM: Invalid service!!")
 
 from patronclient import client
 from keystoneclient import session
 
-from nova.api.patron_cache import PatronCache
 import importlib
 import re
 import patron_parse
+from patron_cache import PatronCache
 
 LOG = logging.getLogger(__name__)
 
@@ -147,22 +153,28 @@ class PatronVerify (wsgi.Middleware):
         cache_enabled = True
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 
-        user_id = req.headers.get('X_USER')
-        user_id = req.headers.get('X_USER_ID', user_id)
-        if user_id is None:
-            LOG.debug("Neither X_USER_ID nor X_USER found in request")
+        caller_project_id = req.headers.get('X_PROJECT_ID')
+        caller_user_id = req.headers.get('X_USER_ID')
+        caller_project_name = req.headers.get('X_PROJECT_NAME')
+        caller_user_name = req.headers.get('X_USER_NAME')
+        if caller_project_id is None or caller_user_id is None or caller_project_name is None or caller_user_name is None:
+            LOG.info("AEM: Either one of (caller_project_id, caller_user_id, caller_project_name, caller_user_name) not found in request")
             return webob.exc.HTTPUnauthorized()
 
-        if 'X_TENANT_ID' in req.headers:
-            # This is the new header since Keystone went to ID/Name
-            project_id = req.headers['X_TENANT_ID']
+        if service_name == "nova":
+            caller_context = req.environ['nova.context']
+        elif service_name == "glance":
+            caller_context = req.context
         else:
-            # This is for legacy compatibility
-            project_id = req.headers['X_TENANT']
-        project_name = req.headers.get('X_TENANT_NAME')
-        user_name = req.headers.get('X_USER_NAME')
+            raise Exception("AEM: Invalid caller context!!")
 
-        req_id = req.environ.get(request_id.ENV_REQUEST_ID)
+        # if 'X_TENANT_ID' in req.headers:
+        #     # This is the new header since Keystone went to ID/Name
+        #     project_id = req.headers['X_TENANT_ID']
+        # else:
+        #     # This is for legacy compatibility
+        #     project_id = req.headers['X_TENANT']
+        # req_id = req.environ.get(request_id.ENV_REQUEST_ID)
 
         # Get the auth token
         auth_token = req.headers.get('X_AUTH_TOKEN',
@@ -174,19 +186,28 @@ class PatronVerify (wsgi.Middleware):
 
         ########################################################################################################
         # Check policy against patron node
-        # Edited by Yang Luo
+        # Edited by veotax
 
-        # First collect the web path vector.
-        # web path vector = {req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+        # First collect the tuple vector.
+        # tuple vector ::= {req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
         req_server_port = req.server_port
-        req_api_version = req.script_name
         req_method = req.method
+
         # Eventually, req_path_info will look like:
         # /85c8848b1dd64c7ebb2c5baeb12e25c3/flavors?is_public=None
-        if req.query_string == "":
+
+        # Use different logic to parse path_info for different services.
+        if service_name == "nova":
+            req_api_version = req.script_name
             req_path_info = req.path_info
-        else:
-            req_path_info = req.path_info + "?" + req.query_string
+        else: # for glance.
+            (s1, s2, s3) = req.path_info.split("/", 2)
+            req_api_version = "/" + s2
+            req_path_info = "/" + s3
+
+        if req.query_string != "":
+            req_path_info = req_path_info+ "?" + req.query_string
+
         # if req.is_body_readable:
         #     for d, x in req.json.items():
         #         req_inner_action = d
@@ -207,27 +228,27 @@ class PatronVerify (wsgi.Middleware):
                 body = jsonutils.loads(req.body)
                 if body != None:
                     wipercache_id = body.get('project-id', None)
-                    if req.environ['nova.context'].project_id == wipercache_id:
+                    if caller_project_id == wipercache_id:
                         # our policy for future usage, but now...
-                        PatronCache.wipecache(req.environ['nova.context'].project_id)
+                        PatronCache.wipecache(caller_project_id)
                         return webob.exc.HTTPOk()
                     else:
                         return webob.exc.HTTPForbidden()
                 else:
-                    PatronCache.wipecache(req.environ['nova.context'].project_id)
+                    PatronCache.wipecache(caller_project_id)
                     return webob.exc.HTTPOk()
             except KeyError:
-                PatronCache.wipecache(req.environ['nova.context'].project_id)
+                PatronCache.wipecache(caller_project_id)
                 return webob.exc.HTTPOk()
 
         # Map the path_info and req_inner_action to op and target for Patron.
-        (op, target) = self.url_to_op_and_target(req.environ['nova.context'], req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+        (op, target) = self.url_to_op_and_target(caller_context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
         if op == "KEY_ERROR":
             # If the mappings failed to find an op, we return the rare HTTP 412 error, to let the user know this is the error position.
             return webob.exc.HTTPPreconditionFailed()
 
         # Get the subject SID.
-        subject_sid = req.environ['nova.context'].project_id + ":" + req.environ['nova.context'].user_id
+        subject_sid = caller_project_id + ":" + caller_user_id
         # Get the object SID.
         if target == None:
             object_sid = "None"
@@ -285,11 +306,11 @@ class PatronVerify (wsgi.Middleware):
 
         if result != True:
             LOG.error("Access is **denied** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
-                      result, user_name, auth_token, project_name, user_auth_plugin)
+                      result, caller_user_name, auth_token, caller_project_name, user_auth_plugin)
             return webob.exc.HTTPForbidden()
         else:
             LOG.info("Access is **permitted** by patron: res = %r, user_name = %r, auth_token = %r, project_name = %r, auth_plugin = %r",
-                      result, user_name, auth_token, project_name, user_auth_plugin)
+                      result, caller_user_name, auth_token, caller_project_name, user_auth_plugin)
 
         # for test
         PatronCache.get_memory()
