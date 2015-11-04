@@ -220,12 +220,11 @@ path_op_map = \
  (9292, '/v2', '/schemas/image', 'GET', ''): ('get_images',),
  (9292, '/v2', '/images?limit=%VALUE%', 'GET', ''): ('get_images',),
  (9292, '/v2', '/images/%UUID%', 'GET', ''): ('get_image',),
- (9696, '/v2.0', '/networks.json', 'GET', ''): ('get_network',),
- (9696, '/v2.0', '/subnets.json?fields=%VALUE%&fields=%VALUE%&id=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
- (9696, u'/v2.0', u'/networks?fields=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
- (9696, u'/v2.0', u'/networks/%UUID%', 'GET', ''): ('get_network',)
- }
-
+ (9696, '/v2.0', '/networks', 'GET', ''): ('get_network',),
+ (9696, '/v2.0', '/subnets?fields=%VALUE%&fields=%VALUE%&id=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
+ (9696, '/v2.0', '/networks', 'GET', ''): ('get_network',),
+ (9696, '/v2.0', '/networks?fields=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
+ (9696, '/v2.0', '/networks/%UUID%', 'GET', ''): ('get_network',)}
 
 
 # Editted by puyangsky
