@@ -153,6 +153,18 @@ class PatronVerify (wsgi.Middleware):
         cache_enabled = True
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 
+        # For debug use to generate five-element tuple: (req_port, req_api_version, req_method, req_path_info, req_inner_action)
+        # This is also used for op mapping collection.
+        # req_port = req.server_port
+        # req_api_version = req.script_name
+        # req_method = req.method
+        # req_path_info = req.path_info
+        # req_inner_action = req.text
+        # f = open('/var/log/tempest/tempest.log','a+')
+        # f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_port, req_api_version, req_method, req_path_info, req_inner_action))
+        # f.close()
+        # return self.application
+
         caller_project_id = req.headers.get('X_PROJECT_ID')
         caller_user_id = req.headers.get('X_USER_ID')
         caller_project_name = req.headers.get('X_PROJECT_NAME')
