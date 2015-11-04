@@ -219,7 +219,11 @@ path_op_map = \
  (8774, '/v2', '/servers?name=%VALUE%', 'GET', ''): ('compute:get_all',),
  (9292, '/v2', '/schemas/image', 'GET', ''): ('get_images',),
  (9292, '/v2', '/images?limit=%VALUE%', 'GET', ''): ('get_images',),
- (9292, '/v2', '/images/%UUID%', 'GET', ''): ('get_image',)
+ (9292, '/v2', '/images/%UUID%', 'GET', ''): ('get_image',),
+ (9696, '/v2.0', '/networks.json', 'GET', ''): ('get_network',),
+ (9696, '/v2.0', '/subnets.json?fields=%VALUE%&fields=%VALUE%&id=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
+ (9696, u'/v2.0', u'/networks?fields=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
+ (9696, u'/v2.0', u'/networks/%UUID%', 'GET', ''): ('get_network',)
  }
 
 

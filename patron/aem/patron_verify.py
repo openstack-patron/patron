@@ -20,8 +20,10 @@ if service_name == "nova":
     from nova import wsgi
 elif service_name == "glance":
     from glance.common import wsgi
+elif service_name == "neutron":
+    from neutron import wsgi
 else:
-    raise Exception("AEM: Invalid service!!")
+    raise Exception("AEM: Invalid service: %r!!" % service_name)
 
 from patronclient import client
 from keystoneclient import session
@@ -94,6 +96,7 @@ class PatronVerify (wsgi.Middleware):
             # glance
             "images": "glance.db.sqlalchemy.api.image_get(uuid)",
             # neutron
+            "networks": "",
             "volumes": ""
         }
         key_ids = {}
@@ -162,6 +165,8 @@ class PatronVerify (wsgi.Middleware):
             caller_context = req.environ['nova.context']
         elif service_name == "glance":
             caller_context = req.context
+        elif service_name == "neutron":
+            caller_context = req.context
         else:
             raise Exception("AEM: Invalid caller context!!")
 
@@ -194,7 +199,7 @@ class PatronVerify (wsgi.Middleware):
         # /85c8848b1dd64c7ebb2c5baeb12e25c3/flavors?is_public=None
 
         # Use different logic to parse path_info for different services.
-        if service_name == "nova":
+        if service_name == "nova" or service_name == "neutron":
             req_api_version = req.script_name
             req_path_info = req.path_info
         else: # for glance.
@@ -204,6 +209,8 @@ class PatronVerify (wsgi.Middleware):
 
         id_start_pattern = "^/[0-9a-f]{32}"
         req_path_info = re.sub(id_start_pattern, "", req_path_info)
+        json_end_pattern = ".json$"
+        req_path_info = re.sub(json_end_pattern, "", req_path_info)
         if req.query_string != "":
             req_path_info = req_path_info+ "?" + req.query_string
 
