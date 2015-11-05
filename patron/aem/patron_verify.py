@@ -150,20 +150,8 @@ class PatronVerify (wsgi.Middleware):
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
-        cache_enabled = True
+        cache_enabled = False
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
-
-        # For debug use to generate five-element tuple: (req_port, req_api_version, req_method, req_path_info, req_inner_action)
-        # This is also used for op mapping collection.
-        # req_port = req.server_port
-        # req_api_version = req.script_name
-        # req_method = req.method
-        # req_path_info = req.path_info
-        # req_inner_action = req.text
-        # f = open('/var/log/tempest/tempest.log','a+')
-        # f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_port, req_api_version, req_method, req_path_info, req_inner_action))
-        # f.close()
-        # return self.application
 
         caller_project_id = req.headers.get('X_PROJECT_ID')
         caller_user_id = req.headers.get('X_USER_ID')
@@ -237,6 +225,14 @@ class PatronVerify (wsgi.Middleware):
         # Show path vectors.
         LOG.info("req_server_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r",
                  req_server_port, req_api_version, req_method, req_path_info, req_inner_action)
+
+        #####################################################################################################
+        # For debug use to generate five-element tuple: (req_port, req_api_version, req_method, req_path_info, req_inner_action)
+        # This is also used for op mapping collection.
+        # f = open('/var/log/tempest/tempest.log','a+')
+        # f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
+        # f.close()
+        # return self.application
 
         # Handle wipe-cache function call.
         pattern = re.compile("/os-aem-access/wipecache")
