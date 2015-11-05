@@ -93,6 +93,15 @@ def handleRadioButton(service, enable):
     toggle_aem(service, enable)
     restart_service(service)
 
+def handleButton_nova():
+    restart_service('nova')
+
+def handleButton_glance():
+    restart_service('glance')
+
+def handleButton_neutron():
+    restart_service('neutron')
+
 def setRadioButton(service, enable):
     if enable:
         globals()[service + 'Var'].set('enable')
@@ -112,7 +121,7 @@ def setText(str):
     label.config(text = str)
 
 root = Tk()
-root.geometry('300x300+10+10')
+root.geometry('300x400+10+10')
 
 novaVar = StringVar()
 glanceVar = StringVar()
@@ -129,10 +138,15 @@ labelframe_neutron.pack(fill="both", expand="yes")
 
 Radiobutton(labelframe_nova, text="Nova's AEM [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
 Radiobutton(labelframe_nova, text="Nova's AEM [OFF]", variable=novaVar, value='disable', command=sel_nova).pack()
+Button(labelframe_nova, text ="Restart nova-api", command = handleButton_nova).pack()
+
 Radiobutton(labelframe_glance, text="Glance's AEM [ON]", variable=glanceVar, value='enable', command=sel_glance).pack()
 Radiobutton(labelframe_glance, text="Glance's AEM [OFF]", variable=glanceVar, value='disable', command=sel_glance).pack()
+Button(labelframe_glance, text ="Restart glance-api", command = handleButton_glance).pack()
+
 Radiobutton(labelframe_neutron, text="Neutron's AEM [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
 Radiobutton(labelframe_neutron, text="Neutron's AEM [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
+Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron).pack()
 
 
 label = Label(root)
