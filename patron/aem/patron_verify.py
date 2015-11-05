@@ -36,12 +36,36 @@ from patron_cache import PatronCache
 LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
+    key_calls = {
+    # nova
+    "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
+    "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
+    "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+    "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
+    "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
+    "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
+    "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+    "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
+    "os-instance-actions": "nova.objects.instance.Instance.get_by_uuid(uuid)", # although "instance_action" has its own object, we still use "instance" as the object here
+    "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
+    "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
+    "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
+    "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
+    "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
+    "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
+    # glance
+    "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    # neutron
+    "networks": "",
+    "volumes": ""
+    }
 
     @classmethod
     def get_tenant_by_id(cls, context, id):
         return {"id": id}
 
-    def get_template_path_info(self, req_path_info, key_calls, key_ids):
+    @classmethod
+    def get_template_path_info(cls, req_path_info, key_ids = {}):
         id_pattern = "[0-9a-f]{32}"
         uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
         value_patern = "=([^&]*)(&|$)"
@@ -49,7 +73,7 @@ class PatronVerify (wsgi.Middleware):
         path_info_list = req_path_info.strip("/").split("/")
 
         for i in range(len(path_info_list) - 1):
-            if path_info_list[i] in key_calls and path_info_list[i + 1] != "detail":
+            if path_info_list[i] in cls.key_calls and path_info_list[i + 1] != "detail":
                 key_ids[path_info_list[i]] = path_info_list[i + 1]
                 if re.match(id_pattern, path_info_list[i + 1]) != None:
                     path_info_list[i + 1] = "%ID%"
@@ -63,6 +87,7 @@ class PatronVerify (wsgi.Middleware):
         template_path_info = template_path_info.strip("&")
         return template_path_info
 
+    @classmethod
     def get_templated_inner_action(self, req_path_info, req_inner_action):
         action_word_pattern = "{\"([A-Za-z-]*)\":"
         if req_path_info.endswith("/action"):
@@ -75,35 +100,14 @@ class PatronVerify (wsgi.Middleware):
         else:
             return ""
 
-    def url_to_op_and_target(self, caller_project_id, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
-        key_calls = {
-            # nova
-            "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
-            "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
-            "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
-            "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
-            "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
-            "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
-            "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
-            "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
-            "os-instance-actions": "nova.objects.instance.Instance.get_by_uuid(uuid)", # although "instance_action" has its own object, we still use "instance" as the object here
-            "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
-            "os-hypervisors": "nova.compute.api.HostAPI.compute_node_search_by_hypervisor(name)",
-            "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
-            "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
-            "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
-            "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
-            # glance
-            "images": "glance.db.sqlalchemy.api.image_get(uuid)",
-            # neutron
-            "networks": "",
-            "volumes": ""
-        }
+    @classmethod
+    def url_to_op_and_target(cls, caller_project_id, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
+
         key_ids = {}
         key_ids["project_id"] = caller_project_id
 
-        template_path_info = self.get_template_path_info(req_path_info, key_calls, key_ids)
-        template_inner_action = self.get_templated_inner_action(req_path_info, req_inner_action)
+        template_path_info = cls.get_template_path_info(req_path_info, key_ids)
+        template_inner_action = cls.get_templated_inner_action(req_path_info, req_inner_action)
 
         if key_ids.has_key("servers"):
             key_name = "servers"
@@ -117,8 +121,8 @@ class PatronVerify (wsgi.Middleware):
         # target : is used to act as the security context of the object for Patron.
         # if no target is needed, can do it as: target = None
         # target = {'project_id': 'fake_project_id', 'user_id': "fake_user_id"}
-        if key_name != None and key_calls[key_name] != "":
-            (module_name, class_name, method_name) = key_calls[key_name].rsplit(".", 2)
+        if key_name != None and cls.key_calls[key_name] != "":
+            (module_name, class_name, method_name) = cls.key_calls[key_name].rsplit(".", 2)
             (method_name, param_name) = method_name.split("(", 1)
             param_list = param_name.replace(")", "").replace(" ", "").split(",")
             mod = importlib.import_module(module_name)
@@ -229,9 +233,12 @@ class PatronVerify (wsgi.Middleware):
         #####################################################################################################
         # For debug use to generate five-element tuple: (req_port, req_api_version, req_method, req_path_info, req_inner_action)
         # This is also used for op mapping collection.
-        # f = open('/var/log/tempest/tempest.log','a+')
-        # f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
-        # f.close()
+        f = open('/var/log/tempest/tempest.log','a+')
+        f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
+        f.close()
+
+        #####################################################################################################
+        # Uncomment this line to always return TRUE.
         # return self.application
 
         # Handle wipe-cache function call.
