@@ -249,8 +249,8 @@ class PatronVerify (wsgi.Middleware):
         f.close()
 
         #####################################################################################################
-        # Uncomment this line to always return TRUE.
-        return self.application
+        # Uncomment this line to bypass AEM (aka always return TRUE).
+        # return self.application
 
         # Handle wipe-cache function call.
         pattern = re.compile("/os-aem-access/wipecache")
