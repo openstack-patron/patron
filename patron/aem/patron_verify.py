@@ -62,12 +62,26 @@ class PatronVerify (wsgi.Middleware):
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
     "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "members":"",
+    "tags":"",
+    "metadefs":"",
+    "namespaces":"",
     # neutron
     "routers": "",
     "networks": "",
     "agents": "",
+    "l3-routers":"",
+    "dhcp-networks":"",
+    "security-groups":"",
+    "security-group-rules":"",
+    "quotas":"",
+    "subnetpools":"",
+    "subnets":"",
+    "ports":"",
+    "floatingips":"",
     # cinder
     "volumes": "",
+
     }
 
     @classmethod
@@ -83,15 +97,22 @@ class PatronVerify (wsgi.Middleware):
 
         path_info_list = req_path_info.strip("/").split("/")
 
-        for i in range(len(path_info_list) - 1):
-            if path_info_list[i] in cls.key_calls and path_info_list[i + 1] != "detail":
-                key_ids[path_info_list[i]] = path_info_list[i + 1]
-                if re.match(id_pattern, path_info_list[i + 1]) != None:
-                    path_info_list[i + 1] = "%ID%"
-                elif re.match(uuid_patern, path_info_list[i + 1]) != None:
-                    path_info_list[i + 1] = "%UUID%"
-                else:
+        if path_info_list[0] == "metadefs":
+            for i in range(1, len(path_info_list) - 1):
+                if path_info_list[i] in cls.key_calls:
+                    key_ids[path_info_list[i]] = path_info_list[i + 1]
                     path_info_list[i + 1] = "%NAME%"
+
+        else:
+            for i in range(len(path_info_list) - 1):
+                if path_info_list[i] in cls.key_calls and path_info_list[i + 1] != "detail":
+                    key_ids[path_info_list[i]] = path_info_list[i + 1]
+                    if re.match(id_pattern, path_info_list[i + 1]) != None:
+                        path_info_list[i + 1] = "%ID%"
+                    elif re.match(uuid_patern, path_info_list[i + 1]) != None:
+                        path_info_list[i + 1] = "%UUID%"
+                    else:
+                        path_info_list[i + 1] = "%NAME%"
         template_path_info = "/" + "/".join(path_info_list)
         # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
         template_path_info = re.sub(value_patern, "=%VALUE%&", template_path_info)
