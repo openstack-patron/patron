@@ -19,6 +19,22 @@ def get_new_file(service):
 def get_old_file(service):
     return './' + service + '-paste-old.ini'
 
+def get_original_hook(service):
+    if service == 'nova':
+        return '/usr/lib/python2.7/dist-packages/nova/policy.py'
+    elif service == 'glance':
+        return '/usr/lib/python2.7/dist-packages/glance/api/policy.py'
+    elif service == 'neutron':
+        return '/usr/lib/python2.7/dist-packages/neutron/policy.py'
+    else:
+        raise Exception('[get_original_hook]: Service not supported!!')
+
+def get_new_hook(service):
+    return './' + service + '-policy.py'
+
+def get_old_hook(service):
+    return './' + service + '-policy-old.py'
+
 def is_aem_enabled(service):
     if filecmp.cmp(get_original_file(service), get_new_file(service)) == True:
         return True
@@ -30,8 +46,10 @@ def is_aem_enabled(service):
 def toggle_aem(service, enable):
     if enable == True:
         shutil.copyfile(get_new_file(service), get_original_file(service))
+        shutil.copyfile(get_new_hook(service), get_original_hook(service))
     else:
         shutil.copyfile(get_old_file(service), get_original_file(service))
+        shutil.copyfile(get_old_hook(service), get_original_hook(service))
 
 def restart_service(service):
     if service == 'nova':
@@ -136,16 +154,16 @@ labelframe_glance.pack(fill="both", expand="yes")
 labelframe_neutron = LabelFrame(root, text="neutron")
 labelframe_neutron.pack(fill="both", expand="yes")
 
-Radiobutton(labelframe_nova, text="Nova's AEM [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
-Radiobutton(labelframe_nova, text="Nova's AEM [OFF]", variable=novaVar, value='disable', command=sel_nova).pack()
+Radiobutton(labelframe_nova, text="Nova's AEM and hook [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
+Radiobutton(labelframe_nova, text="Nova's AEM and hook [OFF]", variable=novaVar, value='disable', command=sel_nova).pack()
 Button(labelframe_nova, text ="Restart nova-api", command = handleButton_nova).pack()
 
-Radiobutton(labelframe_glance, text="Glance's AEM [ON]", variable=glanceVar, value='enable', command=sel_glance).pack()
-Radiobutton(labelframe_glance, text="Glance's AEM [OFF]", variable=glanceVar, value='disable', command=sel_glance).pack()
+Radiobutton(labelframe_glance, text="Glance's AEM and hook [ON]", variable=glanceVar, value='enable', command=sel_glance).pack()
+Radiobutton(labelframe_glance, text="Glance's AEM and hook [OFF]", variable=glanceVar, value='disable', command=sel_glance).pack()
 Button(labelframe_glance, text ="Restart glance-api", command = handleButton_glance).pack()
 
-Radiobutton(labelframe_neutron, text="Neutron's AEM [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
-Radiobutton(labelframe_neutron, text="Neutron's AEM [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
+Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
+Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
 Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron).pack()
 
 
