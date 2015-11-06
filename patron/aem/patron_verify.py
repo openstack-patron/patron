@@ -22,6 +22,8 @@ elif service_name == "glance":
     from glance.common import wsgi
 elif service_name == "neutron":
     from neutron import wsgi
+elif service_name == "tempest": # This is for tempest test use, not a service.
+    from nova import wsgi
 else:
     raise Exception("AEM: Invalid service: %r!!" % service_name)
 
@@ -41,6 +43,7 @@ class PatronVerify (wsgi.Middleware):
     "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
+    "os-agents": "",
     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
@@ -52,12 +55,19 @@ class PatronVerify (wsgi.Middleware):
     "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
     "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
     "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
+    "os-floating-ips": "",
+    "os-security-group-rules": "",
+    "os-extra_specs": "",
+    "os-instance_usage_audit_log": "",
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
     "images": "glance.db.sqlalchemy.api.image_get(uuid)",
     # neutron
+    "routers": "",
     "networks": "",
-    "volumes": ""
+    "agents": "",
+    # cinder
+    "volumes": "",
     }
 
     @classmethod
@@ -69,6 +79,7 @@ class PatronVerify (wsgi.Middleware):
         id_pattern = "[0-9a-f]{32}"
         uuid_patern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
         value_patern = "=([^&]*)(&|$)"
+        # name_pattern = "\w+.*\d+"
 
         path_info_list = req_path_info.strip("/").split("/")
 
@@ -239,7 +250,7 @@ class PatronVerify (wsgi.Middleware):
 
         #####################################################################################################
         # Uncomment this line to always return TRUE.
-        # return self.application
+        return self.application
 
         # Handle wipe-cache function call.
         pattern = re.compile("/os-aem-access/wipecache")
