@@ -61,24 +61,32 @@ def rs_parse(string):
     return rs
 
 
+def do_clear(service):
+    if service == '':
+        return
+    else:
+        f = open('/var/log/tempest/'+ service + '-op.log', 'w+')
+    f.truncate()
+    f.close
+
 # write results in file in line
 def do_write(num, five_key_tuple, result, time, service):
     if service == '':
         return
     else:
         f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
-    f.write("\n %-8r  |   %-90r  |   %-30r  |   %-10r\n" % (num, five_key_tuple, result, time))
+    f.write("%-8r  |   %-90r  |   %-30r  |   %-10r\n" % (num, five_key_tuple, result, time))
     f.close
 
 
-def do_write_time(a, service):
+def do_write_time(total, len, service):
     if service == '':
         return
     else:
         f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
     f.write("\n\n----------------------------------------------------------------------------------------"
             "---------------------------------------------------------\n\n")
-    f.write("total time : %.3fs" % a)
+    f.write("Total time : %.3fs\nCommand number : %d\nAverage time per command : %.3fs" % (total, len, total / len))
     f.write("\n\n----------------------------------------------------------------------------------------"
             "---------------------------------------------------------\n\n")
     f.close()
@@ -128,12 +136,14 @@ def core_parse():
                 ops.append(last_op)
             ops_tuple = tuple(ops)
 
-            if 8774 in five_key_tuple:
-                service = 'nova'
-            elif 9292 in five_key_tuple:
-                service = 'glance'
-            elif 9696 in five_key_tuple:
-                service = 'neutron'
+            if service == '':
+                if 8774 in five_key_tuple:
+                    service = 'nova'
+                elif 9292 in five_key_tuple:
+                    service = 'glance'
+                elif 9696 in five_key_tuple:
+                    service = 'neutron'
+                do_clear(service)
 
             # print ops_tuple
             # runtime result
@@ -181,7 +191,7 @@ def core_parse():
             if five_key_tuple!=():
                 op_map[five_key_tuple] = ops_tuple1
 
-    do_write_time(total, service)
+    do_write_time(total, len(lists) - 1, service)
     op_map_str = pprint.pformat(op_map)
     do_write_op_map(op_map_str, service)
 

@@ -24,6 +24,8 @@ elif service_name == "neutron":
     from neutron import wsgi
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
+elif service_name.endswith(".py"): # This is for other module's calling use.
+    from nova import wsgi
 else:
     raise Exception("AEM: Invalid service: %r!!" % service_name)
 
