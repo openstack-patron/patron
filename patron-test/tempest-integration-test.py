@@ -1,6 +1,7 @@
 import re
-from pprint import pprint
+import pprint
 from patron.aem import patron_verify as patron
+import os
 op_map = {}
 
 
@@ -25,10 +26,9 @@ def parse_five_keys(test):
 
         str_path_info = patron.PatronVerify.get_template_path_info(path_info, key_calls)
         str_inner_action = patron.PatronVerify.get_templated_inner_action(path_info, inner_action)
-
-        five_key_tuple = (int(port), version, str_path_info, method, str_inner_action)
-        # print five_key_tuple
-        return five_key_tuple
+        if str_path_info != "/":
+            five_key_tuple = (int(port), version, str_path_info, method, str_inner_action)
+            return five_key_tuple
     else:
         return None
 
@@ -52,31 +52,44 @@ def rs_parse(string):
     # print m.group(1)
     if m != None:
         rs.append(m.group(1))
+    else:
+        rs.append("NoneCode")
     if m1 != None:
         rs.append(m1.group(1))
+    else:
+        rs.append('0s')
     return rs
 
 
 # write results in file in line
-
-def do_write(num, five_key_tuple, result, time):
-    f = open('/var/log/tempest/nova-op.log', 'a+')
-    f.write("\n %-8r  |   %-70r  |   %-20r  |   %-10r\n" % (num, five_key_tuple, result, time))
+def do_write(num, five_key_tuple, result, time, service):
+    if service == '':
+        return
+    else:
+        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+    f.write("\n %-8r  |   %-90r  |   %-30r  |   %-10r\n" % (num, five_key_tuple, result, time))
     f.close
 
 
-# write op mapping
-# def do_write_opmap():
-# 	f = open('/var/log/tempest/nova-op-map.log','a+')
-# 	for k,v in op_map.items():
-# 		f.write("%r : %r\n" % (k,v))
-# 	f.close()
-
-def do_write_time(a):
-    f = open('/var/log/tempest/nova-op.log', 'a+')
-    f.write("\n\n----------------------------------------------------------------\n\n")
-    f.write("total time : %rs" % a)
+def do_write_time(a, service):
+    if service == '':
+        return
+    else:
+        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+    f.write("\n\n----------------------------------------------------------------------------------------"
+            "---------------------------------------------------------\n\n")
+    f.write("total time : %.3fs" % a)
+    f.write("\n\n----------------------------------------------------------------------------------------"
+            "---------------------------------------------------------\n\n")
     f.close()
+
+def do_write_op_map(a, service):
+    if service == '':
+        return
+    else:
+        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+        f.write(a)
+        f.close()
 
 
 # core parser
@@ -84,6 +97,7 @@ def core_parse():
     t = ''
     total = 0
     result0 = ''
+    service = ''
     f = open('/var/log/tempest/tempest.log')
     STRING = f.read()
     lists = STRING.split("### ")
@@ -95,7 +109,7 @@ def core_parse():
         if lists[i].find("$") != -1:
             # five keys
             test = lists[i].split("$")[0]
-            if parse_five_keys(test) != None:
+            if parse_five_keys(test) != None and parse_five_keys(test) != ():
                 five_key_tuple = parse_five_keys(test)
             # op
             tmp = lists[i].split("$ ")
@@ -113,6 +127,14 @@ def core_parse():
             if last_op != None:
                 ops.append(last_op)
             ops_tuple = tuple(ops)
+
+            if 8774 in five_key_tuple:
+                service = 'nova'
+            elif 9292 in five_key_tuple:
+                service = 'glance'
+            elif 9696 in five_key_tuple:
+                service = 'neutron'
+
             # print ops_tuple
             # runtime result
             result = rs_parse(tmp[-1])
@@ -128,13 +150,14 @@ def core_parse():
                     result0 = 'Denied'
                 else:
                     result0 = "HttpCode : " + result[0]
-            do_write(i, five_key_tuple, result0, t)
-            op_map[five_key_tuple] = ops_tuple
+            do_write(i, five_key_tuple, result0, t, service)
+            if five_key_tuple!=():
+                op_map[five_key_tuple] = ops_tuple
 
-        elif lists[i].find("op=") != -1:
+        elif lists[i].find("op=201") != -1:
             # five keys
             test = lists[i].split("op=")[0]
-            if parse_five_keys(test) != None:
+            if parse_five_keys(test) != None and parse_five_keys(test) != ():
                 five_key_tuple = parse_five_keys(test)
 
             # op
@@ -154,11 +177,14 @@ def core_parse():
                     result0 = 'Denied'
                 else:
                     result0 = "HttpCode : " + result[0]
-            do_write(i, five_key_tuple, result0, t)
-            op_map[five_key_tuple] = ops_tuple1
+            do_write(i, five_key_tuple, result0, t, service)
+            if five_key_tuple!=():
+                op_map[five_key_tuple] = ops_tuple1
 
-    pprint(op_map)
-    do_write_time(total)
+    do_write_time(total, service)
+    op_map_str = pprint.pformat(op_map)
+    do_write_op_map(op_map_str, service)
+
     print total
 
 
