@@ -170,6 +170,15 @@ def core_parse():
             if parse_five_keys(test) != None and parse_five_keys(test) != ():
                 five_key_tuple = parse_five_keys(test)
 
+            if service == '':
+                if 8774 in five_key_tuple:
+                    service = 'nova'
+                elif 9292 in five_key_tuple:
+                    service = 'glance'
+                elif 9696 in five_key_tuple:
+                    service = 'neutron'
+                do_clear(service)
+
             # op
             ops_tuple1 = ()
             # runtime result
