@@ -45,7 +45,7 @@ def op_parse(string):
 def rs_parse(string):
     # print string
     rs = []
-    rs_pattern = re.compile(".*Response - Headers: {'status': '([0-9]{3})', 'content-length.*", re.S)
+    rs_pattern = re.compile(".*Response - Headers: {.*'status': '([0-9]{3})',", re.S)
     time_pattern = re.compile(".* ([0-9]{1}.[0-9]{3}s)\n", re.S)
     m = re.match(rs_pattern, string)
     m1 = re.match(time_pattern, string)
