@@ -114,9 +114,9 @@ def core_parse():
         five_key_tuple = ()
         # print lists[i]
         ops = []
-        if lists[i].find("$") != -1:
+        if lists[i].find("$ ") != -1:
             # five keys
-            test = lists[i].split("$")[0]
+            test = lists[i].split("$ ")[0]
             if parse_five_keys(test) != None and parse_five_keys(test) != ():
                 five_key_tuple = parse_five_keys(test)
             # op
