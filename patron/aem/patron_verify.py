@@ -189,8 +189,8 @@ class PatronVerify (wsgi.Middleware):
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
         # Some options.
-        cache_enabled = False
         aem_to_patron_enabled = True
+        cache_enabled = False
 
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 

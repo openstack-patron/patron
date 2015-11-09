@@ -51,11 +51,18 @@ def toggle_aem(service, enable):
         shutil.copyfile(get_old_file(service), get_original_file(service))
         shutil.copyfile(get_old_hook(service), get_original_hook(service))
 
-def is_aem_bypass_enabled():
+def is_aem_variable_enabled(var):
+    if var == 'aem':
+        var = 'aem_to_patron_enabled';
+    elif var == 'cache':
+        var = 'cache_enabled'
+    else:
+        raise Exception('[toggle_aem_variable]: Variable not supported!!')
+
     f = open('/usr/lib/python2.7/dist-packages/patron/aem/patron_verify.py', 'r')
     text = f.read()
 
-    m = re.search('aem_to_patron_enabled = True', text)
+    m = re.search(var + ' = True', text)
     if m != None:
         res = True
     else:
@@ -64,17 +71,24 @@ def is_aem_bypass_enabled():
     f.close
     return res
 
-def toggle_aem_bypass(enable):
+def toggle_aem_variable(var, enable):
+    if var == 'aem':
+        var = 'aem_to_patron_enabled';
+    elif var == 'cache':
+        var = 'cache_enabled'
+    else:
+        raise Exception('[toggle_aem_variable]: Variable not supported!!')
+
     f = open('/usr/lib/python2.7/dist-packages/patron/aem/patron_verify.py', 'r+')
     text = f.read()
 
     if enable:
-        new_text = re.sub("aem_to_patron_enabled = False", "aem_to_patron_enabled = True", text)
+        new_text = re.sub(var + ' = False', var + ' = True', text)
         f.seek(0, 0)
         f.truncate()
         f.write(new_text)
     else:
-        new_text = re.sub("aem_to_patron_enabled = True", "aem_to_patron_enabled = False", text)
+        new_text = re.sub(var + ' = True', var + ' = False', text)
         f.seek(0, 0)
         f.truncate()
         f.write(new_text)
@@ -107,6 +121,17 @@ buttonStatus = {}
 
 def sel_aem():
     service = 'aem'
+    res = str(globals()[service + 'Var'].get())
+    selection = "You selected the option: " + res
+    setText(selection)
+    if res == 'enable':
+        res_bool = True
+    else:
+        res_bool = False
+    handleRadioButton(service, res_bool)
+
+def sel_cache():
+    service = 'cache'
     res = str(globals()[service + 'Var'].get())
     selection = "You selected the option: " + res
     setText(selection)
@@ -151,8 +176,8 @@ def sel_neutron():
 
 def handleRadioButton(service, enable):
     print (service, enable)
-    if service == 'aem':
-        toggle_aem_bypass(enable)
+    if service == 'aem' or service == 'cache':
+        toggle_aem_variable(service, enable)
     else:
         toggle_aem(service, enable)
         restart_service(service)
@@ -176,7 +201,8 @@ def setRadioButton(service, enable):
         globals()[service + 'Var'].set('disable')
 
 def setDefaultRadioButtons():
-    setRadioButton('aem', is_aem_bypass_enabled())
+    setRadioButton('aem', is_aem_variable_enabled('aem'))
+    setRadioButton('cache', is_aem_variable_enabled('cache'))
     setRadioButton('nova', is_aem_enabled('nova'))
     setRadioButton('glance', is_aem_enabled('glance'))
     setRadioButton('neutron', is_aem_enabled('neutron'))
@@ -198,6 +224,7 @@ root = Tk()
 root.geometry('300x500+10+10')
 
 aemVar = StringVar()
+cacheVar = StringVar()
 novaVar = StringVar()
 glanceVar = StringVar()
 neutronVar = StringVar()
@@ -217,6 +244,8 @@ labelframe_patron.pack(fill="both", expand="yes")
 
 Radiobutton(labelframe_aem, text="AEM -> patron [ON]", variable=aemVar, value='enable', command=sel_aem).pack()
 Radiobutton(labelframe_aem, text="AEM -> patron [OFF]", variable=aemVar, value='disable', command=sel_aem).pack()
+Radiobutton(labelframe_aem, text="AEM cache [ON]", variable=cacheVar, value='enable', command=sel_cache).pack()
+Radiobutton(labelframe_aem, text="AEM cache [OFF]", variable=cacheVar, value='disable', command=sel_cache).pack()
 Button(labelframe_aem, text ="Clear tempest.log", command = clearTempestLog).pack()
 
 Radiobutton(labelframe_nova, text="Nova's AEM and hook [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
