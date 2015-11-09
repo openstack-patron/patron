@@ -188,7 +188,10 @@ class PatronVerify (wsgi.Middleware):
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):
+        # Some options.
         cache_enabled = False
+        aem_to_patron_enabled = True
+
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
 
         caller_project_id = req.headers.get('X_PROJECT_ID')
@@ -272,8 +275,9 @@ class PatronVerify (wsgi.Middleware):
         f.close()
 
         #####################################################################################################
-        # Uncomment this line to bypass AEM (aka always return TRUE).
-        # return self.application
+        # This line is used to bypass AEM (aka always return Permitted).
+        if aem_to_patron_enabled == False:
+            return self.application
 
         # Handle wipe-cache function call.
         pattern = re.compile("/os-aem-access/wipecache")

@@ -51,8 +51,40 @@ def toggle_aem(service, enable):
         shutil.copyfile(get_old_file(service), get_original_file(service))
         shutil.copyfile(get_old_hook(service), get_original_hook(service))
 
+def is_aem_bypass_enabled():
+    f = open('/usr/lib/python2.7/dist-packages/patron/aem/patron_verify.py', 'r')
+    text = f.read()
+
+    m = re.search('aem_to_patron_enabled = True', text)
+    if m != None:
+        res = True
+    else:
+        res = False
+
+    f.close
+    return res
+
+def toggle_aem_bypass(enable):
+    f = open('/usr/lib/python2.7/dist-packages/patron/aem/patron_verify.py', 'r+')
+    text = f.read()
+
+    if enable:
+        new_text = re.sub("aem_to_patron_enabled = False", "aem_to_patron_enabled = True", text)
+        f.seek(0, 0)
+        f.truncate()
+        f.write(new_text)
+    else:
+        new_text = re.sub("aem_to_patron_enabled = True", "aem_to_patron_enabled = False", text)
+        f.seek(0, 0)
+        f.truncate()
+        f.write(new_text)
+
+    f.close
+
 def restart_service(service):
-    if service == 'nova':
+    if service == 'patron':
+        output = os.popen('sudo service patron-api restart')
+    elif service == 'nova':
         output = os.popen('sudo service nova-api restart')
     elif service == 'glance':
         output = os.popen('sudo service glance-api restart')
@@ -72,6 +104,17 @@ def restart_service(service):
 #####################################################################################################################
 
 buttonStatus = {}
+
+def sel_aem():
+    service = 'aem'
+    res = str(globals()[service + 'Var'].get())
+    selection = "You selected the option: " + res
+    setText(selection)
+    if res == 'enable':
+        res_bool = True
+    else:
+        res_bool = False
+    handleRadioButton(service, res_bool)
 
 def sel_nova():
     service = 'nova'
@@ -108,8 +151,14 @@ def sel_neutron():
 
 def handleRadioButton(service, enable):
     print (service, enable)
-    toggle_aem(service, enable)
-    restart_service(service)
+    if service == 'aem':
+        toggle_aem_bypass(enable)
+    else:
+        toggle_aem(service, enable)
+        restart_service(service)
+
+def handleButton_patron():
+    restart_service('patron')
 
 def handleButton_nova():
     restart_service('nova')
@@ -127,6 +176,7 @@ def setRadioButton(service, enable):
         globals()[service + 'Var'].set('disable')
 
 def setDefaultRadioButtons():
+    setRadioButton('aem', is_aem_bypass_enabled())
     setRadioButton('nova', is_aem_enabled('nova'))
     setRadioButton('glance', is_aem_enabled('glance'))
     setRadioButton('neutron', is_aem_enabled('neutron'))
@@ -138,21 +188,36 @@ def setDefaultRadioButtons():
 def setText(str):
     label.config(text = str)
 
-root = Tk()
-root.geometry('300x400+10+10')
+def clearTempestLog():
+    f = open('/var/log/tempest/tempest.log', 'w+')
+    f.truncate()
+    f.close
+    setText('/var/log/tempest/tempest.log\nhas been cleared!')
 
+root = Tk()
+root.geometry('300x500+10+10')
+
+aemVar = StringVar()
 novaVar = StringVar()
 glanceVar = StringVar()
 neutronVar = StringVar()
 
 setDefaultRadioButtons()
 
+labelframe_aem = LabelFrame(root, text="AEM")
+labelframe_aem.pack(fill="both", expand="yes")
 labelframe_nova = LabelFrame(root, text="nova")
 labelframe_nova.pack(fill="both", expand="yes")
 labelframe_glance = LabelFrame(root, text="glance")
 labelframe_glance.pack(fill="both", expand="yes")
 labelframe_neutron = LabelFrame(root, text="neutron")
 labelframe_neutron.pack(fill="both", expand="yes")
+labelframe_patron = LabelFrame(root, text="patron")
+labelframe_patron.pack(fill="both", expand="yes")
+
+Radiobutton(labelframe_aem, text="AEM -> patron [ON]", variable=aemVar, value='enable', command=sel_aem).pack()
+Radiobutton(labelframe_aem, text="AEM -> patron [OFF]", variable=aemVar, value='disable', command=sel_aem).pack()
+Button(labelframe_aem, text ="Clear tempest.log", command = clearTempestLog).pack()
 
 Radiobutton(labelframe_nova, text="Nova's AEM and hook [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
 Radiobutton(labelframe_nova, text="Nova's AEM and hook [OFF]", variable=novaVar, value='disable', command=sel_nova).pack()
@@ -165,6 +230,8 @@ Button(labelframe_glance, text ="Restart glance-api", command = handleButton_gla
 Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
 Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
 Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron).pack()
+
+Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
 
 
 label = Label(root)
