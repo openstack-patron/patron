@@ -43,13 +43,59 @@ def is_aem_enabled(service):
     else:
         raise Exception('Original api-paste.ini file not recognized!!')
 
+def is_aem_enabled2(service):
+    f = open(get_original_hook(service), 'r')
+    text = f.read()
+
+    m = re.search('##apc hook##', text)
+    if m != None:
+        res = False
+    else:
+        res = True
+
+    f.close
+    return res
+
 def toggle_aem(service, enable):
     if enable == True:
         shutil.copyfile(get_new_file(service), get_original_file(service))
-        shutil.copyfile(get_new_hook(service), get_original_hook(service))
+        # shutil.copyfile(get_new_hook(service), get_original_hook(service))
     else:
         shutil.copyfile(get_old_file(service), get_original_file(service))
-        shutil.copyfile(get_old_hook(service), get_original_hook(service))
+        # shutil.copyfile(get_old_hook(service), get_original_hook(service))
+
+apc_log_hook_code = '''f = open('/var/log/tempest/tempest.log','a+')
+    f.write(" $ %r\\n" % action)
+    f.close()'''
+
+apc_log_hook_code2 = '''f = open('/var/log/tempest/tempest.log','a+')
+        f.write(" $ %r\\n" % action)
+        f.close()'''
+
+def toggle_aem2(service, enable):
+    f = open(get_original_hook(service), 'r+')
+    text = f.read()
+    if service == 'nova' or service == 'neutron':
+        hook_code = apc_log_hook_code
+    elif service == 'glance':
+        hook_code = apc_log_hook_code2
+    else:
+        raise Exception('[toggle_aem2]: Service not supported!!')
+
+    if enable:
+        # new_text = re.sub('##apc hook##', apc_log_hook_code, text)
+        new_text = text.replace('##apc hook##', hook_code)
+        f.seek(0, 0)
+        f.truncate()
+        f.write(new_text)
+    else:
+        # new_text = re.sub(apc_log_hook_code, '##apc hook##', text)
+        new_text = text.replace(hook_code, '##apc hook##')
+        f.seek(0, 0)
+        f.truncate()
+        f.write(new_text)
+
+    f.close
 
 def is_aem_variable_enabled(var):
     if var == 'aem':
@@ -180,6 +226,7 @@ def handleRadioButton(service, enable):
         toggle_aem_variable(service, enable)
     else:
         toggle_aem(service, enable)
+        toggle_aem2(service, enable)
         restart_service(service)
 
 def handleButton_patron():
