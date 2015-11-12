@@ -32,6 +32,7 @@ op_map = \
  (9696, '/v2.0', '/floatingips', 'GET', ''): (),
  (9696, '/v2.0', '/floatingips', 'POST', ''): (),
  (9696, '/v2.0', '/floatingips/%UUID%', 'DELETE', ''): (),
+ (9696, '/v2.0', '/floatingips?fixed_ip_address=%VALUE%&port_id=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/floatingips?network=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/metering/metering-labels', 'POST', ''): (),
  (9696, '/v2.0', '/networks', 'GET', ''): (),
@@ -41,6 +42,7 @@ op_map = \
  (9696, '/v2.0', '/networks/%UUID%', 'PUT', ''): (),
  (9696, '/v2.0', '/networks/%UUID%/dhcp-agents', 'GET', ''): ('get_dhcp-agents',),
  (9696, '/v2.0', '/networks?fields=%VALUE%&fields=%VALUE%', 'GET', ''): (),
+ (9696, '/v2.0', '/networks?id=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/networks?router%3Aexternal=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/ports', 'GET', ''): (),
  (9696, '/v2.0', '/ports', 'POST', ''): ('create_port',),
@@ -51,6 +53,7 @@ op_map = \
  (9696, '/v2.0', '/ports?fields=%VALUE%&fields=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/ports?fixed_ips=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/ports?network_id=%VALUE%&device_id=%VALUE%', 'GET', ''): (),
+ (9696, '/v2.0', '/ports?network_id=%VALUE%&device_owner=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/quotas', 'GET', ''): (),
  (9696, '/v2.0', '/quotas/%ID%', 'DELETE', ''): (),
  (9696, '/v2.0', '/quotas/%ID%', 'GET', ''): (),
@@ -86,4 +89,5 @@ op_map = \
  (9696, '/v2.0', '/subnets/%UUID%', 'DELETE', ''): ('delete_subnet',),
  (9696, '/v2.0', '/subnets/%UUID%', 'GET', ''): (),
  (9696, '/v2.0', '/subnets/%UUID%', 'PUT', ''): (),
- (9696, '/v2.0', '/subnets?fields=%VALUE%&fields=%VALUE%', 'GET', ''): ()}
+ (9696, '/v2.0', '/subnets?fields=%VALUE%&fields=%VALUE%', 'GET', ''): (),
+ (9696, '/v2.0', '/subnets?id=%VALUE%', 'GET', ''): ()}
