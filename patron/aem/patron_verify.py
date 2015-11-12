@@ -64,6 +64,7 @@ class PatronVerify (wsgi.Middleware):
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
     "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "shared-images": "",
     "members":"",
     "tags":"",
     "metadefs":"",
@@ -399,7 +400,12 @@ class PatronVerify (wsgi.Middleware):
         #         break
         # else:
         #     req_inner_action = ""
-        req_inner_action = req.text
+
+        try:
+            req_inner_action = req.text
+        except UnicodeDecodeError:
+            # This exception indicates that req_inner_action is a file uploaded by the request, we use '' to represent its content.
+            req_inner_action = ""
 
         # Show path vectors.
         LOG.info("req_server_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r",
