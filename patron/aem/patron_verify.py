@@ -69,21 +69,30 @@ class PatronVerify (wsgi.Middleware):
     "metadefs":"",
     "namespaces":"",
     # neutron
-    "routers": "",
-    "networks": "",
-    "agents": "",
+    "routers": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Router, id)",
+    "networks": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Network, id)",
+    "agents": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Agent, id)",
     "l3-routers":"",
     "dhcp-networks":"",
-    "security-groups":"",
+    "security-groups":"neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroup)",
     "security-group-rules":"",
     "quotas":"",
-    "subnetpools":"",
-    "subnets":"",
-    "ports":"",
-    "floatingips":"",
+    "subnetpools":"", ## cmd not exists
+    "subnets":"neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Subnet, id)",
+    "ports":"neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
+    "floatingips":"", ## related to VM, ignore
     # cinder
     "volumes": "",
 
+    }
+
+    neutron_model = {
+        "Agent": {'path': "neutron.db.agents_db.Agent", 'dict': "neutron.db.agents_db.AgentDbMixin._make_agent_dict"},
+        "SecurityGroup": {'path': 'neutron.db.securitygroups_db.SecurityGroup', 'dict': "neutron.db.securitygroups_db._make_security_group_dict"},
+        "Router": {'path': "neutron.db.l3_db.Router", 'dict': "neutron.db.l3_db.L3_NAT_dbonly_mixin._make_router_dict"},
+        "Subnet": {'path': "neutron.db.models_v2.Subnet", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_router_dict"},
+        "Network": {'path': "neutron.db.models_v2.Network", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_network_dict"},
+        "Port": {'path': "neutron.db.models_v2.Port", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_port_dict"},
     }
 
     @classmethod
@@ -135,6 +144,110 @@ class PatronVerify (wsgi.Middleware):
             return ""
 
     @classmethod
+    def _make_security_group_rule_dict(cls, security_group_rule, fields=None):
+        return {'id': security_group_rule['id'],
+               'tenant_id': security_group_rule['tenant_id'],
+               'security_group_id': security_group_rule['security_group_id'],
+               'ethertype': security_group_rule['ethertype'],
+               'direction': security_group_rule['direction'],
+               'protocol': security_group_rule['protocol'],
+               'port_range_min': security_group_rule['port_range_min'],
+               'port_range_max': security_group_rule['port_range_max'],
+               'remote_ip_prefix': security_group_rule['remote_ip_prefix'],
+               'remote_group_id': security_group_rule['remote_group_id']}
+
+    @classmethod
+    def neutron_target2dict(cls, target, type):
+
+        # !!  ignore all _apply_dict_extend_functions
+
+        if type == 'SecurityGroup':
+            res = {'id': target['id'],
+                'name': target['name'],
+                'tenant_id': target['tenant_id'],
+                'description': target['description']}
+            res['security_group_rules'] = [cls._make_security_group_rule_dict(r)
+                                           for r in target.rules]
+            return res
+        elif type == 'Router':
+            from neutron.extensions import l3
+            EXTERNAL_GW_INFO = l3.EXTERNAL_GW_INFO
+            API_TO_DB_COLUMN_MAP = {'port_id': 'fixed_port_id'}
+            CORE_ROUTER_ATTRS = ('id', 'name', 'tenant_id', 'admin_state_up', 'status')
+
+            res = dict((key, target[key]) for key in CORE_ROUTER_ATTRS)
+            if target['gw_port_id']:
+                ext_gw_info = {
+                    'network_id': target.gw_port['network_id'],
+                    'external_fixed_ips': [{'subnet_id': ip["subnet_id"],
+                                            'ip_address': ip["ip_address"]}
+                                           for ip in target.gw_port['fixed_ips']]}
+            else:
+                ext_gw_info = None
+            res.update({
+                EXTERNAL_GW_INFO: ext_gw_info,
+                'gw_port_id': target['gw_port_id'],
+                    })
+            return res
+        elif type == 'Subnet':
+            res = {'id': target['id'],
+               'name': target['name'],
+               'tenant_id': target['tenant_id'],
+               'network_id': target['network_id'],
+               'ip_version': target['ip_version'],
+               'cidr': target['cidr'],
+               'subnetpool_id': target.get('subnetpool_id'),
+               'allocation_pools': [{'start': pool['first_ip'],
+                                     'end': pool['last_ip']}
+                                    for pool in target['allocation_pools']],
+               'gateway_ip': target['gateway_ip'],
+               'enable_dhcp': target['enable_dhcp'],
+               'ipv6_ra_mode': target['ipv6_ra_mode'],
+               'ipv6_address_mode': target['ipv6_address_mode'],
+               'dns_nameservers': [dns['address']
+                                   for dns in target['dns_nameservers']],
+               'host_routes': [{'destination': route['destination'],
+                                'nexthop': route['nexthop']}
+                               for route in target['routes']],
+               'shared': target['shared']
+               }
+            return res
+        elif type == 'Network':
+            from neutron.api.v2 import attributes
+            from neutron.common import constants
+            res = {'id': target['id'],
+               'name': target['name'],
+               'tenant_id': target['tenant_id'],
+               'admin_state_up': target['admin_state_up'],
+               'mtu': target.get('mtu', constants.DEFAULT_NETWORK_MTU),
+               'status': target['status'],
+               'shared': target['shared'],
+               'subnets': [subnet['id']
+                           for subnet in target['subnets']]}
+            # TODO(pritesh): Move vlan_transparent to the extension module.
+            # vlan_transparent here is only added if the vlantransparent
+            # extension is enabled.
+            if ('vlan_transparent' in target and target['vlan_transparent'] !=
+                attributes.ATTR_NOT_SPECIFIED):
+                res['vlan_transparent'] = target['vlan_transparent']
+            return res
+        elif type == 'Port':
+            res = {"id": target["id"],
+               'name': target['name'],
+               "network_id": target["network_id"],
+               'tenant_id': target['tenant_id'],
+               "mac_address": target["mac_address"],
+               "admin_state_up": target["admin_state_up"],
+               "status": target["status"],
+               "fixed_ips": [{'subnet_id': ip["subnet_id"],
+                              'ip_address': ip["ip_address"]}
+                             for ip in target["fixed_ips"]],
+               "device_id": target["device_id"],
+               "device_owner": target["device_owner"]}
+            return res
+        return None
+
+    @classmethod
     def url_to_op_and_target(cls, caller_project_id, context, req_server_port, req_api_version, req_method, req_path_info, req_inner_action):
 
         key_ids = {}
@@ -161,18 +274,40 @@ class PatronVerify (wsgi.Middleware):
             param_list = param_name.replace(")", "").replace(" ", "").split(",")
             mod = importlib.import_module(module_name)
             param_values = []
+            netron_key = ""
             for param in param_list:
                 if param == "id" or param == "uuid" or param == "name":
                     param_values.append(key_ids[key_name])
+                elif cls.neutron_model.has_key(param):
+                    (internalModname, internalClassName) = cls.neutron_model[param]['path'].rsplit(".", 1)
+                    internalMod = importlib.import_module(internalModname)
+                    internalClassObj = getattr(internalMod, internalClassName)
+                    param_values.append(internalClassObj)
+                    neutron_key = param
                 else:
                     param_values.append(getattr(context, param))
+
             method_obj = getattr(getattr(mod, class_name), method_name)
             try:
                 target = method_obj(context, *param_values)
             # the method is then a instance method, first instantiate the class.
             except TypeError:
+
                 method_obj = getattr(getattr(mod, class_name)(), method_name)
                 target = method_obj(context, *param_values)
+                # make neutron target object to Dict
+                if neutron_key == 'Agent':
+                    from neutron.extensions import agent as ext_agent
+                    attr = ext_agent.RESOURCE_ATTRIBUTE_MAP.get(
+                    ext_agent.RESOURCE_NAME + 's')
+                    target = dict((k, target[k]) for k in attr
+                           if k not in ['alive', 'configurations'])
+                elif neutron_key == 'Router' or neutron_key == 'Subnet' or neutron_key == 'Network' \
+                        or neutron_key == 'Port':
+                    target = cls.neutron_target2dict(target, neutron_key)
+                elif neutron_key == 'SecurityGroup':
+                    security_group = target.filter(internalClassObj.id == key_ids[key_name]).one()
+                    target = cls.neutron_target2dict(security_group, neutron_key)
         else:
             method_obj = None
             target = None
@@ -254,6 +389,9 @@ class PatronVerify (wsgi.Middleware):
         req_path_info = re.sub(json_end_pattern, "", req_path_info)
         if req.query_string != "":
             req_path_info = req_path_info+ "?" + req.query_string
+
+        # Preprocess pathinfo for neutron.
+        req_path_info = req_path_info.replace("?fields=id&id=", "/")  # for neutron security-group-show
 
         # if req.is_body_readable:
         #     for d, x in req.json.items():
