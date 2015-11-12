@@ -238,7 +238,8 @@ path_op_map = \
 path_op_map.update(op_map.nova_op_map.op_map)
 path_op_map.update(op_map.glance_op_map.op_map)
 path_op_map.update(op_map.neutron_op_map.op_map)
-LOG.info("Path op map: %r", (path_op_map))
+LOG.info("Op map has been loaded!!")
+#LOG.info("Path op map: %r", (path_op_map))
 
 # Editted by puyangsky
 def parse_inner_anction(req_innner_action, req_path_info):
