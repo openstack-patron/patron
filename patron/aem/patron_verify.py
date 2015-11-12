@@ -32,6 +32,7 @@ else:
 from patronclient import client
 from keystoneclient import session
 
+import traceback
 import importlib
 import re
 import patron_parse
@@ -63,25 +64,25 @@ class PatronVerify (wsgi.Middleware):
     "os-instance_usage_audit_log": "",
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
-    "images": "", # "glance.db.sqlalchemy.api.image_get(uuid)", this function will cause "image not found" error, we disabled it for the moment.
+    "images": "glance.db.sqlalchemy.api.image_get(uuid)",
     "shared-images": "",
-    "members":"",
-    "tags":"",
-    "metadefs":"",
-    "namespaces":"",
+    "members": "",
+    "tags": "",
+    "metadefs": "",
+    "namespaces": "",
     # neutron
     "routers": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Router, id)",
     "networks": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Network, id)",
     "agents": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Agent, id)",
-    "l3-routers":"",
-    "dhcp-networks":"",
-    "security-groups":"neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroup)",
-    "security-group-rules":"",
-    "quotas":"",
-    "subnetpools":"", ## cmd not exists
-    "subnets":"neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Subnet, id)",
-    "ports":"neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
-    "floatingips":"", ## related to VM, ignore
+    "l3-routers": "",
+    "dhcp-networks": "",
+    "security-groups": "neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroup)",
+    "security-group-rules": "",
+    "quotas": "",
+    "subnetpools": "", ## cmd not exists
+    "subnets": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Subnet, id)",
+    "ports": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
+    "floatingips": "", ## related to VM, ignore
     # cinder
     "volumes": "",
 
@@ -295,20 +296,31 @@ class PatronVerify (wsgi.Middleware):
             except TypeError:
 
                 method_obj = getattr(getattr(mod, class_name)(), method_name)
-                target = method_obj(context, *param_values)
-                # make neutron target object to Dict
-                if neutron_key == 'Agent':
-                    from neutron.extensions import agent as ext_agent
-                    attr = ext_agent.RESOURCE_ATTRIBUTE_MAP.get(
-                    ext_agent.RESOURCE_NAME + 's')
-                    target = dict((k, target[k]) for k in attr
-                           if k not in ['alive', 'configurations'])
-                elif neutron_key == 'Router' or neutron_key == 'Subnet' or neutron_key == 'Network' \
-                        or neutron_key == 'Port':
-                    target = cls.neutron_target2dict(target, neutron_key)
-                elif neutron_key == 'SecurityGroup':
-                    security_group = target.filter(internalClassObj.id == key_ids[key_name]).one()
-                    target = cls.neutron_target2dict(security_group, neutron_key)
+                try:
+                    target = method_obj(context, *param_values)
+                    # make neutron target object to Dict
+                    if neutron_key == 'Agent':
+                        from neutron.extensions import agent as ext_agent
+                        attr = ext_agent.RESOURCE_ATTRIBUTE_MAP.get(
+                        ext_agent.RESOURCE_NAME + 's')
+                        target = dict((k, target[k]) for k in attr
+                               if k not in ['alive', 'configurations'])
+                    elif neutron_key == 'Router' or neutron_key == 'Subnet' or neutron_key == 'Network' \
+                            or neutron_key == 'Port':
+                        target = cls.neutron_target2dict(target, neutron_key)
+                    elif neutron_key == 'SecurityGroup':
+                        security_group = target.filter(internalClassObj.id == key_ids[key_name]).one()
+                        target = cls.neutron_target2dict(security_group, neutron_key)
+                except Exception, e:
+                    LOG.info("Target can't be retrieved using Python reflection! (instance method)\n")
+                    exstr = traceback.format_exc()
+                    LOG.info(exstr)
+                    target = None
+            except Exception, e:
+                LOG.info("Target can't be retrieved using Python reflection! (class method)\n")
+                exstr = traceback.format_exc()
+                LOG.info(exstr)
+                target = None
         else:
             method_obj = None
             target = None
