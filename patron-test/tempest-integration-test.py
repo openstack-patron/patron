@@ -11,15 +11,13 @@ def parse_five_keys(test):
     # test = "req_port = 8774, req_api_version = u'/v2', req_method = 'POST', req_path_info = u'/df1d1e97c4f54e5a8d790d4684c3fa2a/servers/detail', req_inner_action = u''"
     # test = "req_port = 9696, req_api_version = u'/v2.0', req_method = 'DELETE', req_path_info = u'/ports/d6853199-69c7-4699-9173-e6f0d257c172', req_inner_action = u'', op=$ 'delete_port'"
     five_key_pattern = re.compile(
-        "req_port = (.*), req_api_version = (.*), req_method = '(.*)', req_path_info = u'(.*)', req_inner_action = (u'.*'),")
+        "req_port = u?(.*), req_api_version = u?(.*), req_method = u?'(.*)', req_path_info = u?'(.*)', req_inner_action = u?'(.*)',")
 
     match = re.match(five_key_pattern, test)
     if match != None:
         port = match.group(1)
         version = match.group(2)
-        if version.startswith('u'):
-            version = version.strip('u')
-            version = version.strip("'")
+        version = version.strip("'")
         method = match.group(3)
         path_info = match.group(4)
         inner_action = match.group(5)
@@ -30,7 +28,7 @@ def parse_five_keys(test):
             five_key_tuple = (int(port), version, str_path_info, method, str_inner_action)
             return five_key_tuple
     else:
-        return None
+        return ()
 
 
 # parse op
@@ -46,6 +44,8 @@ def rs_parse(string):
     # print string
     rs = []
     rs_pattern = re.compile(".*Response - Headers: {.*'status': '([0-9]{3})',", re.S)
+    rs_pattern2 = re.compile(".*Response Status: ([0-9]{3})", re.S)
+
     time_pattern = re.compile(".* ([0-9]{1}.[0-9]{3}s)\n", re.S)
     m = re.match(rs_pattern, string)
     m1 = re.match(time_pattern, string)
@@ -53,7 +53,11 @@ def rs_parse(string):
     if m != None:
         rs.append(m.group(1))
     else:
-        rs.append("NoneCode")
+        m = re.match(rs_pattern2, string)
+        if m != None:
+            rs.append(m.group(1))
+        else:
+            rs.append("NoneCode")
     if m1 != None:
         rs.append(m1.group(1))
     else:
@@ -117,8 +121,8 @@ def core_parse():
         if lists[i].find("$ ") != -1:
             # five keys
             test = lists[i].split("$ ")[0]
-            if parse_five_keys(test) != None and parse_five_keys(test) != ():
-                five_key_tuple = parse_five_keys(test)
+
+            five_key_tuple = parse_five_keys(test)
             # op
             tmp = lists[i].split("$ ")
             l = len(tmp)
