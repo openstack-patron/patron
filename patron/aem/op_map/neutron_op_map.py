@@ -54,6 +54,7 @@ op_map = \
  (9696, '/v2.0', '/ports?fixed_ips=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/ports?network_id=%VALUE%&device_id=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/ports?network_id=%VALUE%&device_owner=%VALUE%', 'GET', ''): (),
+ (9696, '/v2.0', '/ports?tenant_id=%VALUE%&device_id=%VALUE%', 'GET', ''): (),
  (9696, '/v2.0', '/quotas', 'GET', ''): (),
  (9696, '/v2.0', '/quotas/%ID%', 'DELETE', ''): (),
  (9696, '/v2.0', '/quotas/%ID%', 'GET', ''): (),

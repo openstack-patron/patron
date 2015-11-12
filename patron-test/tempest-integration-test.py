@@ -170,7 +170,7 @@ def core_parse():
             if five_key_tuple!=():
                 op_map[five_key_tuple] = ops_tuple
 
-        elif lists[i].find("op=201") != -1:
+        elif lists[i].find("op=") != -1:
             # five keys
             test = lists[i].split("op=")[0]
 
