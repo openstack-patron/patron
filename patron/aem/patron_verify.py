@@ -63,7 +63,7 @@ class PatronVerify (wsgi.Middleware):
     "os-instance_usage_audit_log": "",
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
-    "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "images": "", # "glance.db.sqlalchemy.api.image_get(uuid)", this function will cause "image not found" error, we disabled it for the moment.
     "shared-images": "",
     "members":"",
     "tags":"",
