@@ -158,7 +158,7 @@ class PatronAccessController(object):
         #         'res': False}
 
         try:
-            res = policy.enforce(context, op, target)
+            res = policy.enforce(context, op, target, bypass=False)
             if res != False:
                 res = True
             return {'command': 'verify',

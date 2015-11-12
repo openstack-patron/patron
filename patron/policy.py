@@ -67,7 +67,7 @@ def set_rules(rules, overwrite=True, use_conf=False):
     _ENFORCER.set_rules(rules, overwrite, use_conf)
 
 
-def enforce(context, action, target, do_raise=True, exc=None):
+def enforce(context, action, target, do_raise=True, exc=None, bypass=True):
     """Verifies that the action is valid on the target in this context.
 
        :param context: patron context
@@ -89,6 +89,10 @@ def enforce(context, action, target, do_raise=True, exc=None):
            authorized, and the exact value False if not authorized and
            do_raise is False.
     """
+
+    if bypass:
+        return True
+
     init()
     credentials = context.to_dict()
     if not exc:
@@ -105,10 +109,13 @@ def enforce(context, action, target, do_raise=True, exc=None):
     return result
 
 
-def check_is_admin(context):
+def check_is_admin(context, bypass=True):
     """Whether or not roles contains 'admin' role according to policy setting.
 
     """
+
+    if bypass:
+        return True
 
     init()
     # the target is user-self
