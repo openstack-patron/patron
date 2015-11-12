@@ -27,6 +27,8 @@ def parse_five_keys(test):
         if str_path_info != "/":
             five_key_tuple = (int(port), version, str_path_info, method, str_inner_action)
             return five_key_tuple
+        else:
+            return ()
     else:
         return ()
 
@@ -171,8 +173,8 @@ def core_parse():
         elif lists[i].find("op=201") != -1:
             # five keys
             test = lists[i].split("op=")[0]
-            if parse_five_keys(test) != None and parse_five_keys(test) != ():
-                five_key_tuple = parse_five_keys(test)
+
+            five_key_tuple = parse_five_keys(test)
 
             if service == '':
                 if 8774 in five_key_tuple:
