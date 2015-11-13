@@ -10,6 +10,8 @@ def get_original_file(service):
         return '/etc/glance/glance-api-paste.ini'
     elif service == 'neutron':
         return '/etc/neutron/api-paste.ini'
+    elif service == 'cinder':
+        return '/etc/cinder/api-paste.ini'
     else:
         raise Exception('[get_original_file]: Service not supported!!')
 
@@ -26,6 +28,8 @@ def get_original_hook(service):
         return '/usr/lib/python2.7/dist-packages/glance/api/policy.py'
     elif service == 'neutron':
         return '/usr/lib/python2.7/dist-packages/neutron/policy.py'
+    elif service == 'cinder':
+        return '/usr/lib/python2.7/dist-packages/cinder/policy.py'
     else:
         raise Exception('[get_original_hook]: Service not supported!!')
 
@@ -75,7 +79,7 @@ apc_log_hook_code2 = '''f = open('/var/log/tempest/tempest.log','a+')
 def toggle_aem2(service, enable):
     f = open(get_original_hook(service), 'r+')
     text = f.read()
-    if service == 'nova' or service == 'neutron':
+    if service == 'nova' or service == 'neutron' or service == 'cinder':
         hook_code = apc_log_hook_code
     elif service == 'glance':
         hook_code = apc_log_hook_code2
@@ -150,6 +154,8 @@ def restart_service(service):
         output = os.popen('sudo service glance-api restart')
     elif service == 'neutron':
         output = os.popen('sudo service neutron-server restart')
+    elif service == 'cinder':
+        output = os.popen('sudo service cinder-api restart')
     else:
         raise Exception('[restart_service]: Service not supported!!')
     res = output.read()
@@ -220,6 +226,17 @@ def sel_neutron():
         res_bool = False
     handleRadioButton(service, res_bool)
 
+def sel_cinder():
+    service = 'cinder'
+    res = str(globals()[service + 'Var'].get())
+    selection = "You selected the option: " + res
+    setText(selection)
+    if res == 'enable':
+        res_bool = True
+    else:
+        res_bool = False
+    handleRadioButton(service, res_bool)
+
 def handleRadioButton(service, enable):
     print (service, enable)
     if service == 'aem' or service == 'cache':
@@ -241,6 +258,9 @@ def handleButton_glance():
 def handleButton_neutron():
     restart_service('neutron')
 
+def handleButton_cinder():
+    restart_service('cinder')
+
 def setRadioButton(service, enable):
     if enable:
         globals()[service + 'Var'].set('enable')
@@ -253,6 +273,7 @@ def setDefaultRadioButtons():
     setRadioButton('nova', is_aem_enabled('nova'))
     setRadioButton('glance', is_aem_enabled('glance'))
     setRadioButton('neutron', is_aem_enabled('neutron'))
+    setRadioButton('cinder', is_aem_enabled('cinder'))
 
     # setRadioButton('nova', True)
     # setRadioButton('glance', False)
@@ -268,13 +289,14 @@ def clearTempestLog():
     setText('/var/log/tempest/tempest.log\nhas been cleared!')
 
 root = Tk()
-root.geometry('300x500+10+10')
+root.geometry('300x600+10+10')
 
 aemVar = StringVar()
 cacheVar = StringVar()
 novaVar = StringVar()
 glanceVar = StringVar()
 neutronVar = StringVar()
+cinderVar = StringVar()
 
 setDefaultRadioButtons()
 
@@ -286,6 +308,8 @@ labelframe_glance = LabelFrame(root, text="glance")
 labelframe_glance.pack(fill="both", expand="yes")
 labelframe_neutron = LabelFrame(root, text="neutron")
 labelframe_neutron.pack(fill="both", expand="yes")
+labelframe_cinder = LabelFrame(root, text="cinder")
+labelframe_cinder.pack(fill="both", expand="yes")
 labelframe_patron = LabelFrame(root, text="patron")
 labelframe_patron.pack(fill="both", expand="yes")
 
@@ -306,6 +330,10 @@ Button(labelframe_glance, text ="Restart glance-api", command = handleButton_gla
 Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
 Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
 Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron).pack()
+
+Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [ON]", variable=cinderVar, value='enable', command=sel_cinder).pack()
+Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [OFF]", variable=cinderVar, value='disable', command=sel_cinder).pack()
+Button(labelframe_cinder, text ="Restart cinder-api", command = handleButton_cinder).pack()
 
 Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
 
