@@ -22,6 +22,8 @@ elif service_name == "glance":
     from glance.common import wsgi
 elif service_name == "neutron":
     from neutron import wsgi
+elif service_name == "cinder":
+    from cinder import wsgi
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
 elif service_name.endswith(".py"): # This is for other module's calling use.
@@ -85,7 +87,9 @@ class PatronVerify (wsgi.Middleware):
     "floatingips": "", ## related to VM, ignore
     # cinder
     "volumes": "",
-
+    "qos-specs": "",
+    "types": "",
+    "extra_specs": "",
     }
 
     neutron_model = {
@@ -356,6 +360,8 @@ class PatronVerify (wsgi.Middleware):
             caller_context = req.context
         elif service_name == "neutron":
             caller_context = req.context
+        elif service_name == "cinder":
+            caller_context = req.environ['cinder.context']
         else:
             raise Exception("AEM: Invalid caller context!!")
 
@@ -388,13 +394,13 @@ class PatronVerify (wsgi.Middleware):
         # /85c8848b1dd64c7ebb2c5baeb12e25c3/flavors?is_public=None
 
         # Use different logic to parse path_info for different services.
-        if service_name == "nova" or service_name == "neutron":
-            req_api_version = req.script_name
-            req_path_info = req.path_info
-        else: # for glance.
+        if service_name == "glance":
             (s1, s2, s3) = req.path_info.split("/", 2)
             req_api_version = "/" + s2
             req_path_info = "/" + s3
+        else: # for nova, neutron, cinder, etc.
+            req_api_version = req.script_name
+            req_path_info = req.path_info
 
         id_start_pattern = "^/[0-9a-f]{32}"
         req_path_info = re.sub(id_start_pattern, "", req_path_info)

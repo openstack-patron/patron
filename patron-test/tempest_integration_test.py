@@ -8,8 +8,6 @@ op_map = {}
 def parse_five_keys(test):
     key_calls = patron.PatronVerify.key_calls
 
-    # test = "req_port = 8774, req_api_version = u'/v2', req_method = 'POST', req_path_info = u'/df1d1e97c4f54e5a8d790d4684c3fa2a/servers/detail', req_inner_action = u''"
-    # test = "req_port = 9696, req_api_version = u'/v2.0', req_method = 'DELETE', req_path_info = u'/ports/d6853199-69c7-4699-9173-e6f0d257c172', req_inner_action = u'', op=$ 'delete_port'"
     five_key_pattern = re.compile(
         "req_port = u?(.*), req_api_version = u?(.*), req_method = u?'(.*)', req_path_info = u?'(.*)', req_inner_action = u?'(.*)',")
 
@@ -71,7 +69,7 @@ def do_clear(service):
     if service == '':
         return
     else:
-        f = open('/var/log/tempest/'+ service + '-op.log', 'w+')
+        f = open('/var/log/tempest/' + service + '-op.log', 'w+')
     f.truncate()
     f.close
 
@@ -80,7 +78,7 @@ def do_write(num, five_key_tuple, result, time, service):
     if service == '':
         return
     else:
-        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+        f = open('/var/log/tempest/' + service + '-op.log', 'a+')
     f.write("%-8r  |   %-90r  |   %-30r  |   %-10r\n" % (num, five_key_tuple, result, time))
     f.close
 
@@ -89,7 +87,7 @@ def do_write_time(total, len, service):
     if service == '':
         return
     else:
-        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+        f = open('/var/log/tempest/' + service + '-op.log', 'a+')
     f.write("\n\n----------------------------------------------------------------------------------------"
             "---------------------------------------------------------\n\n")
     f.write("Total time : %.3fs\nCommand number : %d\nAverage time per command : %.3fs" % (total, len, total / len))
@@ -125,6 +123,7 @@ def core_parse():
             test = lists[i].split("$ ")[0]
 
             five_key_tuple = parse_five_keys(test)
+
             # op
             tmp = lists[i].split("$ ")
             l = len(tmp)
@@ -149,6 +148,8 @@ def core_parse():
                     service = 'glance'
                 elif 9696 in five_key_tuple:
                     service = 'neutron'
+                elif 8776 in five_key_tuple:
+                    service = 'cinder'
                 do_clear(service)
 
             # print ops_tuple
@@ -160,16 +161,18 @@ def core_parse():
                 each_time = float(each_time)
                 total = total + each_time
             if len(result) > 0:
-                if result[0] == '200' or result[0] == '204' or result[0] == '202' or result[0] == '201':
+                if result[0] == '200' or result[0] == '204' or result[0] == '202' or result[0] == '201'\
+                        or result[0] == '203':
                     result0 = "Permited"
                 elif result[0] == '403':
                     result0 = 'Denied'
                 else:
                     result0 = "HttpCode : " + result[0]
             do_write(i, five_key_tuple, result0, t, service)
-            if five_key_tuple!=():
+            if five_key_tuple != ():
                 op_map[five_key_tuple] = ops_tuple
 
+        # no op in this log
         elif lists[i].find("op=") != -1:
             # five keys
             test = lists[i].split("op=")[0]
@@ -183,6 +186,8 @@ def core_parse():
                     service = 'glance'
                 elif 9696 in five_key_tuple:
                     service = 'neutron'
+                elif 8776 in five_key_tuple:
+                    service = 'cinder'
                 do_clear(service)
 
             # op
@@ -196,14 +201,15 @@ def core_parse():
                 each_time = float(each_time)
                 total = total + each_time
             if len(result) > 0:
-                if result[0] == '200' or result[0] == '204' or result[0] == '202' or result[0] == '201':
+                if result[0] == '200' or result[0] == '204' or result[0] == '202' or result[0] == '201'\
+                        or result[0] == '203':
                     result0 = "Permited"
                 elif result[0] == '403':
                     result0 = 'Denied'
                 else:
                     result0 = "HttpCode : " + result[0]
             do_write(i, five_key_tuple, result0, t, service)
-            if five_key_tuple!=():
+            if five_key_tuple != ():
                 op_map[five_key_tuple] = ops_tuple1
 
     do_write_time(total, len(lists) - 1, service)
