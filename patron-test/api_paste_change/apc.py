@@ -60,6 +60,7 @@ def is_aem_enabled2(service):
     f.close
     return res
 
+# add aem into api.ini
 def toggle_aem(service, enable):
     if enable == True:
         shutil.copyfile(get_new_file(service), get_original_file(service))
@@ -76,6 +77,7 @@ apc_log_hook_code2 = '''f = open('/var/log/tempest/tempest.log','a+')
         f.write(" $ %r\\n" % action)
         f.close()'''
 
+# add policy hooks into service
 def toggle_aem2(service, enable):
     f = open(get_original_hook(service), 'r+')
     text = f.read()
@@ -121,6 +123,7 @@ def is_aem_variable_enabled(var):
     f.close
     return res
 
+# decide whether aem and cache is on or off
 def toggle_aem_variable(var, enable):
     if var == 'aem':
         var = 'aem_to_patron_enabled';
@@ -159,8 +162,7 @@ def restart_service(service):
     else:
         raise Exception('[restart_service]: Service not supported!!')
     res = output.read()
-    print res
-    setText(res)
+    return res
 
 # toggle_aem('nova', False)
 # res = is_aem_enabled('nova')
@@ -247,19 +249,29 @@ def handleRadioButton(service, enable):
         restart_service(service)
 
 def handleButton_patron():
-    restart_service('patron')
+    res = restart_service('patron')
+    print res
+    setText(res)
 
 def handleButton_nova():
-    restart_service('nova')
+    res = restart_service('nova')
+    print res
+    setText(res)
 
 def handleButton_glance():
-    restart_service('glance')
+    res = restart_service('glance')
+    print res
+    setText(res)
 
 def handleButton_neutron():
-    restart_service('neutron')
+    res = restart_service('neutron')
+    print res
+    setText(res)
 
 def handleButton_cinder():
-    restart_service('cinder')
+    res = restart_service('cinder')
+    print res
+    setText(res)
 
 def setRadioButton(service, enable):
     if enable:
