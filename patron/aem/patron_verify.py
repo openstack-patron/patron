@@ -52,7 +52,7 @@ class PatronVerify (wsgi.Middleware):
     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
-    "os-quota-sets": "nova.quota.QUOTAS.get_project_quotas(id)",
+    "os-quota-sets": "", # "nova.quota.QUOTAS.get_project_quotas(id)", comment this for the moment because it conflicts with the same key in cinder.
     "os-simple-tenant-usage": "nova.api.patron_verify.PatronVerify.get_tenant_by_id(id)",
     "os-instance-actions": "nova.objects.instance.Instance.get_by_uuid(uuid)", # although "instance_action" has its own object, we still use "instance" as the object here
     "os-hosts": "nova.compute.api.HostAPI.instance_get_all_by_host(name)",
