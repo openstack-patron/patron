@@ -2,6 +2,9 @@ import re
 import pprint
 from patron.aem import patron_verify as patron
 import os
+import inspect
+
+invoker = os.path.basename(inspect.stack()[-1][1]).split('-')[0]
 op_map = {}
 
 
@@ -88,18 +91,16 @@ def do_write_time(total, len, service):
         return
     else:
         f = open('/var/log/tempest/' + service + '-op.log', 'a+')
-    f.write("\n\n----------------------------------------------------------------------------------------"
-            "---------------------------------------------------------\n\n")
-    f.write("Total time : %.3fs\nCommand number : %d\nAverage time per command : %.3fs" % (total, len, total / len))
-    f.write("\n\n----------------------------------------------------------------------------------------"
-            "---------------------------------------------------------\n\n")
-    f.close()
+        f.write("\n\n----------------------------------------------------------------------------------------"
+                "---------------------------------------------------------\n\n")
+        f.write("Total time : %.3fs\nCommand number : %d\nAverage time per command : %.3fs" % (total, len, total / len))
+        f.close()
 
 def do_write_op_map(a, service):
     if service == '':
         return
     else:
-        f = open('/var/log/tempest/'+ service + '-op.log', 'a+')
+        f = open('/var/log/tempest/' + service + '-op.log', 'a+')
         f.write(a)
         f.close()
 
@@ -212,11 +213,16 @@ def core_parse():
             if five_key_tuple != ():
                 op_map[five_key_tuple] = ops_tuple1
 
-    do_write_time(total, len(lists) - 1, service)
+    f = open('/var/log/tempest/' + service + '-op.log', 'a+')
+    f.write("\n\n----------------------------------------------------------------------------------------"
+            "---------------------------------------------------------\n\n")
+    f.close()
     op_map_str = pprint.pformat(op_map)
     do_write_op_map(op_map_str, service)
 
-    print total
+    do_write_time(total, len(lists) - 1, service)
 
+    # print total
 
-core_parse()
+if invoker == "tempest_integration_test.py":
+    core_parse()

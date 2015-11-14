@@ -2,6 +2,9 @@ import filecmp
 import shutil
 import os
 from Tkinter import *
+import inspect
+
+invoker = os.path.basename(inspect.stack()[-1][1]).split('-')[0]
 
 def get_original_file(service):
     if service == 'nova':
@@ -353,4 +356,5 @@ Button(labelframe_patron, text ="Restart patron-api", command = handleButton_pat
 label = Label(root)
 label.pack()
 root.title("API Paste Change (APC)")
-root.mainloop()
+if invoker == "apc.py":
+    root.mainloop()
