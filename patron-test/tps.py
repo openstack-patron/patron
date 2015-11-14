@@ -15,13 +15,13 @@ service_map = {
 }
 
 def reset_all_services():
-    for service in services:
-        apc.toggle_aem(service, False)
-        apc.toggle_aem2(service, False)
+    for single_service in services:
+        apc.toggle_aem(single_service, False)
+        apc.toggle_aem2(single_service, False)
 
-def restart_all_service():
-    for service in services:
-        apc.restart_service(service)
+def restart_all_services():
+    for single_service in services:
+        apc.restart_service(single_service)
 
 
 def clear_tempest_log():
@@ -29,7 +29,15 @@ def clear_tempest_log():
     f.truncate()
     f.close()
 
+# clear /var/log/tempest before running tests
+def clear_before_test(service_name):
+    path = "/var/log/tempest/" + service_name + "/"
+    if os.path.exists(path):
+        os.popen("rm -r " + path)
+
+# main action
 def do_test(times, service, AEMenabled, cacheEnabled):
+    reset_all_services()
     base_dir = "/var/log/tempest/" + service + "/"
     if not os.path.exists(base_dir):
         os.popen("mkdir " + base_dir)
@@ -54,7 +62,7 @@ def do_test(times, service, AEMenabled, cacheEnabled):
         os.popen("mkdir " + file_dir)
 
     for i in range(times):
-        reset_all_services()
+        restart_all_services()
         clear_tempest_log()
         print ("The %dth time, running %s test==>>>>>>>>>" % (i+1, service.upper()))
         cmd = "nosetests /usr/lib/python2.7/dist-packages/tempest/api/" + service_map[service] \
@@ -90,10 +98,16 @@ def do_test(times, service, AEMenabled, cacheEnabled):
         print "Run successfully!\n"
         time.sleep(3)
 
+# do test loop
 times = 0
 for service in services:
+    clear_before_test(service)
     do_test(times, service, False, False)
     do_test(times, service, True, False)
     do_test(times, service, True, True)
 
-do_test(5, "cinder", False, False)
+
+# do single test
+service_name = "cinder"
+clear_before_test(service_name)
+do_test(5, service_name, False, False)
