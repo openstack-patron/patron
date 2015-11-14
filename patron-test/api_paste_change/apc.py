@@ -16,10 +16,10 @@ def get_original_file(service):
         raise Exception('[get_original_file]: Service not supported!!')
 
 def get_new_file(service):
-    return './' + service + '-paste.ini'
+    return '/usr/lib/python2.7/dist-packages/patron-test/api_paste_change/' + service + '-paste.ini'
 
 def get_old_file(service):
-    return './' + service + '-paste-old.ini'
+    return '/usr/lib/python2.7/dist-packages/patron-test/api_paste_change/' + service + '-paste-old.ini'
 
 def get_original_hook(service):
     if service == 'nova':
