@@ -1,9 +1,8 @@
-__author__ = 'root'
 
 import os
 import api_paste_change.apc as apc
 import shutil
-import tempest_integration_test as tipt
+import tempest_integration_test as tepit
 import time
 
 services = ["nova", "glance", "neutron", "cinder"]
@@ -70,25 +69,39 @@ def do_test(times, service, AEMenabled, cacheEnabled):
         os.popen(cmd)
 
         result = os.popen("tail -3 /var/log/tempest/tempest_result.log")
-        f = open(file_dir + "result.log", "a+")
         result_str = result.read()
         if result_str == '':
             result_str = "Nosetests Error!"
-        f.write("##################################################################\nNo. %d\n" % (i+1))
+        result_str = result_str.replace("\n\n", "\n")
+
+        f = open(file_dir + "result.log", "a+")
+        f.write("##################################################################\nNo. %d, %s, %s\n\n" % (i+1, service, flag))
         f.write(result_str)
         f.close()
 
-        tipt.core_parse()
+        ultimate_f = open("/var/log/tempest/ultimate_result.log", "a+")
+        ultimate_f.write("##################################################################\nNo. %d, %s, %s\n\n" % (i+1, service, flag))
+        ultimate_f.write(result_str)
+        ultimate_f.close()
+
+        tepit.core_parse()
         old_op_path = "/var/log/tempest/" + service + "-op.log"
         result1 = os.popen("tail -3 " + old_op_path)
         result1_str = result1.read()
         if result1_str == "":
             result1_str = "Parse Error!"
+
         # print result1.read()
         f1 = open(file_dir + "result.log", "a+")
         f1.write("\n------------------------------------------------------------------\n")
         f1.write("%s\n\n" % result1_str)
         f1.close()
+
+        ultimate_f1 = open("/var/log/tempest/ultimate_result.log", "a+")
+        ultimate_f1.write("\n------------------------------------------------------------------\n")
+        ultimate_f1.write("%s\n\n" % result1_str)
+        ultimate_f1.close()
+
         old_tempest_log_path = "/var/log/tempest/tempest.log"
         new_op_path = file_dir + str(i+1) + "-op.log"
         new_tempest_log_path = file_dir + str(i+1) + "-tempest.log"
@@ -110,4 +123,6 @@ for service in services:
 # do single test
 service_name = "cinder"
 clear_before_test(service_name)
-do_test(5, service_name, False, False)
+do_test(2, service_name, False, False)
+do_test(2, service_name, True, False)
+do_test(2, service_name, True, True)
