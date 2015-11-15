@@ -64,6 +64,7 @@ class PatronVerify (wsgi.Middleware):
     "os-security-group-rules": "",
     "os-extra_specs": "",
     "os-instance_usage_audit_log": "",
+    "os-volumes": "",
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
     "images": "", # "glance.db.sqlalchemy.api.image_get(uuid)", # comment this because it triggers error in tempest for glance.
