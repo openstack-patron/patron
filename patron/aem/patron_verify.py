@@ -66,7 +66,7 @@ class PatronVerify (wsgi.Middleware):
     "os-instance_usage_audit_log": "",
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
-    "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "images": "", # "glance.db.sqlalchemy.api.image_get(uuid)", # comment this because it triggers error in tempest for glance.
     "shared-images": "",
     "members": "",
     "tags": "",
@@ -296,6 +296,8 @@ class PatronVerify (wsgi.Middleware):
             method_obj = getattr(getattr(mod, class_name), method_name)
             try:
                 target = method_obj(context, *param_values)
+                if key_name == "images":
+                    target["properties"] = []
             # the method is then a instance method, first instantiate the class.
             except TypeError:
 
