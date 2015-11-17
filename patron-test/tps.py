@@ -5,12 +5,13 @@ import shutil
 import tempest_integration_test as tepit
 import time
 
-services = ["nova", "glance", "neutron", "cinder"]
+services = ["nova", "glance", "neutron", "cinder", "heat"]
 service_map = {
     "nova": "compute",
     "glance": "image",
     "neutron": "network",
     "cinder": "volume",
+    "heat": "orchestration",
 }
 
 def reset_all_services():
