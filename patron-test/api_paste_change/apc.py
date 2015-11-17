@@ -327,7 +327,7 @@ def clearTempestLog():
     setText('/var/log/tempest/tempest.log\nhas been cleared!')
 
 root = Tk()
-root.geometry('300x700+10+10')
+root.geometry('600x500+10+10')
 
 aemVar = StringVar()
 cacheVar = StringVar()
@@ -339,19 +339,29 @@ heatVar = StringVar()
 
 setDefaultRadioButtons()
 
-labelframe_aem = LabelFrame(root, text="AEM")
+labelframe_top = LabelFrame(root, text="", borderwidth=0)
+labelframe_top.pack(side="top", fill="both", expand="yes")
+labelframe_bottom = LabelFrame(root, text="", borderwidth=0)
+labelframe_bottom.pack(side="bottom", fill="both", expand="yes")
+labelframe_left = LabelFrame(labelframe_top, text="", borderwidth=0)
+labelframe_left.pack(side="left", fill="both", expand="yes")
+labelframe_right = LabelFrame(labelframe_top, text="", borderwidth=0)
+labelframe_right.pack(side="right", fill="both", expand="yes")
+
+
+labelframe_aem = LabelFrame(labelframe_left, text="AEM")
 labelframe_aem.pack(fill="both", expand="yes")
-labelframe_nova = LabelFrame(root, text="nova")
+labelframe_nova = LabelFrame(labelframe_left, text="nova")
 labelframe_nova.pack(fill="both", expand="yes")
-labelframe_glance = LabelFrame(root, text="glance")
+labelframe_glance = LabelFrame(labelframe_left, text="glance")
 labelframe_glance.pack(fill="both", expand="yes")
-labelframe_neutron = LabelFrame(root, text="neutron")
+labelframe_neutron = LabelFrame(labelframe_left, text="neutron")
 labelframe_neutron.pack(fill="both", expand="yes")
-labelframe_cinder = LabelFrame(root, text="cinder")
+labelframe_cinder = LabelFrame(labelframe_right, text="cinder")
 labelframe_cinder.pack(fill="both", expand="yes")
-labelframe_heat = LabelFrame(root, text="heat")
+labelframe_heat = LabelFrame(labelframe_right, text="heat")
 labelframe_heat.pack(fill="both", expand="yes")
-labelframe_patron = LabelFrame(root, text="patron")
+labelframe_patron = LabelFrame(labelframe_right, text="patron")
 labelframe_patron.pack(fill="both", expand="yes")
 
 Radiobutton(labelframe_aem, text="AEM -> patron [ON]", variable=aemVar, value='enable', command=sel_aem).pack()
@@ -383,7 +393,7 @@ Button(labelframe_heat, text ="Restart heat-api", command = handleButton_heat).p
 Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
 
 
-label = Label(root)
+label = Label(labelframe_bottom)
 label.pack()
 root.title("API Paste Change (APC)")
 if invoker == "apc.py":
