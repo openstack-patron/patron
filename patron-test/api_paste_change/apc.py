@@ -15,6 +15,8 @@ def get_original_file(service):
         return '/etc/neutron/api-paste.ini'
     elif service == 'cinder':
         return '/etc/cinder/api-paste.ini'
+    elif service == 'heat':
+        return '/etc/heat/api-paste.ini'
     else:
         raise Exception('[get_original_file]: Service not supported!!')
 
@@ -33,6 +35,8 @@ def get_original_hook(service):
         return '/usr/lib/python2.7/dist-packages/neutron/policy.py'
     elif service == 'cinder':
         return '/usr/lib/python2.7/dist-packages/cinder/policy.py'
+    elif service == 'heat':
+        return '/usr/lib/python2.7/dist-packages/heat/common/policy.py'
     else:
         raise Exception('[get_original_hook]: Service not supported!!')
 
@@ -86,7 +90,7 @@ def toggle_aem2(service, enable):
     text = f.read()
     if service == 'nova' or service == 'neutron' or service == 'cinder':
         hook_code = apc_log_hook_code
-    elif service == 'glance':
+    elif service == 'glance' or service == 'heat':
         hook_code = apc_log_hook_code2
     else:
         raise Exception('[toggle_aem2]: Service not supported!!')
@@ -162,6 +166,8 @@ def restart_service(service):
         output = os.popen('sudo service neutron-server restart')
     elif service == 'cinder':
         output = os.popen('sudo service cinder-api restart')
+    elif service == 'heat':
+        output = os.popen('sudo service heat-api restart')
     else:
         raise Exception('[restart_service]: Service not supported!!')
     res = output.read()
@@ -242,6 +248,17 @@ def sel_cinder():
         res_bool = False
     handleRadioButton(service, res_bool)
 
+def sel_heat():
+    service = 'heat'
+    res = str(globals()[service + 'Var'].get())
+    selection = "You selected the option: " + res
+    setText(selection)
+    if res == 'enable':
+        res_bool = True
+    else:
+        res_bool = False
+    handleRadioButton(service, res_bool)
+
 def handleRadioButton(service, enable):
     print (service, enable)
     if service == 'aem' or service == 'cache':
@@ -276,6 +293,11 @@ def handleButton_cinder():
     print res
     setText(res)
 
+def handleButton_heat():
+    res = restart_service('heat')
+    print res
+    setText(res)
+
 def setRadioButton(service, enable):
     if enable:
         globals()[service + 'Var'].set('enable')
@@ -289,6 +311,7 @@ def setDefaultRadioButtons():
     setRadioButton('glance', is_aem_enabled('glance'))
     setRadioButton('neutron', is_aem_enabled('neutron'))
     setRadioButton('cinder', is_aem_enabled('cinder'))
+    setRadioButton('heat', is_aem_enabled('heat'))
 
     # setRadioButton('nova', True)
     # setRadioButton('glance', False)
@@ -304,7 +327,7 @@ def clearTempestLog():
     setText('/var/log/tempest/tempest.log\nhas been cleared!')
 
 root = Tk()
-root.geometry('300x600+10+10')
+root.geometry('300x700+10+10')
 
 aemVar = StringVar()
 cacheVar = StringVar()
@@ -312,6 +335,7 @@ novaVar = StringVar()
 glanceVar = StringVar()
 neutronVar = StringVar()
 cinderVar = StringVar()
+heatVar = StringVar()
 
 setDefaultRadioButtons()
 
@@ -325,6 +349,8 @@ labelframe_neutron = LabelFrame(root, text="neutron")
 labelframe_neutron.pack(fill="both", expand="yes")
 labelframe_cinder = LabelFrame(root, text="cinder")
 labelframe_cinder.pack(fill="both", expand="yes")
+labelframe_heat = LabelFrame(root, text="heat")
+labelframe_heat.pack(fill="both", expand="yes")
 labelframe_patron = LabelFrame(root, text="patron")
 labelframe_patron.pack(fill="both", expand="yes")
 
@@ -349,6 +375,10 @@ Button(labelframe_neutron, text ="Restart neutron-server", command = handleButto
 Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [ON]", variable=cinderVar, value='enable', command=sel_cinder).pack()
 Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [OFF]", variable=cinderVar, value='disable', command=sel_cinder).pack()
 Button(labelframe_cinder, text ="Restart cinder-api", command = handleButton_cinder).pack()
+
+Radiobutton(labelframe_heat, text="Heat's AEM and hook [ON]", variable=heatVar, value='enable', command=sel_heat).pack()
+Radiobutton(labelframe_heat, text="Heat's AEM and hook [OFF]", variable=heatVar, value='disable', command=sel_heat).pack()
+Button(labelframe_heat, text ="Restart heat-api", command = handleButton_heat).pack()
 
 Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
 
