@@ -24,6 +24,21 @@ elif service_name == "neutron":
     from neutron import wsgi
 elif service_name == "cinder":
     from cinder import wsgi
+elif service_name == "heat":
+    from heat.common import wsgi
+
+    def PatronVerify_factory(global_conf, **local_conf):
+        """
+        Factory method for paste.deploy
+        """
+
+        conf = global_conf.copy()
+        conf.update(local_conf)
+
+        def filter(app):
+            return PatronVerify(app, conf)
+
+        return filter
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
 elif service_name.endswith(".py"): # This is for other module's calling use.
@@ -43,6 +58,11 @@ from patron_cache import PatronCache
 LOG = logging.getLogger(__name__)
 
 class PatronVerify (wsgi.Middleware):
+
+    if service_name == "heat":
+        def __init__(self, app, conf):
+            super(PatronVerify, self).__init__(app)
+
     key_calls = {
     # nova
     "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
@@ -341,8 +361,7 @@ class PatronVerify (wsgi.Middleware):
 
         return (op, target)
 
-    @webob.dec.wsgify(RequestClass=wsgi.Request)
-    def __call__(self, req):
+    def process_request(self, req):
         # Some options.
         aem_to_patron_enabled = True
         cache_enabled = False
@@ -365,6 +384,8 @@ class PatronVerify (wsgi.Middleware):
             caller_context = req.context
         elif service_name == "cinder":
             caller_context = req.environ['cinder.context']
+        elif service_name == "heat":
+            caller_context = req.context
         else:
             raise Exception("AEM: Invalid caller context!!")
 
@@ -537,6 +558,11 @@ class PatronVerify (wsgi.Middleware):
                       result, caller_user_name, auth_token, caller_project_name, user_auth_plugin)
 
         # for test
-        PatronCache.get_memory()
+        # PatronCache.get_memory()
 
         return self.application
+
+    if not (service_name == "heat"):
+        @webob.dec.wsgify(RequestClass=wsgi.Request)
+        def __call__(self, req):
+            return self.process_request(req)
