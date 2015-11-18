@@ -135,7 +135,7 @@ class ObjectMmap(mmap.mmap):
         return
 
 global mm
-mm = ObjectMmap(-1, 1024*1024, 1, access=mmap.ACCESS_WRITE)
+mm = ObjectMmap(-1, 1024 * 1024 * 16, 1, access=mmap.ACCESS_WRITE)
 
 class PatronCache(object):
 
