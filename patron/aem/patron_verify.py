@@ -26,19 +26,6 @@ elif service_name == "cinder":
     from cinder import wsgi
 elif service_name == "heat":
     from heat.common import wsgi
-
-    def PatronVerify_factory(global_conf, **local_conf):
-        """
-        Factory method for paste.deploy
-        """
-
-        conf = global_conf.copy()
-        conf.update(local_conf)
-
-        def filter(app):
-            return PatronVerify(app, conf)
-
-        return filter
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
 elif service_name.endswith(".py"): # This is for other module's calling use.
@@ -566,3 +553,17 @@ class PatronVerify (wsgi.Middleware):
         @webob.dec.wsgify(RequestClass=wsgi.Request)
         def __call__(self, req):
             return self.process_request(req)
+    else:
+        @classmethod
+        def factory(cls, global_conf, **local_conf):
+            """
+            Factory method for paste.deploy
+            """
+            LOG.info("factory")
+            conf = global_conf.copy()
+            conf.update(local_conf)
+
+            def filter(app):
+                return PatronVerify(app, conf)
+
+            return filter
