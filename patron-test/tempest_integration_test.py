@@ -140,6 +140,7 @@ def core_parse():
             last_op = op_parse(tmp[-1])
             if last_op != None:
                 ops.append(last_op)
+            ops = list(set(ops))
             ops_tuple = tuple(ops)
 
             if service == '':
@@ -151,6 +152,10 @@ def core_parse():
                     service = 'neutron'
                 elif 8776 in five_key_tuple:
                     service = 'cinder'
+                elif 8004 in five_key_tuple:
+                    service = 'heat'
+                elif 8777 in five_key_tuple:
+                    service = 'ceilometer'
                 do_clear(service)
 
             # print ops_tuple
@@ -189,6 +194,10 @@ def core_parse():
                     service = 'neutron'
                 elif 8776 in five_key_tuple:
                     service = 'cinder'
+                elif 8004 in five_key_tuple:
+                    service = 'heat'
+                elif 8777 in five_key_tuple:
+                    service = 'ceilometer'
                 do_clear(service)
 
             # op
