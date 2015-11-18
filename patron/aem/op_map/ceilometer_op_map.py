@@ -21,4 +21,6 @@ op_map = \
  (8777, '/v2', '/meters/image.download?q.op=%VALUE%&q.value=%VALUE%&q.field=%VALUE%', 'GET', ''): ('segregation',
                                                                                                    'telemetry:get_samples'),
  (8777, '/v2', '/meters/image.size?q.op=%VALUE%&q.value=%VALUE%&q.field=%VALUE%', 'GET', ''): ('segregation',
-                                                                                               'telemetry:get_samples')}
+                                                                                               'telemetry:get_samples'),
+ (8777, '/v2', '/meters/memory?q.op=%VALUE%&q.value=%VALUE%&q.field=%VALUE%', 'GET', ''): ('segregation',
+                                                                                           'telemetry:get_samples')}
