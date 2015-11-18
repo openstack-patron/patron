@@ -100,6 +100,9 @@ class PatronVerify (wsgi.Middleware):
     "qos-specs": "",
     "types": "",
     "extra_specs": "",
+    # heat
+    # ceilometer
+    "alarms": "",
     }
 
     neutron_model = {
