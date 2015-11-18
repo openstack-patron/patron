@@ -26,6 +26,8 @@ elif service_name == "cinder":
     from cinder import wsgi
 elif service_name == "heat":
     from heat.common import wsgi
+elif service_name == "ceilometer":
+    from oslo_middleware import base as wsgi
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
 elif service_name.endswith(".py"): # This is for other module's calling use.
@@ -373,6 +375,8 @@ class PatronVerify (wsgi.Middleware):
             caller_context = req.environ['cinder.context']
         elif service_name == "heat":
             caller_context = req.context
+        elif service_name == "ceilometer":
+            caller_context = None # ceilometer doesn't have a context.
         else:
             raise Exception("AEM: Invalid caller context!!")
 
@@ -405,7 +409,7 @@ class PatronVerify (wsgi.Middleware):
         # /85c8848b1dd64c7ebb2c5baeb12e25c3/flavors?is_public=None
 
         # Use different logic to parse path_info for different services.
-        if service_name == "glance":
+        if service_name == "glance" or service_name == "ceilometer": # path_info is something like "/v2/meters"
             (s1, s2, s3) = req.path_info.split("/", 2)
             req_api_version = "/" + s2
             req_path_info = "/" + s3
@@ -549,8 +553,11 @@ class PatronVerify (wsgi.Middleware):
 
         return self.application
 
+    class Request(webob.Request):
+        pass
+
     if not (service_name == "heat"):
-        @webob.dec.wsgify(RequestClass=wsgi.Request)
+        @webob.dec.wsgify(RequestClass=Request)
         def __call__(self, req):
             return self.process_request(req)
     else:
