@@ -19,6 +19,8 @@ def get_original_file(service):
         return '/etc/heat/api-paste.ini'
     elif service == 'ceilometer':
         return '/etc/ceilometer/api_paste.ini'
+    elif service == 'patron':
+        return '/etc/patron/api-paste.ini'
     else:
         raise Exception('[get_original_file]: Service not supported!!')
 
@@ -41,6 +43,8 @@ def get_original_hook(service):
         return '/usr/lib/python2.7/dist-packages/heat/common/policy.py'
     elif service == 'ceilometer':
         return '/usr/lib/python2.7/dist-packages/ceilometer/api/rbac.py'
+    if service == 'patron':
+        return '/usr/lib/python2.7/dist-packages/patron/policy.py'
     else:
         raise Exception('[get_original_hook]: Service not supported!!')
 
@@ -92,7 +96,7 @@ apc_log_hook_code2 = '''f = open('/var/log/tempest/tempest.log','a+')
 def toggle_aem2(service, enable):
     f = open(get_original_hook(service), 'r+')
     text = f.read()
-    if service == 'nova' or service == 'neutron' or service == 'cinder' or service == 'ceilometer':
+    if service == 'nova' or service == 'neutron' or service == 'cinder' or service == 'ceilometer' or service == 'patron':
         hook_code = apc_log_hook_code
     elif service == 'glance' or service == 'heat':
         hook_code = apc_log_hook_code2
@@ -160,9 +164,7 @@ def toggle_aem_variable(var, enable):
     f.close
 
 def restart_service(service):
-    if service == 'patron':
-        output = os.popen('sudo service patron-api restart')
-    elif service == 'nova':
+    if service == 'nova':
         output = os.popen('sudo service nova-api restart')
     elif service == 'glance':
         output = os.popen('sudo service glance-api restart')
@@ -174,6 +176,8 @@ def restart_service(service):
         output = os.popen('sudo service heat-api restart')
     elif service == 'ceilometer':
         output = os.popen('sudo service ceilometer-api restart')
+    elif service == 'patron':
+        output = os.popen('sudo service patron-api restart')
     else:
         raise Exception('[restart_service]: Service not supported!!')
     res = output.read()
@@ -276,6 +280,17 @@ def sel_ceilometer():
         res_bool = False
     handleRadioButton(service, res_bool)
 
+def sel_patron():
+    service = 'patron'
+    res = str(globals()[service + 'Var'].get())
+    selection = "You selected the option: " + res
+    setText(selection)
+    if res == 'enable':
+        res_bool = True
+    else:
+        res_bool = False
+    handleRadioButton(service, res_bool)
+
 def handleRadioButton(service, enable):
     print (service, enable)
     if service == 'aem' or service == 'cache':
@@ -284,11 +299,6 @@ def handleRadioButton(service, enable):
         toggle_aem(service, enable)
         toggle_aem2(service, enable)
         restart_service(service)
-
-def handleButton_patron():
-    res = restart_service('patron')
-    print res
-    setText(res)
 
 def handleButton_nova():
     res = restart_service('nova')
@@ -320,6 +330,11 @@ def handleButton_ceilometer():
     print res
     setText(res)
 
+def handleButton_patron():
+    res = restart_service('patron')
+    print res
+    setText(res)
+
 def setRadioButton(service, enable):
     if enable:
         globals()[service + 'Var'].set('enable')
@@ -335,6 +350,7 @@ def setDefaultRadioButtons():
     setRadioButton('cinder', is_aem_enabled('cinder'))
     setRadioButton('heat', is_aem_enabled('heat'))
     setRadioButton('ceilometer', is_aem_enabled('ceilometer'))
+    setRadioButton('patron', is_aem_enabled('patron'))
 
     # setRadioButton('nova', True)
     # setRadioButton('glance', False)
@@ -360,6 +376,7 @@ neutronVar = StringVar()
 cinderVar = StringVar()
 heatVar = StringVar()
 ceilometerVar = StringVar()
+patronVar = StringVar()
 
 setDefaultRadioButtons()
 
@@ -420,6 +437,8 @@ Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [ON]", variab
 Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [OFF]", variable=ceilometerVar, value='disable', command=sel_ceilometer).pack()
 Button(labelframe_ceilometer, text ="Restart ceilometer-api", command = handleButton_ceilometer).pack()
 
+Radiobutton(labelframe_patron, text="Patron's AEM and hook [ON]", variable=patronVar, value='enable', command=sel_patron).pack()
+Radiobutton(labelframe_patron, text="Patron's AEM and hook [OFF]", variable=patronVar, value='disable', command=sel_patron).pack()
 Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
 
 
