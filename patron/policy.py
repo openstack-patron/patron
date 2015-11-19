@@ -67,6 +67,10 @@ def set_rules(rules, overwrite=True, use_conf=False):
     _ENFORCER.set_rules(rules, overwrite, use_conf)
 
 
+def record_enforce(context, action, target):
+    ##apc hook##
+    return True
+
 def enforce(context, action, target, do_raise=True, exc=None, bypass=True):
     """Verifies that the action is valid on the target in this context.
 

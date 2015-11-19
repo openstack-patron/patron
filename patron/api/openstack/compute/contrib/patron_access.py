@@ -26,6 +26,8 @@ class PatronAccessController(object):
         self.ext_mgr = ext_mgr
 
     def getpolicy(self, req):
+        policy.record_enforce(None, "access:get_policy", None)
+
         all_the_text = '>>>>>>>>> enter PatronAccessController:getpolicy\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
         file_object.write(all_the_text)
@@ -33,6 +35,7 @@ class PatronAccessController(object):
         return {'action': 'getpolicy'}
 
     def setpolicy(self, req):
+        policy.record_enforce(None, "access:set_policy", None)
 
         #get project_id
         try:
@@ -73,6 +76,8 @@ class PatronAccessController(object):
             return {'action': 'setpolicy', 'res': False}
 
     def getlabel(self, req):
+        policy.record_enforce(None, "access:get_label", None)
+
         all_the_text = '>>>>>>>>> enter PatronAccessController:getlabel\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
         file_object.write(all_the_text)
@@ -80,6 +85,8 @@ class PatronAccessController(object):
         return {'action': 'getlabel'}
 
     def setlabel(self, req):
+        policy.record_enforce(None, "access:set_label", None)
+
         all_the_text = '>>>>>>>>> enter PatronAccessController:setlabel\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
         file_object.write(all_the_text)
@@ -88,6 +95,8 @@ class PatronAccessController(object):
 
 
     def verify(self, req):
+        policy.record_enforce(context, "access:verify", None)
+
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
         file_object = open('/var/log/patron/mylog.txt', 'a+')
