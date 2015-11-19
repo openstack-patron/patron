@@ -28,6 +28,8 @@ elif service_name == "heat":
     from heat.common import wsgi
 elif service_name == "ceilometer":
     from oslo_middleware import base as wsgi
+elif service_name == "patron":
+    from patron import wsgi
 elif service_name == "tempest": # This is for tempest test use, not a service.
     from nova import wsgi
 elif service_name.endswith(".py"): # This is for other module's calling use.
@@ -394,6 +396,8 @@ class PatronVerify (wsgi.Middleware):
             caller_context = req.context
         elif service_name == "ceilometer":
             caller_context = None # ceilometer doesn't have a context.
+        elif service_name == "patron":
+            caller_context = req.environ['patron.context']
         else:
             raise Exception("AEM: Invalid caller context!!")
 
