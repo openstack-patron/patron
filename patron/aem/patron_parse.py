@@ -9,6 +9,7 @@ import op_map.nova_op_map
 import op_map.glance_op_map
 import op_map.neutron_op_map
 import op_map.cinder_op_map
+import op_map.heat_op_map
 import op_map.ceilometer_op_map
 
 LOG = logging.getLogger(__name__)
@@ -242,6 +243,7 @@ path_op_map.update(op_map.nova_op_map.op_map)
 path_op_map.update(op_map.glance_op_map.op_map)
 path_op_map.update(op_map.neutron_op_map.op_map)
 path_op_map.update(op_map.cinder_op_map.op_map)
+path_op_map.update(op_map.heat_op_map.op_map)
 path_op_map.update(op_map.ceilometer_op_map.op_map)
 LOG.info("Op map has been loaded!!")
 #LOG.info("Path op map: %r", (path_op_map))

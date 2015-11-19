@@ -101,6 +101,12 @@ class PatronVerify (wsgi.Middleware):
     "types": "",
     "extra_specs": "",
     # heat
+    "stacks": "",
+    "resources": "",
+    "events": "",
+    "resource_types": "",
+    "software_deployments": "",
+    "software_configs": "",
     # ceilometer
     "alarms": "",
     }
@@ -132,17 +138,25 @@ class PatronVerify (wsgi.Middleware):
                 if path_info_list[i] in cls.key_calls:
                     key_ids[path_info_list[i]] = path_info_list[i + 1]
                     path_info_list[i + 1] = "%NAME%"
-
         else:
             for i in range(len(path_info_list) - 1):
                 if path_info_list[i] in cls.key_calls and path_info_list[i + 1] != "detail":
-                    key_ids[path_info_list[i]] = path_info_list[i + 1]
-                    if re.match(id_pattern, path_info_list[i + 1]) != None:
-                        path_info_list[i + 1] = "%ID%"
-                    elif re.match(uuid_patern, path_info_list[i + 1]) != None:
-                        path_info_list[i + 1] = "%UUID%"
-                    else:
+                    if path_info_list[i] == "stacks" and i < len(path_info_list) - 2:
+                        key_ids[path_info_list[i]] = path_info_list[i + 2]
                         path_info_list[i + 1] = "%NAME%"
+                        path_info_list[i + 2] = "%UUID%"
+                    elif path_info_list[i] == "software_deployments" and i < len(path_info_list) - 2:
+                        key_ids[path_info_list[i]] = path_info_list[i + 2]
+                        path_info_list[i + 1] = "%NAME%"
+                        path_info_list[i + 2] = "%NAME%"
+                    else:
+                        key_ids[path_info_list[i]] = path_info_list[i + 1]
+                        if re.match(id_pattern, path_info_list[i + 1]) != None:
+                            path_info_list[i + 1] = "%ID%"
+                        elif re.match(uuid_patern, path_info_list[i + 1]) != None:
+                            path_info_list[i + 1] = "%UUID%"
+                        else:
+                            path_info_list[i + 1] = "%NAME%"
         template_path_info = "/" + "/".join(path_info_list)
         # Translate '/%ID%/flavors?is_public=None' to '/%ID%/flavors?is_public=%VALUE%'
         template_path_info = re.sub(value_patern, "=%VALUE%&", template_path_info)
