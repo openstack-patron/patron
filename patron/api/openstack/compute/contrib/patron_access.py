@@ -95,7 +95,7 @@ class PatronAccessController(object):
 
 
     def verify(self, req):
-        policy.record_enforce(context, "access:verify", None)
+        policy.record_enforce(None, "access:verify", None)
 
         """Return all cells in detail."""
         all_the_text = '>>>>>>>>> enter PatronAccessController:verify\n'
