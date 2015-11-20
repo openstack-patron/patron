@@ -98,10 +98,11 @@ class PatronVerify (wsgi.Middleware):
     "ports": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
     "floatingips": "", ## related to VM, ignore
     # cinder
-    "volumes": "",
-    "qos-specs": "",
-    "types": "",
-    "extra_specs": "",
+    "volumes": "cinder.db.api.volume_get(id)",
+    "qos-specs": "cinder.db.api.qos_specs_get(id)",
+    "types": "cinder.db.api.volume_type_get(id)",
+    "extra_specs": "cinder.db.api.volume_type_extra_specs_get(id)",
+    "snapshots": "cinder.objects.Snapshot.get_by_id(id)",
     # heat
     "stacks": "",
     "resources": "",
