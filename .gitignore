@@ -11,8 +11,6 @@ nova/nova-api.py
 !/patron
 !/patronclient
 !/patron-config
-!/tempest
-!/tempest_lib
 
 *.py[cod]
 
