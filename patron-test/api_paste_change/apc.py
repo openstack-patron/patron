@@ -6,6 +6,9 @@ import inspect
 
 invoker = os.path.basename(inspect.stack()[-1][1]).split('-')[0]
 
+def is_service_installed(service):
+    return os.path.exists('/usr/lib/python2.7/dist-packages/' + service)
+
 def get_original_file(service):
     if service == 'nova':
         return '/etc/nova/api-paste.ini'
@@ -341,16 +344,24 @@ def setRadioButton(service, enable):
     else:
         globals()[service + 'Var'].set('disable')
 
+novaState = is_service_installed('nova')
+glanceState = is_service_installed('glance')
+neutronState = is_service_installed('neutron')
+cinderState = is_service_installed('cinder')
+heatState = is_service_installed('heat')
+ceilometerState = is_service_installed('ceilometer')
+patronState = is_service_installed('patron')
+
 def setDefaultRadioButtons():
     setRadioButton('aem', is_aem_variable_enabled('aem'))
     setRadioButton('cache', is_aem_variable_enabled('cache'))
-    setRadioButton('nova', is_aem_enabled('nova'))
-    setRadioButton('glance', is_aem_enabled('glance'))
-    setRadioButton('neutron', is_aem_enabled('neutron'))
-    setRadioButton('cinder', is_aem_enabled('cinder'))
-    setRadioButton('heat', is_aem_enabled('heat'))
-    setRadioButton('ceilometer', is_aem_enabled('ceilometer'))
-    setRadioButton('patron', is_aem_enabled('patron'))
+    if novaState: setRadioButton('nova', is_aem_enabled('nova'))
+    if glanceState: setRadioButton('glance', is_aem_enabled('glance'))
+    if neutronState: setRadioButton('neutron', is_aem_enabled('neutron'))
+    if cinderState: setRadioButton('cinder', is_aem_enabled('cinder'))
+    if heatState: setRadioButton('heat', is_aem_enabled('heat'))
+    if ceilometerState: setRadioButton('ceilometer', is_aem_enabled('ceilometer'))
+    if patronState: setRadioButton('patron', is_aem_enabled('patron'))
 
     # setRadioButton('nova', True)
     # setRadioButton('glance', False)
@@ -413,33 +424,33 @@ Radiobutton(labelframe_aem, text="AEM cache [ON]", variable=cacheVar, value='ena
 Radiobutton(labelframe_aem, text="AEM cache [OFF]", variable=cacheVar, value='disable', command=sel_cache).pack()
 Button(labelframe_aem, text ="Clear tempest.log", command = clearTempestLog).pack()
 
-Radiobutton(labelframe_nova, text="Nova's AEM and hook [ON]", variable=novaVar, value='enable', command=sel_nova).pack()
-Radiobutton(labelframe_nova, text="Nova's AEM and hook [OFF]", variable=novaVar, value='disable', command=sel_nova).pack()
-Button(labelframe_nova, text ="Restart nova-api", command = handleButton_nova).pack()
+Radiobutton(labelframe_nova, text="Nova's AEM and hook [ON]", variable=novaVar, value='enable', command=sel_nova, state = NORMAL if novaState else DISABLED).pack()
+Radiobutton(labelframe_nova, text="Nova's AEM and hook [OFF]", variable=novaVar, value='disable', command=sel_nova, state = NORMAL if novaState else DISABLED).pack()
+Button(labelframe_nova, text ="Restart nova-api", command = handleButton_nova, state = NORMAL if novaState else DISABLED).pack()
 
-Radiobutton(labelframe_glance, text="Glance's AEM and hook [ON]", variable=glanceVar, value='enable', command=sel_glance).pack()
-Radiobutton(labelframe_glance, text="Glance's AEM and hook [OFF]", variable=glanceVar, value='disable', command=sel_glance).pack()
-Button(labelframe_glance, text ="Restart glance-api", command = handleButton_glance).pack()
+Radiobutton(labelframe_glance, text="Glance's AEM and hook [ON]", variable=glanceVar, value='enable', command=sel_glance, state = NORMAL if glanceState else DISABLED).pack()
+Radiobutton(labelframe_glance, text="Glance's AEM and hook [OFF]", variable=glanceVar, value='disable', command=sel_glance, state = NORMAL if glanceState else DISABLED).pack()
+Button(labelframe_glance, text ="Restart glance-api", command = handleButton_glance, state = NORMAL if glanceState else DISABLED).pack()
 
-Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [ON]", variable=neutronVar, value='enable', command=sel_neutron).pack()
-Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [OFF]", variable=neutronVar, value='disable', command=sel_neutron).pack()
-Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron).pack()
+Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [ON]", variable=neutronVar, value='enable', command=sel_neutron, state = NORMAL if neutronState else DISABLED).pack()
+Radiobutton(labelframe_neutron, text="Neutron's AEM and hook [OFF]", variable=neutronVar, value='disable', command=sel_neutron, state = NORMAL if neutronState else DISABLED).pack()
+Button(labelframe_neutron, text ="Restart neutron-server", command = handleButton_neutron, state = NORMAL if neutronState else DISABLED).pack()
 
-Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [ON]", variable=cinderVar, value='enable', command=sel_cinder).pack()
-Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [OFF]", variable=cinderVar, value='disable', command=sel_cinder).pack()
-Button(labelframe_cinder, text ="Restart cinder-api", command = handleButton_cinder).pack()
+Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [ON]", variable=cinderVar, value='enable', command=sel_cinder, state = NORMAL if cinderState else DISABLED).pack()
+Radiobutton(labelframe_cinder, text="Cinder's AEM and hook [OFF]", variable=cinderVar, value='disable', command=sel_cinder, state = NORMAL if cinderState else DISABLED).pack()
+Button(labelframe_cinder, text ="Restart cinder-api", command = handleButton_cinder, state = NORMAL if cinderState else DISABLED).pack()
 
-Radiobutton(labelframe_heat, text="Heat's AEM and hook [ON]", variable=heatVar, value='enable', command=sel_heat).pack()
-Radiobutton(labelframe_heat, text="Heat's AEM and hook [OFF]", variable=heatVar, value='disable', command=sel_heat).pack()
-Button(labelframe_heat, text ="Restart heat-api", command = handleButton_heat).pack()
+Radiobutton(labelframe_heat, text="Heat's AEM and hook [ON]", variable=heatVar, value='enable', command=sel_heat, state = NORMAL if heatState else DISABLED).pack()
+Radiobutton(labelframe_heat, text="Heat's AEM and hook [OFF]", variable=heatVar, value='disable', command=sel_heat, state = NORMAL if heatState else DISABLED).pack()
+Button(labelframe_heat, text ="Restart heat-api", command = handleButton_heat, state = NORMAL if heatState else DISABLED).pack()
 
-Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [ON]", variable=ceilometerVar, value='enable', command=sel_ceilometer).pack()
-Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [OFF]", variable=ceilometerVar, value='disable', command=sel_ceilometer).pack()
-Button(labelframe_ceilometer, text ="Restart ceilometer-api", command = handleButton_ceilometer).pack()
+Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [ON]", variable=ceilometerVar, value='enable', command=sel_ceilometer, state = NORMAL if ceilometerState else DISABLED).pack()
+Radiobutton(labelframe_ceilometer, text="Ceilometer's AEM and hook [OFF]", variable=ceilometerVar, value='disable', command=sel_ceilometer, state = NORMAL if ceilometerState else DISABLED).pack()
+Button(labelframe_ceilometer, text ="Restart ceilometer-api", command = handleButton_ceilometer, state = NORMAL if ceilometerState else DISABLED).pack()
 
-Radiobutton(labelframe_patron, text="Patron's AEM and hook [ON]", variable=patronVar, value='enable', command=sel_patron).pack()
-Radiobutton(labelframe_patron, text="Patron's AEM and hook [OFF]", variable=patronVar, value='disable', command=sel_patron).pack()
-Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron).pack()
+Radiobutton(labelframe_patron, text="Patron's AEM and hook [ON]", variable=patronVar, value='enable', command=sel_patron, state = NORMAL if patronState else DISABLED).pack()
+Radiobutton(labelframe_patron, text="Patron's AEM and hook [OFF]", variable=patronVar, value='disable', command=sel_patron, state = NORMAL if patronState else DISABLED).pack()
+Button(labelframe_patron, text ="Restart patron-api", command = handleButton_patron, state = NORMAL if patronState else DISABLED).pack()
 
 
 label = Label(labelframe_bottom)
