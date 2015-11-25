@@ -88,11 +88,11 @@ class PatronVerify (wsgi.Middleware):
     "routers": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Router, id)",
     "networks": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Network, id)",
     "agents": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Agent, id)",
-    "l3-routers": "",
-    "dhcp-networks": "",
+    "l3-routers": "", # no target
+    "dhcp-networks": "",  # no target
     "security-groups": "neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroup)",
-    "security-group-rules": "",
-    "quotas": "",
+    "security-group-rules": "neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroupRule)",
+    "quotas": "", # no target
     "subnetpools": "", ## cmd not exists
     "subnets": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Subnet, id)",
     "ports": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
@@ -116,11 +116,12 @@ class PatronVerify (wsgi.Middleware):
 
     neutron_model = {
         "Agent": {'path': "neutron.db.agents_db.Agent", 'dict': "neutron.db.agents_db.AgentDbMixin._make_agent_dict"},
-        "SecurityGroup": {'path': 'neutron.db.securitygroups_db.SecurityGroup', 'dict': "neutron.db.securitygroups_db._make_security_group_dict"},
+        "SecurityGroup": {'path': 'neutron.db.securitygroups_db.SecurityGroup', 'dict': "neutron.db.securitygroups_db.SecurityGroupRule._make_security_group_dict"},
         "Router": {'path': "neutron.db.l3_db.Router", 'dict': "neutron.db.l3_db.L3_NAT_dbonly_mixin._make_router_dict"},
         "Subnet": {'path': "neutron.db.models_v2.Subnet", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_router_dict"},
         "Network": {'path': "neutron.db.models_v2.Network", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_network_dict"},
         "Port": {'path': "neutron.db.models_v2.Port", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_port_dict"},
+        "SecurityGroupRule": {"path": "neutron.db.securitygroups_db.SecurityGroupRule", "dict": "neutron.db.securitygroup_db.SecurityGroupRule._make_security_group_rule_dict"}
     }
 
     @classmethod
@@ -205,6 +206,8 @@ class PatronVerify (wsgi.Middleware):
             res['security_group_rules'] = [cls._make_security_group_rule_dict(r)
                                            for r in target.rules]
             return res
+        elif type == 'SecurityGroupRule':
+            return cls._make_security_group_rule_dict(target)
         elif type == 'Router':
             from neutron.extensions import l3
             EXTERNAL_GW_INFO = l3.EXTERNAL_GW_INFO
@@ -390,7 +393,7 @@ class PatronVerify (wsgi.Middleware):
         elif service_name == "glance":
             caller_context = req.context
         elif service_name == "neutron":
-            caller_context = req.context
+            caller_context = req.environ['neutron.context']
         elif service_name == "cinder":
             caller_context = req.environ['cinder.context']
         elif service_name == "heat":
