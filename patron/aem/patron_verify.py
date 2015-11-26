@@ -22,8 +22,8 @@ elif service_name == "glance":
     from glance.common import wsgi
 elif service_name == "neutron":
     from neutron import wsgi
-elif service_name == "cinder":
-    from cinder import wsgi
+# elif service_name == "cinder":
+#     from cinder import wsgi
 elif service_name == "heat":
     from heat.common import wsgi
 elif service_name == "ceilometer":
@@ -104,12 +104,12 @@ class PatronVerify (wsgi.Middleware):
     "extra_specs": "cinder.db.api.volume_type_extra_specs_get(id)",
     "snapshots": "cinder.objects.Snapshot.get_by_id(id)",
     # heat
-    "stacks": "",
-    "resources": "",
-    "events": "",
-    "resource_types": "",
-    "software_deployments": "",
-    "software_configs": "",
+    "stacks": "heat.db.sqlalchemy.api.stack_get(uuid)",
+    "resources": "heat.db.sqlalchemy.api.resource_get(uuid)",
+    "events": "heat.db.sqlalchemy.api.event_get(uuid)",
+    "resource_types": "heat.db.sqlalchemy.api.resource_data_get(uuid)",
+    "software_deployments": "heat.db.sqlalchemy.api.software_deployment_get(uuid)",
+    "software_configs": "heat.db.sqlalchemy.api.software_config_get(uuid)",
     # ceilometer
     "alarms": "",
     }
@@ -375,7 +375,7 @@ class PatronVerify (wsgi.Middleware):
 
     def process_request(self, req):
         # Some options.
-        aem_to_patron_enabled = True
+        aem_to_patron_enabled = False
         cache_enabled = False
 
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
@@ -475,6 +475,10 @@ class PatronVerify (wsgi.Middleware):
         f = open('/var/log/tempest/tempest.log','a+')
         f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
         f.close()
+        f1 = open('/var/log/tempest/heat.log','a+')
+        f1.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
+        f1.close()
+
 
         #####################################################################################################
         # This line is used to bypass AEM (aka always return Permitted).
