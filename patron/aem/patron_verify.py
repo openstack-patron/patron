@@ -111,7 +111,7 @@ class PatronVerify (wsgi.Middleware):
     "software_deployments": "heat.db.sqlalchemy.api.software_deployment_get(uuid)",
     "software_configs": "heat.db.sqlalchemy.api.software_config_get(uuid)",
     # ceilometer
-    "alarms": "",
+    "alarms": "ceilometer.alarm.storage.impl_sqlalchemy.Connection.get_alarms(uuid)", # need to test
     }
 
     neutron_model = {
