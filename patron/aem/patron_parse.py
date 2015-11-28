@@ -235,8 +235,8 @@ path_op_map = \
  (9696, '/v2.0', '/networks', 'GET', ''): ('get_network',),
  (9696, '/v2.0', '/networks?fields=%VALUE%&id=%VALUE%', 'GET', ''): ('get_network',),
  (9696, '/v2.0', '/networks/%UUID%', 'GET', ''): ('get_network',),
- (8776, u'/v2', u'/volumes/detail', 'GET', ''): ('volume:get_all',),
- (8776, u'/v2', u'/volumes/%NAME%', 'GET', ''): ('volume:get',),
+ (8776, '/v2', '/volumes/detail', 'GET', ''): ('volume:get_all',),
+ (8776, '/v2', '/volumes/%NAME%', 'GET', ''): ('volume:get',),
  (8777, '/v2', '/meters', 'GET', ''): (),}
 
 # Load op maps for all services
