@@ -22,8 +22,8 @@ elif service_name == "glance":
     from glance.common import wsgi
 elif service_name == "neutron":
     from neutron import wsgi
-elif service_name == "cinder":
-    from cinder import wsgi
+# elif service_name == "cinder":
+#     from cinder import wsgi
 elif service_name == "heat":
     from heat.common import wsgi
 elif service_name == "ceilometer":
@@ -59,7 +59,7 @@ class PatronVerify (wsgi.Middleware):
     "servers": "nova.objects.instance.Instance.get_by_uuid(uuid)",
     "os-interface": "nova.objects.virtual_interface.VirtualInterface.get_by_uuid(uuid)",
     "os-keypairs": "nova.objects.keypair.KeyPair.get_by_name(user_id, name)",
-    "os-agents": "",
+    "os-agents": "patron.aem.patron_verify.PatronVerify.get_default_target(id)",  # need to test
     "os-aggregates": "nova.objects.aggregate.Aggregate.get_by_id(id)",
     "os-networks": "nova.network.neutronv2.api.API.get(id)", # "nova.objects.network.Network.get_by_id(uuid)"
     "os-tenant-networks": "nova.network.neutronv2.api.API.get(id)",
@@ -71,32 +71,32 @@ class PatronVerify (wsgi.Middleware):
     "os-security-groups": "nova.objects.security_group.SecurityGroup.get(id)",
     "os-server-groups": "nova.objects.instance_group.InstanceGroup.get_by_uuid(uuid)",
     "os-migrations": "nova.objects.migraton.Migration.get_by_id(id)",
-    "os-floating-ips": "",
-    "os-security-group-rules": "",
-    "os-extra_specs": "",
-    "os-instance_usage_audit_log": "",
-    "os-volumes": "",
+    "os-floating-ips": "nova.objects.floating_ip.FloatingIP.get_by_id(id)",  # need to test
+    "os-security-group-rules": "nova.objects.security_group_rule.SecurityGroupRule.get_by_id(id)",  # need to test
+    "os-extra_specs": "nova.api.openstack.compute.contrib.flavorextraspecs.FlavorExtraSpecsController._get_extra_specs(id)", # need to test
+    "os-instance_usage_audit_log": "nova.api.openstack.compute.contrib.instance_usage_audit_log.InstanceUsageAuditLogController.show(id)", # need to test
+    "os-volumes": "nova.objects.block_device.BlockDeviceMapping.get_by_volume_id(id)", # need to test
     "flavors": "nova.objects.flavor.Flavor.get_by_id(id)",
     # glance
-    "images": "", # "glance.db.sqlalchemy.api.image_get(uuid)", # comment this because it triggers error in tempest for glance.
-    "shared-images": "",
-    "members": "",
-    "tags": "",
-    "metadefs": "",
-    "namespaces": "",
+    "images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "shared-images": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "members": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "tags": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "metadefs": "glance.db.sqlalchemy.api.image_get(uuid)",
+    "namespaces": "glance.db.sqlalchemy.api.image_get(uuid)",
     # neutron
     "routers": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Router, id)",
     "networks": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Network, id)",
     "agents": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Agent, id)",
-    "l3-routers": "",
-    "dhcp-networks": "",
+    "l3-routers": "", # no target
+    "dhcp-networks": "",  # no target
     "security-groups": "neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroup)",
-    "security-group-rules": "",
-    "quotas": "",
+    "security-group-rules": "neutron.db.common_db_mixin.CommonDbMixin._model_query(SecurityGroupRule)",
+    "quotas": "", # no target
     "subnetpools": "", ## cmd not exists
     "subnets": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Subnet, id)",
     "ports": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(Port, id)",
-    "floatingips": "", ## related to VM, ignore
+    "floatingips": "neutron.db.common_db_mixin.CommonDbMixin._get_by_id(FloatingIP, id)", ## need to test
     # cinder
     "volumes": "cinder.db.api.volume_get(id)",
     "qos-specs": "cinder.db.api.qos_specs_get(id)",
@@ -104,28 +104,34 @@ class PatronVerify (wsgi.Middleware):
     "extra_specs": "cinder.db.api.volume_type_extra_specs_get(id)",
     "snapshots": "cinder.objects.Snapshot.get_by_id(id)",
     # heat
-    "stacks": "",
-    "resources": "",
-    "events": "",
-    "resource_types": "",
-    "software_deployments": "",
-    "software_configs": "",
+    "stacks": "heat.db.sqlalchemy.api.stack_get(uuid)",
+    "resources": "heat.db.sqlalchemy.api.resource_get(uuid)",
+    "events": "heat.db.sqlalchemy.api.event_get(uuid)",
+    "resource_types": "heat.db.sqlalchemy.api.resource_data_get(uuid)",
+    "software_deployments": "heat.db.sqlalchemy.api.software_deployment_get(uuid)",
+    "software_configs": "heat.db.sqlalchemy.api.software_config_get(uuid)",
     # ceilometer
-    "alarms": "",
+    "alarms": "ceilometer.alarm.storage.impl_sqlalchemy.Connection.get_alarms(uuid)", # need to test
     }
 
     neutron_model = {
         "Agent": {'path': "neutron.db.agents_db.Agent", 'dict': "neutron.db.agents_db.AgentDbMixin._make_agent_dict"},
-        "SecurityGroup": {'path': 'neutron.db.securitygroups_db.SecurityGroup', 'dict': "neutron.db.securitygroups_db._make_security_group_dict"},
+        "SecurityGroup": {'path': 'neutron.db.securitygroups_db.SecurityGroup', 'dict': "neutron.db.securitygroups_db.SecurityGroupRule._make_security_group_dict"},
         "Router": {'path': "neutron.db.l3_db.Router", 'dict': "neutron.db.l3_db.L3_NAT_dbonly_mixin._make_router_dict"},
         "Subnet": {'path': "neutron.db.models_v2.Subnet", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_router_dict"},
         "Network": {'path': "neutron.db.models_v2.Network", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_network_dict"},
         "Port": {'path': "neutron.db.models_v2.Port", 'dict': "neutron.db.db_base_plugin_v2.NeutronDbPluginV2._make_port_dict"},
+        "SecurityGroupRule": {"path": "neutron.db.securitygroups_db.SecurityGroupRule", "dict": "neutron.db.securitygroup_db.SecurityGroupRule._make_security_group_rule_dict"},
+        "FloatingIP": {'path': 'neutron.db.l3_db.FloatingIP','dict': "neutron.db.l3_db.L3_NAT_dbonly_mixin._make_floatingip_dict"}
     }
 
     @classmethod
     def get_tenant_by_id(cls, context, id):
         return {"id": id}
+
+    @classmethod
+    def get_default_target(cls, context, id):
+        return {"project_id": context}
 
     @classmethod
     def get_template_path_info(cls, req_path_info, key_ids = {}):
@@ -205,6 +211,17 @@ class PatronVerify (wsgi.Middleware):
             res['security_group_rules'] = [cls._make_security_group_rule_dict(r)
                                            for r in target.rules]
             return res
+        elif type == 'SecurityGroupRule':
+            return cls._make_security_group_rule_dict(target)
+        elif type == 'FloatingIP':
+            return {'id': target['id'],
+               'tenant_id': target['tenant_id'],
+               'floating_ip_address': target['floating_ip_address'],
+               'floating_network_id': target['floating_network_id'],
+               'router_id': target['router_id'],
+               'port_id': target['fixed_port_id'],
+               'fixed_ip_address': target['fixed_ip_address'],
+               'status': target['status']}
         elif type == 'Router':
             from neutron.extensions import l3
             EXTERNAL_GW_INFO = l3.EXTERNAL_GW_INFO
@@ -372,7 +389,7 @@ class PatronVerify (wsgi.Middleware):
 
     def process_request(self, req):
         # Some options.
-        aem_to_patron_enabled = True
+        aem_to_patron_enabled = False
         cache_enabled = False
 
         LOG.info("\n!!!!!!!!!!!!!!!!!! This is PatronVerify Middleware\n")
@@ -390,7 +407,7 @@ class PatronVerify (wsgi.Middleware):
         elif service_name == "glance":
             caller_context = req.context
         elif service_name == "neutron":
-            caller_context = req.context
+            caller_context = req.environ['neutron.context']
         elif service_name == "cinder":
             caller_context = req.environ['cinder.context']
         elif service_name == "heat":
@@ -472,6 +489,10 @@ class PatronVerify (wsgi.Middleware):
         f = open('/var/log/tempest/tempest.log','a+')
         f.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
         f.close()
+        f1 = open('/var/log/tempest/heat.log','a+')
+        f1.write("\n### req_port = %r, req_api_version = %r, req_method = %r, req_path_info = %r, req_inner_action = %r, op=" % (req_server_port, req_api_version, req_method, req_path_info, req_inner_action))
+        f1.close()
+
 
         #####################################################################################################
         # This line is used to bypass AEM (aka always return Permitted).
